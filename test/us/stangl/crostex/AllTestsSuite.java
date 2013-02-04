@@ -1,0 +1,35 @@
+/**
+ * Copyright 2008, Alex Stangl. See LICENSE for licensing details.
+ */
+package us.stangl.crostex;
+
+import junit.framework.TestSuite;
+
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+
+import us.stangl.crostex.constraint.OnePolyominoGridConstraintTest;
+import us.stangl.crostex.constraint.SymmetryGridConstraintTest;
+import us.stangl.crostex.gui.CrosswordPanelTest;
+import us.stangl.crostex.util.CircularListTest;
+import us.stangl.crostex.util.MessageTest;
+import us.stangl.crostex.util.StackTest;
+ 
+/**
+ * Test suite to run all unit tests.
+ */
+@RunWith(Suite.class)
+@Suite.SuiteClasses({
+	CircularListTest.class,
+	CrosswordPanelTest.class,
+	MessageTest.class,
+	OnePolyominoGridConstraintTest.class,
+	RomanNumeralGeneratorTest.class,
+	StackTest.class,
+	SymmetryGridConstraintTest.class,
+	TrieTest.class
+})
+public class AllTestsSuite extends TestSuite {
+    // the class remains completely empty, 
+    // being used only as a holder for the above annotations
+}

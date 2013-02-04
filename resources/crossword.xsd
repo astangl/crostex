@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="puzzle">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="crossword"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="crossword">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="metadata"/>
+        <xs:element ref="american"/>
+      </xs:sequence>
+      <xs:attribute name="language" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="metadata">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="title"/>
+        <xs:element ref="date"/>
+        <xs:element ref="creator"/>
+        <xs:element ref="rights"/>
+        <xs:element ref="publisher"/>
+        <xs:element ref="identifier"/>
+        <xs:element ref="description"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="title" type="xs:string"/>
+  <xs:element name="date" type="xs:string"/>
+  <xs:element name="creator" type="xs:string"/>
+  <xs:element name="rights" type="xs:string"/>
+  <xs:element name="publisher" type="xs:string"/>
+  <xs:element name="identifier" type="xs:anyURI"/>
+  <xs:element name="description" type="xs:string"/>
+  <xs:element name="american">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="grid"/>
+        <xs:element ref="clues"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="grid">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element ref="blank"/>
+        <xs:element ref="letter"/>
+      </xs:choice>
+      <xs:attribute name="columns" use="required" type="xs:integer"/>
+      <xs:attribute name="rows" use="required" type="xs:integer"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="blank">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="letter">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:NCName">
+          <xs:attribute name="id" use="required"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="clues">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="across"/>
+        <xs:element maxOccurs="unbounded" ref="down"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="across">
+    <xs:complexType mixed="true">
+      <xs:attribute name="cellid" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="down">
+    <xs:complexType mixed="true">
+      <xs:attribute name="cellid" use="required"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
