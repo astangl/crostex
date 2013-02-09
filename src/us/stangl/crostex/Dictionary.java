@@ -11,6 +11,9 @@ import us.stangl.crostex.util.ResettableIterator;
  * Public interface for a dictionary class.
  */
 public interface Dictionary<K, E> {
+	/** wildcard character */
+	static final char WILDCARD = '_';
+
 	/**
 	 * Return list of entries matching specified pattern.
 	 * @param pattern

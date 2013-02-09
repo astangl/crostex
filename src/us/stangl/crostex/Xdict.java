@@ -12,11 +12,9 @@ import us.stangl.crostex.util.ResettableIterator;
 
 /**
  * Implementation of dictionary optimized for crossword pattern lookup. 
+ * NOTE: According to DictionariesTest, this Dictionary is not correct!!!
  */
 public class Xdict<E> implements Dictionary<char[], E> {
-    /** wildcard character */
-    public static final char WILDCARD = '_';
-
     /**
      * buckets organized by word length.
      * Element[N] logically points to all words of length N
@@ -31,13 +29,13 @@ public class Xdict<E> implements Dictionary<char[], E> {
      *
      * len bucket -> letter slots -> A-Z array -> words
      */
-    private List<List<?>[][]> lenBuckets_ = new ArrayList<List<?>[][]>();
+    private List<List<?>[][]> lenBuckets = new ArrayList<List<?>[][]>();
 
     /** private scratchpad */
-    private char[] scratchpad_ = new char[100];
+    private char[] scratchpad = new char[100];
 
     private void growLenList() {
-        int nextSize = lenBuckets_.size();
+        int nextSize = lenBuckets.size();
         List<?>[][] letterSlots = new List<?>[nextSize][26];
         for (int i = 0; i < nextSize; ++i) {
 //            List<?>[] atozArray = new List<?>[26];
@@ -47,7 +45,7 @@ public class Xdict<E> implements Dictionary<char[], E> {
 //            letterSlots[i] = atozArray;
         }
 
-        lenBuckets_.add(letterSlots);
+        lenBuckets.add(letterSlots);
     }
 
     public void rebalance() {}
@@ -65,10 +63,10 @@ public class Xdict<E> implements Dictionary<char[], E> {
 	}
 
     public E lookup(char[] key) {
-        if (lenBuckets_.size() <= key.length)
+        if (lenBuckets.size() <= key.length)
             return null;
 
-        List[][] letterSlots = lenBuckets_.get(key.length);
+        List[][] letterSlots = lenBuckets.get(key.length);
         int[] freqs = getFreqDist(key, letterSlots);
         if (freqs.length != key.length)
             throw new IllegalArgumentException("Illegal key value '" + new String(key) + "' passed to findKey");
@@ -89,44 +87,20 @@ candidates:
     }
 
     public boolean isPatternInDictionary(char[] pattern) {
-        //TODO this is copied verbatim from findKey and really isn't correct
-        // since it assumes there must be no wildcards
-        if (lenBuckets_.size() <= pattern.length)
+        if (lenBuckets.size() <= pattern.length)
             return false;
         
         return getIterator(pattern).hasNext();
-/*
-        List[][] letterSlots = lenBuckets_.get(pattern.length);
-        int[] freqs = getFreqDist(pattern, letterSlots);
-        if (freqs.length != pattern.length)
-            throw new IllegalArgumentException("Illegal key value '" + new String(pattern) + "' passed to findPattern");
-        List<Pair<char[], E>> list = letterSlots[freqs[0]][pattern[freqs[0]] - 'A'];
-candidates:
-        for (Pair<char[], E> candidate : list) {
-            char[] text = candidate.first_;
-            
-            for (int i = 1; i < freqs.length; ++i) {
-                int freqIndex = freqs[i];
-                if (text[freqIndex] != pattern[freqIndex])
-                    continue candidates;
-            }
-
-            return candidate;
-        }
-        return null;
-        */
     }
 
-    /**
-     * return list of zero-based indexes into word, pointing at
-     * non-wildcard characters, in increasing order of freq. in dict
-     */
+    // return list of zero-based indexes into word, pointing at
+    // non-wildcard characters, in increasing order of freq. in dict
     private int[] getFreqDist(char[] word, List[][] letterSlots) {
         // Count # of non-wildcard chars in word to determine size of retval
         int retsize = 0;
 //        char[] temp = new char[word.length]
         for (int i = 0; i < word.length; ++i) {
-            scratchpad_[i] = word[i];
+            scratchpad[i] = word[i];
             if (word[i] != WILDCARD)
                 ++retsize;
         }
@@ -137,8 +111,8 @@ candidates:
             int lowestSoFar = Integer.MAX_VALUE;
             int lowestSoFarIndex = -1;
             for (int i = 0; i < word.length; ++i) {
-                if (scratchpad_[i] != WILDCARD) {
-                    int atoz = scratchpad_[i] - 'A';
+                if (scratchpad[i] != WILDCARD) {
+                    int atoz = scratchpad[i] - 'A';
                     int nMatching = letterSlots[i][atoz].size();
                     if (nMatching < lowestSoFar) {
                         lowestSoFar = nMatching;
@@ -148,16 +122,16 @@ candidates:
             }
             retval[index] = lowestSoFarIndex;
             // Change char to wildcard so we ignore it from now on
-            scratchpad_[lowestSoFarIndex] = WILDCARD;
+            scratchpad[lowestSoFarIndex] = WILDCARD;
         }
         return retval;
     }
 
     public void insert(char[] word, E entry) {
-        while (lenBuckets_.size() <= word.length)
+        while (lenBuckets.size() <= word.length)
             growLenList();
 
-        List[][] letterSlots = lenBuckets_.get(word.length);
+        List[][] letterSlots = lenBuckets.get(word.length);
         Pair<char[], E> pair = new Pair<char[], E>(word, entry);
         for (int i = 0; i < word.length; ++i) {
             char c = word[i];
@@ -175,31 +149,31 @@ candidates:
     private class XdictIterator implements ResettableIterator<Pair<char[], E>>
     {
         /** indexes by freq dist of non-wildcard chars; empty if all wildcards */
-        private int[] freqs_;
+        private int[] freqs;
 
         /** list of candidates to check */
-        private List<Pair<char[], E>> candidates_;
+        private List<Pair<char[], E>> candidates;
 
         /** pattern */
-        private final char[] pattern_;
+        private final char[] pattern;
 
         /** index of next element to check in list */
-        private int nextListIndex_;
+        private int nextListIndex;
 
         /** letter slots */
-        private final List[][] letterSlots_;
+        private final List[][] letterSlots;
 
         /** flag indicating whether pattern is all wildcards */
-        private final boolean allWildcards_;
+        private final boolean allWildcards;
 
         /** index of which list we are iterating over (as opposed to nextListIndex which is index INSIDE list), only used for all wildcard iterating */
-        private int indexOfList_;
+        private int indexOfList;
 
         /** next element to return, or null if none available */
-        private Pair<char[], E> next_;
+        private Pair<char[], E> next;
 
 	    /** last key returned */
-	    private char[] lastKeyReturned_;
+	    private char[] lastKeyReturned;
 	    
 	    /**
 	     * characters to exclude from regexp matching, based upon position.
@@ -207,30 +181,30 @@ candidates:
 	     * exclusions_ elements are each bitmaps, with 1 corresponding to A and 1 << 25 corresponding to Z
 	     * If the corresponding exclusions bit is set, that letter should be avoided at that wildcard position
 	     */
-	    private int[] exclusions_;
+	    private int[] exclusions;
 
         public XdictIterator(char[] pattern) {
             //TODO if client mutates pattern, it will mess us up unless we copy it
-            pattern_ = pattern;
+            this.pattern = pattern;
 
             // figure out list to iterate over and desc freqs
-            if (lenBuckets_.size() <= pattern.length) {
-                candidates_ = Collections.EMPTY_LIST;
-                letterSlots_ = null;
-                allWildcards_ = false;
+            if (lenBuckets.size() <= pattern.length) {
+                candidates = Collections.emptyList();
+                letterSlots = null;
+                allWildcards = false;
                 return;
             }
 
-            letterSlots_ = lenBuckets_.get(pattern.length);
-            freqs_ = getFreqDist(pattern, letterSlots_);
+            letterSlots = lenBuckets.get(pattern.length);
+            freqs = getFreqDist(pattern, letterSlots);
 
-            if (freqs_.length == 0) {
+            if (freqs.length == 0) {
                 // Handle all wildcards special
-                allWildcards_ = true;
+                allWildcards = true;
             } else {
                 // We have at least 1 non-wildcard char
-                allWildcards_ = false;
-                candidates_ = letterSlots_[freqs_[0]][pattern[freqs_[0]] - 'A'];
+                allWildcards = false;
+                candidates = letterSlots[freqs[0]][pattern[freqs[0]] - 'A'];
             }
             reset();
         }
@@ -240,14 +214,14 @@ candidates:
 	     */
 	    public void avoidLetterAt(int index) {
 	    	// Grow exclusions_ if necessary
-	    	if (exclusions_.length <= index) {
+	    	if (exclusions.length <= index) {
 	    		int[] newArray = new int[index + 1];
-	    		for (int i = 0; i < exclusions_.length; ++i)
-	    			newArray[i] = exclusions_[i];
-	    		exclusions_ = newArray;
+	    		for (int i = 0; i < exclusions.length; ++i)
+	    			newArray[i] = exclusions[i];
+	    		exclusions = newArray;
 	    	}
-	    	char badChar = lastKeyReturned_[index];
-	    	exclusions_[index] |= 1 << (badChar - 'A');
+	    	char badChar = lastKeyReturned[index];
+	    	exclusions[index] |= 1 << (badChar - 'A');
 
 	    	// Check to see if next one to return violates the new avoidance constraint
 	    	if (! hasNext())
@@ -263,7 +237,7 @@ candidates:
 	    }
 
         public boolean hasNext() {
-            return next_ != null;
+            return next != null;
         }
         
 	    public Pair<char[], E> next() {
@@ -273,45 +247,45 @@ candidates:
 	    }
 	    
         public Pair<char[], E> peekNext() {
-        	lastKeyReturned_ = next_.first_;
-        	return next_;
+        	lastKeyReturned = next.first_;
+        	return next;
         }
 
         public void reset() {
-            if (allWildcards_) {
-                indexOfList_ = 0;
-                candidates_ = letterSlots_[0][indexOfList_];
+            if (allWildcards) {
+                indexOfList = 0;
+                candidates = letterSlots[0][indexOfList];
             }
-            nextListIndex_ = 0;
-	        exclusions_ = new int[0];
-	        lastKeyReturned_ = new char[pattern_.length];
+            nextListIndex = 0;
+	        exclusions = new int[0];
+	        lastKeyReturned = new char[pattern.length];
 
             findNext();
         }
 
         private void findNext() {
-            next_ = findNextMatchingFromList();
-            if (next_ != null || !allWildcards_)
+            next = findNextMatchingFromList();
+            if (next != null || !allWildcards)
                 return;
 
-            while (indexOfList_ < 25) {
-                candidates_ = letterSlots_[0][++indexOfList_];
-                next_ = findNextMatchingFromList();
-                if (next_ != null)
+            while (indexOfList < 25) {
+                candidates = letterSlots[0][++indexOfList];
+                next = findNextMatchingFromList();
+                if (next != null)
                     return;
             }
         }
 
-        /** find next matching candidate from list_, if any, else null */
+        // find next matching candidate from list, if any, else null
         private Pair<char[], E> findNextMatchingFromList() {
 candidates:
-            while (nextListIndex_ < candidates_.size()) {
-                Pair<char[], E> candidate = candidates_.get(nextListIndex_++);
+            while (nextListIndex < candidates.size()) {
+                Pair<char[], E> candidate = candidates.get(nextListIndex++);
                 char[] text = candidate.first_;
                 
-                for (int i = 1; i < freqs_.length; ++i) {
-                    int freqIndex = freqs_[i];
-                    if (text[freqIndex] != pattern_[freqIndex])
+                for (int i = 1; i < freqs.length; ++i) {
+                    int freqIndex = freqs[i];
+                    if (text[freqIndex] != pattern[freqIndex])
                         continue candidates;
                 }
 

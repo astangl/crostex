@@ -13,15 +13,13 @@ import us.stangl.crostex.util.ResettableIterator;
  */
 public class Trie<E> implements Dictionary<char[], E> {
 	/** head node of Trie */
-	private TrieNode<E> head_ = new TrieNode<E>();
+	private TrieNode<E> head = new TrieNode<E>();
 
-    public void rebalance() {}
-    
 	/**
 	 * get iterator to iterate over all words matching specified pattern
 	 */
 	public ResettableIterator<Pair<char[], E>> getIterator(char[] pattern) {
-		return new TrieIterator<E>(head_, pattern);
+		return new TrieIterator<E>(head, pattern);
 	}
 
 	public List<Pair<char[], E>> getPatternMatches(char[] pattern) {
@@ -38,57 +36,59 @@ public class Trie<E> implements Dictionary<char[], E> {
 	}
 
 	public void insert(char[] key, E word) {
-		head_.insert(key, word, 0);
+		head.insert(key, word, 0);
 	}
 
 	public void remove(char[] key) {
-		head_.remove(key, 0);
+		head.remove(key, 0);
 	}
 
 	public E lookup(char[] key) {
-		return head_.lookup(key, 0);
+		return head.lookup(key, 0);
 	}
 
 	public boolean isPatternInDictionary(char[] key) {
-		return head_.isPatternInTrie(key, 0);
+		return head.isPatternInTrie(key, 0);
 	}
 
+    public void rebalance() {}
+    
 	private static class TrieNode<E> {
 		/** reference to this node's attributes if it is a terminal node (i.e., ends a word) */
-		private E word_;
+		private E word;
 
 		/** references to other nodes for successor characters A .. Z */
-		private TrieNode<E>[] children_ = new TrieNode[26];
+		private TrieNode<E>[] children = new TrieNode[26];
 
-		public void insert(char[] key, E word, int keyIndex) {
-			if (word == null)
+		public void insert(char[] key, E newWord, int keyIndex) {
+			if (newWord == null)
 				throw new IllegalArgumentException("Cannot insert null Word");
 			if (keyIndex == key.length) {
-				word_ = word;
+				this.word = newWord;
 			} else {
 				char c = key[keyIndex];
 				if (c < 'A' || c > 'Z')
 					throw new IllegalArgumentException("Unrecognized character " + c + " at index " + keyIndex);
 				int childIndex = c - 'A';
-				TrieNode<E> child = children_[childIndex];
+				TrieNode<E> child = children[childIndex];
 				if (child == null) {
 					child = new TrieNode<E>();
-					children_[childIndex] = child;
+					children[childIndex] = child;
 				}
-				child.insert(key, word, keyIndex + 1);
+				child.insert(key, newWord, keyIndex + 1);
 			}
 		}
 
 		public void remove(char[] key, int keyIndex) {
 			// No pruning done since we only remove temporarily anyhow
 			if (keyIndex == key.length) {
-				word_ = null;
+				word = null;
 			} else {
 				char c = key[keyIndex];
 				if (c < 'A' || c > 'Z')
 					throw new IllegalArgumentException("Unrecognized character " + c + " at index " + keyIndex);
 				int childIndex = c - 'A';
-				TrieNode child = children_[childIndex];
+				TrieNode child = children[childIndex];
 				if (child != null)
 					child.remove(key, keyIndex + 1);
 			}
@@ -96,22 +96,22 @@ public class Trie<E> implements Dictionary<char[], E> {
 
 		public E lookup(char[] key, int keyIndex) {
 			if (keyIndex == key.length)
-				return word_;
+				return word;
 			char c = key[keyIndex];
 			if (c < 'A' || c > 'Z')
 				throw new IllegalArgumentException("Unrecognized character " + c + " at index " + keyIndex);
 			int childIndex = c - 'A';
-			TrieNode<E> child = children_[childIndex];
+			TrieNode<E> child = children[childIndex];
 			return child == null ? null : child.lookup(key, keyIndex + 1);
 		}
 
 		public boolean isPatternInTrie(char[] key, int keyIndex) {
 			if (keyIndex == key.length)
-				return word_ != null;
+				return word != null;
 			char c = key[keyIndex];
 			if (c == '_') {
 				for (int i = 0; i < 26; ++i)
-					if (children_[i] != null && children_[i].isPatternInTrie(key, keyIndex + 1))
+					if (children[i] != null && children[i].isPatternInTrie(key, keyIndex + 1))
 						return true;
 				return false;
 			}
@@ -119,47 +119,47 @@ public class Trie<E> implements Dictionary<char[], E> {
 			if (c < 'A' || c > 'Z')
 				throw new IllegalArgumentException("Unrecognized character " + c + " at index " + keyIndex);
 			int childIndex = c - 'A';
-			TrieNode child = children_[childIndex];
+			TrieNode child = children[childIndex];
 			return child == null ? false : child.isPatternInTrie(key, keyIndex + 1);
 		}
 
 		public TrieNode getFirstChild() {
 			for (int i = 0; i < 26; ++i)
-				if (children_[i] != null)
-					return children_[i];
+				if (children[i] != null)
+					return children[i];
 			return null;
 		}
 
 		public boolean isTerminal() {
-			return word_ != null;
+			return word != null;
 		}
 	}
 
 	private static class TrieIterator<E> implements ResettableIterator<Pair<char[], E>> {
 		/** pattern */
-		private final char[] pattern_;
+		private final char[] pattern;
 
 		/**
 		 * index of child node for every node in current descent,
 		 * starting with HEAD. Values point to NEXT element to return.
-		 * If there is no next element, childIndexes_[0] == -1
+		 * If there is no next element, childIndexes[0] == -1
 		 */
-		private final int[] childIndexes_;
+		private final int[] childIndexes;
 
 		/**
 		 * reference to TrieNode for each node in current descent,
 		 * starting with HEAD. Points to NEXT element to return.
-		 * If there is no next element, childIndexes_[0] == -1
+		 * If there is no next element, childIndexes[0] == -1
 		 */
-		private final TrieNode<E>[] descentGraph_;
+		private final TrieNode<E>[] descentGraph;
 
 		public TrieIterator(TrieNode<E> head, char[] pattern) {
 			int length = pattern.length;
-			pattern_ = pattern;
+			this.pattern = pattern;
 
-			childIndexes_ = new int[length];
-			descentGraph_ = new TrieNode[length];
-			descentGraph_[0] = head;
+			childIndexes = new int[length];
+			descentGraph = new TrieNode[length];
+			descentGraph[0] = head;
 			reset();
 		}
 		
@@ -168,13 +168,34 @@ public class Trie<E> implements Dictionary<char[], E> {
 			// Now, drill down and find first word of length and leave iterator pointing to it
 			// stick null at front of descentGraph if there are no elements
 			if (! findFirstStartingAtDepth(0))
-			   childIndexes_[0] = -1;
+			   childIndexes[0] = -1;
 		}
 		
 		public void avoidLetterAt(int index) {
 			throw new UnsupportedOperationException("avoidLetterAt not implemented");
 		}
 
+		public void remove() {
+			throw new UnsupportedOperationException("remove not implemented");
+		}
+
+		public boolean hasNext() {
+			return childIndexes[0] != -1;
+		}
+
+		public Pair<char[], E> next() {
+//			TrieTuple retval = new Tri
+			char[] text = new char[childIndexes.length];
+			for (int i = 0; i < childIndexes.length; ++i)
+					text[i] = (char)(childIndexes[i] + 'A');
+
+			Pair<char[], E> retval = new Pair<char[], E>(text, descentGraph[descentGraph.length - 1].word);
+			// goto next element, if any
+			if (! findNextStartingAtDepth(0))
+				childIndexes[0] = -1;
+
+			return retval;
+		}
 		/**
 		 * Find first element, starting search at specified depth,
 		 * where depth in 0 .. pattern_.length - 1
@@ -184,15 +205,15 @@ public class Trie<E> implements Dictionary<char[], E> {
 		 */
 		private boolean findFirstStartingAtDepth(int depth) {
 			//TODO can optimize setting of childIndexes elements later
-			char patChar = pattern_[depth];
-			if (depth == pattern_.length - 1) {
-				if (patChar != '_') {
+			char patChar = pattern[depth];
+			if (depth == pattern.length - 1) {
+				if (patChar != WILDCARD) {
 					// If we are at bottom depth and we have no wildcard, then
 					// we only have one possibility
 					int index = patChar - 'A';
-					TrieNode<E> node = descentGraph_[depth].children_[index];
+					TrieNode<E> node = descentGraph[depth].children[index];
 					if (node != null && node.isTerminal()) {
-						childIndexes_[depth] = index;
+						childIndexes[depth] = index;
 						return true;
 					}
 					return false;
@@ -200,33 +221,33 @@ public class Trie<E> implements Dictionary<char[], E> {
 				// We are at bottom depth and have wildcard, need to iterate thru
 				// possibilities
 				for (int i = 0; i < 26; ++i) {
-					TrieNode<E> node = descentGraph_[depth].children_[i];
+					TrieNode<E> node = descentGraph[depth].children[i];
 					if (node != null && node.isTerminal()) {
-						childIndexes_[depth] = i;
+						childIndexes[depth] = i;
 						return true;
 					}
 				}
 				return false;                 // none found
 			}
 			// We are not at bottom depth
-			if (patChar != '_') {
+			if (patChar != WILDCARD) {
 				// If we are not at bottom depth and we have no wildcard, then
 				// we only have one possibility
 				int index = patChar - 'A';
-				TrieNode<E> node = descentGraph_[depth].children_[index];
+				TrieNode<E> node = descentGraph[depth].children[index];
 				if (node == null)
 					return false;
-				childIndexes_[depth] = index;
-				descentGraph_[depth + 1] = node;
+				childIndexes[depth] = index;
+				descentGraph[depth + 1] = node;
 				return findFirstStartingAtDepth(depth + 1);
 			}
 			// We are not at bottom depth and have wildcard, need to iterate thru
 			// possibilities
 			for (int i = 0; i < 26; ++i) {
-				TrieNode<E> node = descentGraph_[depth].children_[i];
+				TrieNode<E> node = descentGraph[depth].children[i];
 				if (node != null) {
-					descentGraph_[depth + 1] = node;
-					childIndexes_[depth] = i;
+					descentGraph[depth + 1] = node;
+					childIndexes[depth] = i;
 					if (findFirstStartingAtDepth(depth + 1))
 						return true;
 				}
@@ -241,8 +262,8 @@ public class Trie<E> implements Dictionary<char[], E> {
 		 * If found, return true and leave childIndexes and descentGraph_ pointing at it
 		 */
 		private boolean findNextStartingAtDepth(int depth) {
-			char patChar = pattern_[depth];
-			boolean atBottom = depth == pattern_.length - 1;
+			char patChar = pattern[depth];
+			boolean atBottom = depth == pattern.length - 1;
 
 			// First we try to do findNextStartingAtDepth all the way down to the
 			// bottom. If bottom is a wildcard, we can try to iterate over them.
@@ -253,27 +274,25 @@ public class Trie<E> implements Dictionary<char[], E> {
 				return true;
 
 			// Either at bottom or we didn't find a next on our current branch below
-			if (patChar != '_')
+			if (patChar != WILDCARD)
 				return false;            // nothing good below us
 
-			TrieNode<E>[] children = descentGraph_[depth].children_;
+			TrieNode<E>[] children = descentGraph[depth].children;
 			if (atBottom) {
-				// We are at bottom depth and have wildcard, need to iterate thru
-				// possibilities
-				while (++childIndexes_[depth] < 26) {
-					TrieNode node = children[childIndexes_[depth]];
+				// We are at bottom depth and have wildcard, need to iterate thru possibilities
+				while (++childIndexes[depth] < 26) {
+					TrieNode node = children[childIndexes[depth]];
 					if (node != null && node.isTerminal())
 						return true;
 				}
 				return false;                 // none found
 			}
 
-			// We are not at bottom depth and have wildcard, need to iterate thru
-			// possibilities
-			while (++childIndexes_[depth] < 26) {
-				TrieNode<E> node = children[childIndexes_[depth]];
+			// We are not at bottom depth and have wildcard, need to iterate thru possibilities
+			while (++childIndexes[depth] < 26) {
+				TrieNode<E> node = children[childIndexes[depth]];
 				if (node != null) {
-					descentGraph_[depth + 1] = node;
+					descentGraph[depth + 1] = node;
 					if (findFirstStartingAtDepth(depth + 1))
 						return true;
 				}
@@ -281,27 +300,6 @@ public class Trie<E> implements Dictionary<char[], E> {
 			return false;                    // none found
 		}
 
-		public void remove() {
-			throw new UnsupportedOperationException("remove not implemented");
-		}
-
-		public boolean hasNext() {
-			return childIndexes_[0] != -1;
-		}
-
-		public Pair<char[], E> next() {
-//			TrieTuple retval = new Tri
-			char[] text = new char[childIndexes_.length];
-			for (int i = 0; i < childIndexes_.length; ++i)
-					text[i] = (char)(childIndexes_[i] + 'A');
-
-			Pair<char[], E> retval = new Pair<char[], E>(text, descentGraph_[descentGraph_.length - 1].word_);
-			// goto next element, if any
-			if (! findNextStartingAtDepth(0))
-				childIndexes_[0] = -1;
-
-			return retval;
-		}
 	}
 }
 

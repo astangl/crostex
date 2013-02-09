@@ -4,10 +4,7 @@
 package us.stangl.crostex;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import us.stangl.crostex.util.ResettableIterator;
 
@@ -21,19 +18,11 @@ public class TST<E> implements Dictionary<char[], E> {
 	/** flag to enable additional debug code */
 	private static final boolean DEBUG = false;
 	
-	/** wildcard character */
-	public static final char WILDCARD = '_';
-	
 	/** each element at index N in forest_ contains an array of TST heads for words of size N + 3 */
-	private List<TstNode<E>[]> forest_ = new ArrayList<TstNode<E>[]>();
+	private List<TstNode<E>[]> forest = new ArrayList<TstNode<E>[]>();
 	
 //	private TstNode<E>[] heads_ = new TstNode[26];
 	
-	private void growForestToSize(int size) {
-		while (forest_.size() < size)
-			forest_.add(new TstNode[26]);
-	}
-
 	public List<Pair<char[], E>> getPatternMatches(char[] pattern) {
 		List<Pair<char[], E>> retval = new ArrayList<Pair<char[], E>>(200);
 		for (ResettableIterator<Pair<char[], E>> it = getIterator(pattern); it.hasNext(); )
@@ -49,7 +38,7 @@ public class TST<E> implements Dictionary<char[], E> {
 	public ResettableIterator<Pair<char[], E>> getIterator(char[] pattern) {
 		int forestIndex = pattern.length - 3;
 		growForestToSize(forestIndex + 1);
-		return new TstIterator<E>(forest_.get(forestIndex), pattern);
+		return new TstIterator<E>(forest.get(forestIndex), pattern);
 //		return new TstIterator<E>(heads_, pattern);
 	}
 
@@ -73,7 +62,7 @@ public class TST<E> implements Dictionary<char[], E> {
 //System.out.println("adding " + key);		
 		int forestIndex = key.length - 3;
 		growForestToSize(forestIndex + 1);
-		TstNode<E>[] heads = forest_.get(forestIndex);
+		TstNode<E>[] heads = forest.get(forestIndex);
 		heads[headIndex] = add(heads[headIndex], key, 1, entry);
 //		heads_[headIndex] = add(heads_[headIndex], key, 1, entry);
 	}
@@ -87,7 +76,7 @@ public class TST<E> implements Dictionary<char[], E> {
 	public E lookup(char[] key) {
 		int forestIndex = key.length - 3;
 		growForestToSize(forestIndex + 1);
-		TstNode<E>[] heads = forest_.get(forestIndex);
+		TstNode<E>[] heads = forest.get(forestIndex);
 		return lookup(heads[key[0] - 'A'], key, 1);
 	}
 
@@ -99,7 +88,7 @@ public class TST<E> implements Dictionary<char[], E> {
 	public boolean isPatternInDictionary(char[] pattern) {
 		int forestIndex = pattern.length - 3;
 		growForestToSize(forestIndex + 1);
-		TstNode<E>[] heads = forest_.get(forestIndex);
+		TstNode<E>[] heads = forest.get(forestIndex);
 		if (pattern[0] != WILDCARD)
 			return isPatternFound(heads[pattern[0] - 'A'], pattern, 1);
 
@@ -109,34 +98,61 @@ public class TST<E> implements Dictionary<char[], E> {
 		return false;
 	}
 
+	public String toString() {
+		StringBuilder retval = new StringBuilder();
+		retval.append("{");
+		for (int j = 0; j < forest.size(); ++j) {
+			TstNode<E>[] heads = forest.get(j);
+			if (j > 0)
+				retval.append(", ");
+			retval.append("forest[").append(j).append("] = ");
+			for (int i = 0; i < heads.length; ++i) {
+				TstNode<E> head = heads[i];
+				if (i > 0)
+					retval.append(", ");
+				String headString = head == null ? "null" : head.toString();
+				retval.append("head_[").append(i).append("] = ").append(headString);
+			}
+		}
+		retval.append("}");
+		return retval.toString();
+	}
+
+    public void rebalance() {}
+    
+	private void growForestToSize(int size) {
+		while (forest.size() < size)
+			forest.add(new TstNode[26]);
+	}
+
 	private boolean isPatternFound(TstNode<E> node, char[] key, int keyIndex) {
 		if (node == null)
 			return false;
 		char c = key[keyIndex];
-		if ((c == WILDCARD || c < node.splitChar_) && isPatternFound(node.leftChild_, key, keyIndex))
+		if ((c == WILDCARD || c < node.splitChar) && isPatternFound(node.leftChild, key, keyIndex))
 			return true;
-		if (c == WILDCARD || c == node.splitChar_) {
+		if (c == WILDCARD || c == node.splitChar) {
 			if (keyIndex < key.length - 1) {
-				if (isPatternFound((TstNode<E>)node.middleChild_, key, keyIndex + 1))
+				if (isPatternFound((TstNode<E>)node.middleChild, key, keyIndex + 1))
 					return true;
-			} else if (node.middleChild_ != null) {
+			} else if (node.middleChild != null) {
 				return true;
 			}
 		}
-		return ((c == WILDCARD || c > node.splitChar_) && isPatternFound(node.rightChild_, key, keyIndex));
+		return ((c == WILDCARD || c > node.splitChar) && isPatternFound(node.rightChild, key, keyIndex));
 	}
 	
 	private E lookup(TstNode<E> node, char[] key, int keyIndex) {
 		if (node == null)
 			return null;
 		char c = key[keyIndex];
-		if (c < node.splitChar_)
-			return lookup(node.leftChild_, key, keyIndex);
-		if (c > node.splitChar_)
-			return lookup(node.rightChild_, key, keyIndex);
+		if (c < node.splitChar)
+			return lookup(node.leftChild, key, keyIndex);
+		if (c > node.splitChar)
+			return lookup(node.rightChild, key, keyIndex);
 		if (keyIndex < key.length - 1)
-			return lookup((TstNode<E>)node.middleChild_, key, keyIndex + 1);
-		return (E)node.middleChild_;
+			return lookup((TstNode<E>)node.middleChild, key, keyIndex + 1);
+		return (E)node.middleChild;
 	}
 	
 	/** recursively insert middle entry from subarray, then left and right subarrays to get balanced TST */
@@ -158,70 +174,48 @@ public class TST<E> implements Dictionary<char[], E> {
 		char c = key[keyIndex];
 		if (node == null)
 			node = new TstNode<E>(c);
-		if (c < node.splitChar_)
-			node.leftChild_ = add(node.leftChild_, key, keyIndex, entry);
-		else if (c > node.splitChar_)
-			node.rightChild_ = add(node.rightChild_, key, keyIndex, entry);
+		if (c < node.splitChar)
+			node.leftChild = add(node.leftChild, key, keyIndex, entry);
+		else if (c > node.splitChar)
+			node.rightChild = add(node.rightChild, key, keyIndex, entry);
 		else if (keyIndex < key.length - 1)
-			node.middleChild_ = add((TstNode<E>)node.middleChild_, key, keyIndex + 1, entry);
+			node.middleChild = add((TstNode<E>)node.middleChild, key, keyIndex + 1, entry);
 		else
-			node.middleChild_ = entry;
+			node.middleChild = entry;
 		return node;
 	}
 	
-	public String toString() {
-		StringBuilder retval = new StringBuilder();
-		retval.append("{");
-		for (int j = 0; j < forest_.size(); ++j) {
-			TstNode<E>[] heads = forest_.get(j);
-			if (j > 0)
-				retval.append(", ");
-			retval.append("forest[").append(j).append("] = ");
-			for (int i = 0; i < heads.length; ++i) {
-				TstNode<E> head = heads[i];
-				if (i > 0)
-					retval.append(", ");
-				String headString = head == null ? "null" : head.toString();
-				retval.append("head_[").append(i).append("] = ").append(headString);
-			}
-		}
-		retval.append("}");
-		return retval.toString();
-	}
-
-    public void rebalance() {}
-    
 	private static class TstNode<E> {
 		/** split character */
-		private final char splitChar_;
+		private final char splitChar;
 		
 		/** left child contains all children whose curr. char is less than our split char */
-		private TstNode<E> leftChild_;
+		private TstNode<E> leftChild;
 		
 		/** 
 		 * in interior node, middle child contains all children whose curr. char is our split char
 		 * in leaf node, middle child points to entry
 		 */
-		private Object middleChild_;
+		private Object middleChild;
 		
 		/** right child contains all children whose curr. char is greater than our split char */
-		private TstNode<E> rightChild_;
+		private TstNode<E> rightChild;
 		
 		public TstNode(char splitChar) {
-			splitChar_ = splitChar;
+			this.splitChar = splitChar;
 		}
 
 		public String toString() {
 			StringBuilder retval = new StringBuilder();
 //			String entryString = entry_ == null ? "null" : entry_.toString();
-			String leftChildString = leftChild_ == null ? "null" : leftChild_.toString();
-			String middleChildString = middleChild_ == null ? "null" : middleChild_.toString();
-			String rightChildString = rightChild_ == null ? "null" : rightChild_.toString();
-			retval.append("{").append("splitChar_ = ").append(splitChar_)
+			String leftChildString = leftChild == null ? "null" : leftChild.toString();
+			String middleChildString = middleChild == null ? "null" : middleChild.toString();
+			String rightChildString = rightChild == null ? "null" : rightChild.toString();
+			retval.append("{").append("splitChar = ").append(splitChar)
 //				.append(", entry_ = ").append(entryString)
-				.append(", leftChild_ = ").append(leftChildString)
-				.append(", middleChild_ = ").append(middleChildString)
-				.append(", rightChild_ = ").append(rightChildString)
+				.append(", leftChild = ").append(leftChildString)
+				.append(", middleChild = ").append(middleChildString)
+				.append(", rightChild = ").append(rightChildString)
 				.append("}");
 			return retval.toString();
 		}
@@ -232,16 +226,16 @@ public class TST<E> implements Dictionary<char[], E> {
 	
 	private static class TstIterator<E> implements ResettableIterator<Pair<char[], E>> {
 	    /** pattern */
-	    private final char[] pattern_;
+	    private final char[] pattern;
 	    
 	    /** array of TST heads */
-	    private final TstNode<E>[] heads_;
+	    private final TstNode<E>[] heads;
 
 	    /** index of which head we are currently using */
-	    private int headIndex_;
+	    private int headIndex;
 	    
 	    /** last key returned */
-	    private char[] lastKeyReturned_;
+	    private char[] lastKeyReturned;
 	    
 	    /**
 	     * characters to exclude from regexp matching, based upon position.
@@ -249,32 +243,30 @@ public class TST<E> implements Dictionary<char[], E> {
 	     * exclusions_ elements are each bitmaps, with 1 corresponding to A and 1 << 25 corresponding to Z
 	     * If the corresponding exclusions bit is set, that letter should be avoided at that wildcard position
 	     */
-	    private int[] exclusions_;
+	    private int[] exclusions;
 
 	    enum Pointer { LEFT, MIDDLE, RIGHT };
 	    /**
 	     * list of pointers showing what type of pointer was used to arrive each corresponding node
 	     */
-	    private Pointer[] typeOfPointerToNode_ = new Pointer[32];
+	    private Pointer[] typeOfPointerToNode = new Pointer[32];
 //	    private List<Pointer> typeOfPointerToNode_ = new ArrayList<Pointer>(32);
 
 	    /**
 	     * list of Nodes showing the current descent all the way to current pos
 	     * empty if there is no next (really current since we always point to next)
 	     */
-	    private TstNode<E>[] descentGraph_ = new TstNode[32];
+	    private TstNode<E>[] descentGraph = new TstNode[32];
 	    
-	    /**
-	     * fill pointer, showing next element in typeOfPointerToNode_ and descentGraph_ to write to
-	     * everything from 0 .. fillPointer_ considered valid
-	     */
-	    private int fillPointer_ = 0;
+	    // fill pointer, showing next element in typeOfPointerToNode and descentGraph to write to
+	    // everything from 0 .. fillPointer considered valid
+	    private int fillPointer = 0;
 	    
 //	    private List<TstNode<E>> descentGraph_ = new ArrayList<TstNode<E>>(32);
 
 	    public TstIterator(TstNode<E>[] heads, char[] pattern) {
-	        pattern_ = pattern;
-	        heads_ = heads;
+	        this.pattern = pattern;
+	        this.heads = heads;
 
 	        reset();
 	    }
@@ -283,13 +275,13 @@ public class TST<E> implements Dictionary<char[], E> {
 	     * Reset iterator back to its initial creation state.
 	     */
 	    public void reset() {
-	    	headIndex_ = pattern_[0] == WILDCARD ? 0 : pattern_[0] - 'A';
-	    	fillPointer_ = 0;
+	    	headIndex = pattern[0] == WILDCARD ? 0 : pattern[0] - 'A';
+	    	fillPointer = 0;
 //	        descentGraph_.clear();
 //	        typeOfPointerToNode_.clear();
-	        lastKeyReturned_ = new char[pattern_.length];
+	        lastKeyReturned = new char[pattern.length];
 	        if (INCLUDE_AVOID)
-	        	exclusions_ = new int[0];
+	        	exclusions = new int[0];
 	        findFirst();
 	    }
 
@@ -299,14 +291,14 @@ public class TST<E> implements Dictionary<char[], E> {
 	    public void avoidLetterAt(int index) {
 	    	if (INCLUDE_AVOID) {
 		    	// Grow exclusions_ if necessary
-		    	if (exclusions_.length <= index) {
+		    	if (exclusions.length <= index) {
 		    		int[] newArray = new int[index + 1];
-		    		for (int i = 0; i < exclusions_.length; ++i)
-		    			newArray[i] = exclusions_[i];
-		    		exclusions_ = newArray;
+		    		for (int i = 0; i < exclusions.length; ++i)
+		    			newArray[i] = exclusions[i];
+		    		exclusions = newArray;
 		    	}
-		    	char badChar = lastKeyReturned_[index];
-		    	exclusions_[index] |= 1 << (badChar - 'A');
+		    	char badChar = lastKeyReturned[index];
+		    	exclusions[index] |= 1 << (badChar - 'A');
 	
 		    	// Check to see if next one to return violates the new avoidance constraint
 		    	if (! hasNext())
@@ -326,7 +318,7 @@ public class TST<E> implements Dictionary<char[], E> {
 	     * @return whether any elements are remaining (i.e, safe to call next).
 	     */
 	    public boolean hasNext() {
-	        return fillPointer_ > 0;
+	        return fillPointer > 0;
 	    }
 
 	    public Pair<char[], E> next() {
@@ -337,74 +329,74 @@ public class TST<E> implements Dictionary<char[], E> {
 	    
 	    /** just like next but without advancing iterator */
 	    public Pair<char[], E> peekNext() {
-	    	lastKeyReturned_[0] = (char)(headIndex_ + 'A');
+	    	lastKeyReturned[0] = (char)(headIndex + 'A');
   	        int index = 1;
-  	        for (int i = 0; i < fillPointer_ - 1; ++i) {
-  	        	if (typeOfPointerToNode_[i + 1] == Pointer.MIDDLE)
-  	        		lastKeyReturned_[index++] = descentGraph_[i].splitChar_;
+  	        for (int i = 0; i < fillPointer - 1; ++i) {
+  	        	if (typeOfPointerToNode[i + 1] == Pointer.MIDDLE)
+  	        		lastKeyReturned[index++] = descentGraph[i].splitChar;
   	        }
-  	        TstNode<E> endNode = descentGraph_[fillPointer_ - 1];
-  	        lastKeyReturned_[index++] = endNode.splitChar_;
+  	        TstNode<E> endNode = descentGraph[fillPointer - 1];
+  	        lastKeyReturned[index++] = endNode.splitChar;
   	        if (DEBUG) {
-	  	        if (index != lastKeyReturned_.length) {
-	  	        	throw new RuntimeException("index incorrectly calculated, is " + index + ", rather than " + lastKeyReturned_.length);
+	  	        if (index != lastKeyReturned.length) {
+	  	        	throw new RuntimeException("index incorrectly calculated, is " + index + ", rather than " + lastKeyReturned.length);
 	  	        }
   	        }
   	        
-  	        return new Pair<char[], E>(lastKeyReturned_, (E)endNode.middleChild_);
+  	        return new Pair<char[], E>(lastKeyReturned, (E)endNode.middleChild);
 	    }
 
 	    private void addNodeAndPointer(TstNode<E> node, Pointer pointer) {
-	    	int currLen = descentGraph_.length;
-	    	if (fillPointer_ == currLen) {
+	    	int currLen = descentGraph.length;
+	    	if (fillPointer == currLen) {
 	    		int newLen = currLen * 2;
 	    		// allocate new node and pointer arrays, twice as big and copy old contents in
 	    		TstNode<E>[] newNodeArray = new TstNode[newLen];
 	    		Pointer[] newPointerArray = new Pointer[newLen];
 	    		for (int i = 0; i < currLen; ++i) {
-	    			newNodeArray[i] = descentGraph_[i];
-	    			newPointerArray[i] = typeOfPointerToNode_[i];
+	    			newNodeArray[i] = descentGraph[i];
+	    			newPointerArray[i] = typeOfPointerToNode[i];
 	    		}
-	    		descentGraph_ = newNodeArray;
-	    		typeOfPointerToNode_ = newPointerArray;
+	    		descentGraph = newNodeArray;
+	    		typeOfPointerToNode = newPointerArray;
 	    	}
 	    	
-	    	descentGraph_[fillPointer_] = node;
-	    	typeOfPointerToNode_[fillPointer_++] = pointer;
+	    	descentGraph[fillPointer] = node;
+	    	typeOfPointerToNode[fillPointer++] = pointer;
 	    }
 	    
 	    private boolean findFirst() {
-	        if (pattern_[0] == WILDCARD) {
+	        if (pattern[0] == WILDCARD) {
 	        	
 	        	if (INCLUDE_AVOID) {
 		        	// Skip heads we have been warned to avoid
 		        	int headMask = 1;	// for A
-		        	int headsToAvoid = exclusions_.length == 0 ? 0 : exclusions_[0];
+		        	int headsToAvoid = exclusions.length == 0 ? 0 : exclusions[0];
 	//	        	Set headsToAvoid = exclusionList_.size() == 0 ? Collections.EMPTY_SET : exclusionList_.get(0);
-		            for (headIndex_ = 0; headIndex_ < heads_.length; ++headIndex_) {
+		            for (headIndex = 0; headIndex < heads.length; ++headIndex) {
 		            	if ((headsToAvoid & headMask) == 0) {
-		            		addNodeAndPointer(heads_[headIndex_], Pointer.MIDDLE);
-			            	if (findFirst(heads_[headIndex_], 0, 1))
+		            		addNodeAndPointer(heads[headIndex], Pointer.MIDDLE);
+			            	if (findFirst(heads[headIndex], 0, 1))
 			                    return true;
-			            	--fillPointer_;
+			            	--fillPointer;
 		            	}
 		            	headMask <<= 1;
 		            }
 	        	} else {
-		            for (headIndex_ = 0; headIndex_ < heads_.length; ++headIndex_) {
-	            		addNodeAndPointer(heads_[headIndex_], Pointer.MIDDLE);
-		            	if (findFirst(heads_[headIndex_], 0, 1))
+		            for (headIndex = 0; headIndex < heads.length; ++headIndex) {
+	            		addNodeAndPointer(heads[headIndex], Pointer.MIDDLE);
+		            	if (findFirst(heads[headIndex], 0, 1))
 		                    return true;
-		            	--fillPointer_;
+		            	--fillPointer;
 		            }
 	        	}
 	            return false;
 	        } else {
-	            headIndex_ = pattern_[0] - 'A';
-        		addNodeAndPointer(heads_[headIndex_], Pointer.MIDDLE);
-            	if (findFirst(heads_[headIndex_], 0, 1))
+	            headIndex = pattern[0] - 'A';
+        		addNodeAndPointer(heads[headIndex], Pointer.MIDDLE);
+            	if (findFirst(heads[headIndex], 0, 1))
                     return true;
-            	--fillPointer_;
+            	--fillPointer;
     	        return false;
 	        }
 	    }
@@ -428,57 +420,57 @@ public class TST<E> implements Dictionary<char[], E> {
 	        if (currNode == null)
 	            return false;
 	        if (INCLUDE_AVOID) {
-	        	int charsToAvoid = exclusions_.length <= keyIndex ? 0 : exclusions_[keyIndex];
+	        	int charsToAvoid = exclusions.length <= keyIndex ? 0 : exclusions[keyIndex];
 	        }
 //	        descentGraph_.add(currNode);
-	        char c = pattern_[keyIndex];
+	        char c = pattern[keyIndex];
 //	        TstNode<E> currNode = descentGraph_.get(treeDepth);
-	        if (c == WILDCARD || c < currNode.splitChar_) {
-        		addNodeAndPointer(currNode.leftChild_, Pointer.LEFT);
-	            if (findFirst(currNode.leftChild_, treeDepth + 1, keyIndex))
+	        if (c == WILDCARD || c < currNode.splitChar) {
+        		addNodeAndPointer(currNode.leftChild, Pointer.LEFT);
+	            if (findFirst(currNode.leftChild, treeDepth + 1, keyIndex))
 	                return true;
-            	--fillPointer_;
+            	--fillPointer;
 	        }
 	        /*
 	        if ((charsToAvoid & (1 << (currNode.splitChar_ - 'A'))) == 0 && (c == WILDCARD || c == currNode.splitChar_)) {
 	        */
-	        if (c == WILDCARD || c == currNode.splitChar_) {
-	            if (keyIndex < pattern_.length - 1) {
-	        		addNodeAndPointer((TstNode<E>)currNode.middleChild_, Pointer.MIDDLE);
-	                if (findFirst((TstNode<E>)currNode.middleChild_, treeDepth + 1, keyIndex + 1))
+	        if (c == WILDCARD || c == currNode.splitChar) {
+	            if (keyIndex < pattern.length - 1) {
+	        		addNodeAndPointer((TstNode<E>)currNode.middleChild, Pointer.MIDDLE);
+	                if (findFirst((TstNode<E>)currNode.middleChild, treeDepth + 1, keyIndex + 1))
 	                    return true;
-	            	--fillPointer_;
-	            } else if (currNode.middleChild_ != null) {
+	            	--fillPointer;
+	            } else if (currNode.middleChild != null) {
 	                return true;
 	            }
 	        }
-	        if (c == WILDCARD || c > currNode.splitChar_) {
-        		addNodeAndPointer(currNode.rightChild_, Pointer.RIGHT);
-	            if (findFirst(currNode.rightChild_, treeDepth + 1, keyIndex))
+	        if (c == WILDCARD || c > currNode.splitChar) {
+        		addNodeAndPointer(currNode.rightChild, Pointer.RIGHT);
+	            if (findFirst(currNode.rightChild, treeDepth + 1, keyIndex))
 	                return true;
-            	--fillPointer_;
+            	--fillPointer;
 	        }
 //	        descentGraph_.remove(descentGraph_.size() - 1);
 	        return false;
 	    }
 
 	    private boolean findNext() {
-	        if (pattern_[0] != WILDCARD) {
-	            return findNext(heads_[headIndex_], 0, 1);
+	        if (pattern[0] != WILDCARD) {
+	            return findNext(heads[headIndex], 0, 1);
 	        }
 	        
 	        if (INCLUDE_AVOID) {
 	        	// Skip heads we have been warned to avoid
-	        	int headsToAvoid = exclusions_.length == 0 ? 0 : exclusions_[0];
-	        	int headMask = 1 << headIndex_;
+	        	int headsToAvoid = exclusions.length == 0 ? 0 : exclusions[0];
+	        	int headMask = 1 << headIndex;
 	        	if ((headsToAvoid & headMask) != 0) {
 	        		// Abort processing this HEAD immediately since it starts with a char we should avoid
-	        		fillPointer_ = 0;
+	        		fillPointer = 0;
 	        	} else {
-			        if (findNext(heads_[headIndex_], 0, 1))
+			        if (findNext(heads[headIndex], 0, 1))
 			            return true;
 	        	}
-		        while (++headIndex_ < heads_.length) {
+		        while (++headIndex < heads.length) {
 		        	headMask <<= 1;
 		        	if ((headsToAvoid & headMask) == 0) {
 		//System.out.println("Did not find next on existing HEAD, switching to next HEAD " + headIndex_ + " since first char wildcard");	 
@@ -486,27 +478,27 @@ public class TST<E> implements Dictionary<char[], E> {
 		//System.out.println("desc size " +  descentGraph_.size() + ", pointer size " + typeOfPointerToNode_);
 		//	        	descentGraph_.clear();
 		//	        	typeOfPointerToNode_.clear();
-		        		addNodeAndPointer(heads_[headIndex_], Pointer.MIDDLE);
-			            if (findFirst(heads_[headIndex_], 0, 1))
+		        		addNodeAndPointer(heads[headIndex], Pointer.MIDDLE);
+			            if (findFirst(heads[headIndex], 0, 1))
 			                return true;
 
-		            	--fillPointer_;
+		            	--fillPointer;
 		        	}
 		        }
 	        } else {
-		        if (findNext(heads_[headIndex_], 0, 1))
+		        if (findNext(heads[headIndex], 0, 1))
 		            return true;
-		        while (++headIndex_ < heads_.length) {
+		        while (++headIndex < heads.length) {
 		//System.out.println("Did not find next on existing HEAD, switching to next HEAD " + headIndex_ + " since first char wildcard");	 
 		//if (descentGraph_.size() > 0 || typeOfPointerToNode_.size() > 0)
 		//System.out.println("desc size " +  descentGraph_.size() + ", pointer size " + typeOfPointerToNode_);
 		//	        	descentGraph_.clear();
 		//	        	typeOfPointerToNode_.clear();
-	        		addNodeAndPointer(heads_[headIndex_], Pointer.MIDDLE);
-		            if (findFirst(heads_[headIndex_], 0, 1))
+	        		addNodeAndPointer(heads[headIndex], Pointer.MIDDLE);
+		            if (findFirst(heads[headIndex], 0, 1))
 		                return true;
 
-	            	--fillPointer_;
+	            	--fillPointer;
 		        }
 	        }
 	        return false;
@@ -533,149 +525,149 @@ public class TST<E> implements Dictionary<char[], E> {
 	     * If not found, return false and pop descentGraph and childPointers
 	     */
 	    private boolean findNext(TstNode<E> currNode, int treeDepth, int keyIndex) {
-	    	if (pattern_[keyIndex] != WILDCARD) {
-		    	if (treeDepth == fillPointer_ - 1) {
+	    	if (pattern[keyIndex] != WILDCARD) {
+		    	if (treeDepth == fillPointer - 1) {
 //				    if (currNode == null)
-		    		--fillPointer_;
+		    		--fillPointer;
 		    		return false;
 		    	}
-	            int nextKeyindex = typeOfPointerToNode_[treeDepth + 1] == Pointer.MIDDLE ? 
+	            int nextKeyindex = typeOfPointerToNode[treeDepth + 1] == Pointer.MIDDLE ? 
 	                keyIndex + 1 : keyIndex;
-	            if (findNext(descentGraph_[treeDepth + 1], treeDepth + 1, nextKeyindex))
+	            if (findNext(descentGraph[treeDepth + 1], treeDepth + 1, nextKeyindex))
 	                return true;
-	    		--fillPointer_;
+	    		--fillPointer;
 	    		return false;
 	    	}
 	    	
 	    	if (INCLUDE_AVOID) {
 		    	// Processing wildcard
-	        	int charsToAvoid = exclusions_.length <= keyIndex ? 0 : exclusions_[keyIndex];
-	            boolean atEndOfKey = keyIndex == pattern_.length - 1;
+	        	int charsToAvoid = exclusions.length <= keyIndex ? 0 : exclusions[keyIndex];
+	            boolean atEndOfKey = keyIndex == pattern.length - 1;
 	            if (! atEndOfKey) {
-	                Pointer prevPointerToNext = typeOfPointerToNode_[treeDepth + 1];
+	                Pointer prevPointerToNext = typeOfPointerToNode[treeDepth + 1];
 	                
 	                // Abort processing current branch if it's down a middle link whose char we seek to avoid
-	                boolean splitCharBad = (charsToAvoid & (1 << (currNode.splitChar_ - 'A'))) != 0;
+	                boolean splitCharBad = (charsToAvoid & (1 << (currNode.splitChar - 'A'))) != 0;
 	                if (prevPointerToNext == Pointer.MIDDLE && splitCharBad) {
-	                	fillPointer_ = treeDepth + 1;
+	                	fillPointer = treeDepth + 1;
 	                } else {
-	                    int nextKeyindex = typeOfPointerToNode_[treeDepth + 1] == Pointer.MIDDLE ? 
+	                    int nextKeyindex = typeOfPointerToNode[treeDepth + 1] == Pointer.MIDDLE ? 
 	                            keyIndex + 1 : keyIndex;
-	                	if (findNext(descentGraph_[treeDepth + 1], treeDepth + 1, nextKeyindex))
+	                	if (findNext(descentGraph[treeDepth + 1], treeDepth + 1, nextKeyindex))
 		                    return true;
 	                }
 		                
 	    	        // OK, try findFirst on remaining branches.
 	                if (prevPointerToNext == Pointer.LEFT && ! splitCharBad) {
-		        		addNodeAndPointer((TstNode<E>)currNode.middleChild_, Pointer.MIDDLE);
-	                	if (findFirst((TstNode<E>)currNode.middleChild_, treeDepth + 1, keyIndex + 1))
+		        		addNodeAndPointer((TstNode<E>)currNode.middleChild, Pointer.MIDDLE);
+	                	if (findFirst((TstNode<E>)currNode.middleChild, treeDepth + 1, keyIndex + 1))
 	                		return true;
-	                	--fillPointer_;
+	                	--fillPointer;
 	                }
 	                if (prevPointerToNext != Pointer.RIGHT) {
-		        		addNodeAndPointer(currNode.rightChild_, Pointer.RIGHT);
-	                 	if (findFirst(currNode.rightChild_, treeDepth + 1, keyIndex))
+		        		addNodeAndPointer(currNode.rightChild, Pointer.RIGHT);
+	                 	if (findFirst(currNode.rightChild, treeDepth + 1, keyIndex))
 	                		return true;
-	                	--fillPointer_;
+	                	--fillPointer;
 	                }
-		    		--fillPointer_;
+		    		--fillPointer;
 		    		return false;
 	            }
 	            
 	            // OK we are processing wildcard at end of key
-	            boolean atBottomOfDescent = treeDepth == fillPointer_ - 1;
+	            boolean atBottomOfDescent = treeDepth == fillPointer - 1;
 	            if (atBottomOfDescent) {
 	            	// Try right node
-	        		addNodeAndPointer(currNode.rightChild_, Pointer.RIGHT);
-	             	if (findFirst(currNode.rightChild_, treeDepth + 1, keyIndex))
+	        		addNodeAndPointer(currNode.rightChild, Pointer.RIGHT);
+	             	if (findFirst(currNode.rightChild, treeDepth + 1, keyIndex))
 	            		return true;
-	             	fillPointer_ -= 2;
+	             	fillPointer -= 2;
 	             	return false;
 	            } else {
 	            	// Processing wildcard, not at bottom of descent
-		            Pointer prevPointerToNext = typeOfPointerToNode_[treeDepth + 1];
+		            Pointer prevPointerToNext = typeOfPointerToNode[treeDepth + 1];
 	                // Abort processing current branch if it's down a middle link whose char we seek to avoid
-	                boolean splitCharBad = (charsToAvoid & (1 << (currNode.splitChar_ - 'A'))) != 0;
+	                boolean splitCharBad = (charsToAvoid & (1 << (currNode.splitChar - 'A'))) != 0;
 	                if (prevPointerToNext == Pointer.MIDDLE && splitCharBad) {
-	                	fillPointer_ = treeDepth + 1;
+	                	fillPointer = treeDepth + 1;
 	                } else {
-	    	            int nextKeyindex = typeOfPointerToNode_[treeDepth + 1] == Pointer.MIDDLE ? 
+	    	            int nextKeyindex = typeOfPointerToNode[treeDepth + 1] == Pointer.MIDDLE ? 
 	    		                keyIndex + 1 : keyIndex;
-	                	if (findNext(descentGraph_[treeDepth + 1], treeDepth + 1, nextKeyindex))
+	                	if (findNext(descentGraph[treeDepth + 1], treeDepth + 1, nextKeyindex))
 		                    return true;
 	                }
 	
 	                // If we're at end of pattern, and current node is itself an entry, and we were previously down left branch, return it
-		            if (currNode.middleChild_ != null && prevPointerToNext == Pointer.LEFT)
+		            if (currNode.middleChild != null && prevPointerToNext == Pointer.LEFT)
 		            	return true;
 		            
 			        // OK, try now findFirst on right branch, if we haven't already
 		            if (prevPointerToNext != Pointer.RIGHT) {
-		        		addNodeAndPointer(currNode.rightChild_, Pointer.RIGHT);
-		             	if (findFirst(currNode.rightChild_, treeDepth + 1, keyIndex))
+		        		addNodeAndPointer(currNode.rightChild, Pointer.RIGHT);
+		             	if (findFirst(currNode.rightChild, treeDepth + 1, keyIndex))
 		            		return true;
-		            	--fillPointer_;
+		            	--fillPointer;
 		            }
-	            	--fillPointer_;
+	            	--fillPointer;
 	            	return false;
 	            }
 	    	} else {
 		    	// Processing wildcard
-	            boolean atEndOfKey = keyIndex == pattern_.length - 1;
+	            boolean atEndOfKey = keyIndex == pattern.length - 1;
 	            if (! atEndOfKey) {
-	                Pointer prevPointerToNext = typeOfPointerToNode_[treeDepth + 1];
+	                Pointer prevPointerToNext = typeOfPointerToNode[treeDepth + 1];
 	                
-                    int nextKeyindex = typeOfPointerToNode_[treeDepth + 1] == Pointer.MIDDLE ? 
+                    int nextKeyindex = typeOfPointerToNode[treeDepth + 1] == Pointer.MIDDLE ? 
                             keyIndex + 1 : keyIndex;
-                	if (findNext(descentGraph_[treeDepth + 1], treeDepth + 1, nextKeyindex))
+                	if (findNext(descentGraph[treeDepth + 1], treeDepth + 1, nextKeyindex))
 	                    return true;
 		                
 	    	        // OK, try findFirst on remaining branches.
 	                if (prevPointerToNext == Pointer.LEFT) {
-		        		addNodeAndPointer((TstNode<E>)currNode.middleChild_, Pointer.MIDDLE);
-	                	if (findFirst((TstNode<E>)currNode.middleChild_, treeDepth + 1, keyIndex + 1))
+		        		addNodeAndPointer((TstNode<E>)currNode.middleChild, Pointer.MIDDLE);
+	                	if (findFirst((TstNode<E>)currNode.middleChild, treeDepth + 1, keyIndex + 1))
 	                		return true;
-	                	--fillPointer_;
+	                	--fillPointer;
 	                }
 	                if (prevPointerToNext != Pointer.RIGHT) {
-		        		addNodeAndPointer(currNode.rightChild_, Pointer.RIGHT);
-	                 	if (findFirst(currNode.rightChild_, treeDepth + 1, keyIndex))
+		        		addNodeAndPointer(currNode.rightChild, Pointer.RIGHT);
+	                 	if (findFirst(currNode.rightChild, treeDepth + 1, keyIndex))
 	                		return true;
-	                	--fillPointer_;
+	                	--fillPointer;
 	                }
-		    		--fillPointer_;
+		    		--fillPointer;
 		    		return false;
 	            }
 	            
 	            // OK we are processing wildcard at end of key
-	            boolean atBottomOfDescent = treeDepth == fillPointer_ - 1;
+	            boolean atBottomOfDescent = treeDepth == fillPointer - 1;
 	            if (atBottomOfDescent) {
 	            	// Try right node
-	        		addNodeAndPointer(currNode.rightChild_, Pointer.RIGHT);
-	             	if (findFirst(currNode.rightChild_, treeDepth + 1, keyIndex))
+	        		addNodeAndPointer(currNode.rightChild, Pointer.RIGHT);
+	             	if (findFirst(currNode.rightChild, treeDepth + 1, keyIndex))
 	            		return true;
-	             	fillPointer_ -= 2;
+	             	fillPointer -= 2;
 	             	return false;
 	            } else {
 	            	// Processing wildcard, not at bottom of descent
-		            Pointer prevPointerToNext = typeOfPointerToNode_[treeDepth + 1];
-    	            int nextKeyindex = typeOfPointerToNode_[treeDepth + 1] == Pointer.MIDDLE ? 
+		            Pointer prevPointerToNext = typeOfPointerToNode[treeDepth + 1];
+    	            int nextKeyindex = typeOfPointerToNode[treeDepth + 1] == Pointer.MIDDLE ? 
     		                keyIndex + 1 : keyIndex;
-                	if (findNext(descentGraph_[treeDepth + 1], treeDepth + 1, nextKeyindex))
+                	if (findNext(descentGraph[treeDepth + 1], treeDepth + 1, nextKeyindex))
 	                    return true;
 	
 	                // If we're at end of pattern, and current node is itself an entry, and we were previously down left branch, return it
-		            if (currNode.middleChild_ != null && prevPointerToNext == Pointer.LEFT)
+		            if (currNode.middleChild != null && prevPointerToNext == Pointer.LEFT)
 		            	return true;
 		            
 			        // OK, try now findFirst on right branch, if we haven't already
 		            if (prevPointerToNext != Pointer.RIGHT) {
-		        		addNodeAndPointer(currNode.rightChild_, Pointer.RIGHT);
-		             	if (findFirst(currNode.rightChild_, treeDepth + 1, keyIndex))
+		        		addNodeAndPointer(currNode.rightChild, Pointer.RIGHT);
+		             	if (findFirst(currNode.rightChild, treeDepth + 1, keyIndex))
 		            		return true;
-		            	--fillPointer_;
+		            	--fillPointer;
 		            }
-	            	--fillPointer_;
+	            	--fillPointer;
 	            	return false;
 	            }
 	    	}

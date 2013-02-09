@@ -5,7 +5,6 @@ package us.stangl.crostex;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import us.stangl.crostex.util.ResettableIterator;
@@ -14,15 +13,12 @@ import us.stangl.crostex.util.ResettableIterator;
  * Ternary search tree implementation of Dictionary.
  */
 public class TstNew<E> implements Dictionary<char[], E> {
-	/** wildcard character */
-	public static final char WILDCARD = '_';
-
 	/** each element at index N in forest_ contains an array of TST heads for words of size N + 3 */
-	private List<TstNode<E>[]> forest_ = new ArrayList<TstNode<E>[]>();
+	private List<TstNode<E>[]> forest = new ArrayList<TstNode<E>[]>();
 
 	private void growForestToSize(int size) {
-		while (forest_.size() < size)
-			forest_.add(new TstNode[26]);
+		while (forest.size() < size)
+			forest.add(new TstNode[26]);
 	}
 
 	/**
@@ -53,7 +49,7 @@ public class TstNew<E> implements Dictionary<char[], E> {
 		int headIndex = key[0] - 'A';
 		int forestIndex = key.length - 3;
 		growForestToSize(forestIndex + 1);
-		TstNode<E>[] heads = forest_.get(forestIndex);
+		TstNode<E>[] heads = forest.get(forestIndex);
 		heads[headIndex] = add(heads[headIndex], key, 1, entry);
 	}
 
@@ -65,34 +61,34 @@ public class TstNew<E> implements Dictionary<char[], E> {
 	 */
 	public E lookup(char[] key) {
 		int forestIndex = key.length - 3;
-		if (forest_.size() <= forestIndex)
+		if (forest.size() <= forestIndex)
 			return null;
 		//TstNode<E>[] heads = forest_.get(forestIndex);
 		//return lookup(heads[key[0] - 'A'], key, 1);
-		TstNode<E> node = forest_.get(forestIndex)[key[0] - 'A'];
+		TstNode<E> node = forest.get(forestIndex)[key[0] - 'A'];
 		int keyIndex = 1;
 		char c = key[keyIndex];
 		while (true) {
 			if (node == null)
 				return null;
-			if (c < node.splitChar_)
-				node = node.leftChild_;
-			else if (c > node.splitChar_)
-				node = node.rightChild_;
+			if (c < node.splitChar)
+				node = node.leftChild;
+			else if (c > node.splitChar)
+				node = node.rightChild;
 			else if (keyIndex < key.length - 1) {
-				node = (TstNode<E>)node.middleChild_;
+				node = (TstNode<E>)node.middleChild;
 				c = key[++keyIndex];
 			} else {
-				return (E)node.middleChild_;
+				return (E)node.middleChild;
 			}
 		}
 	}
 
 	public List<Pair<char[], E>> getPatternMatches(char[] pattern) {
 		int forestIndex = pattern.length - 3;
-		if (forest_.size() <= forestIndex)
-			return Collections.EMPTY_LIST;
-		TstNode<E>[] heads = forest_.get(forestIndex);
+		if (forest.size() <= forestIndex)
+			return Collections.emptyList();
+		TstNode<E>[] heads = forest.get(forestIndex);
 		// start with 200 capacity: 760 extra bytes to save up to 7 realloc/copies
 		List<Pair<char[], E>> retval = new ArrayList<Pair<char[], E>>(200);
 		char[] keybuff = new char[pattern.length];
@@ -113,29 +109,7 @@ public class TstNew<E> implements Dictionary<char[], E> {
 		}
 		
 		// If empty, return empty list, so we don't waste memory if it gets cached
-		return retval.size() > 0 ? retval : Collections.EMPTY_LIST;
-	}
-
-	private void getPatternMatches(TstNode<E> node, char[] pattern, int keyIndex, List<Pair<char[], E>> accumulator, char[] keybuff) {
-		char c = pattern[keyIndex];
-		//TODO consider splitting out wildcard path, but clutters code more, potentially kills L1 cache
-		if ((c == WILDCARD || c < node.splitChar_) && node.leftChild_ != null)
-			getPatternMatches(node.leftChild_, pattern, keyIndex, accumulator, keybuff);
-		if ((c == WILDCARD || c == node.splitChar_) && node.middleChild_ != null) {
-			keybuff[keyIndex] = node.splitChar_;
-			if (keyIndex < pattern.length - 1) {
-				getPatternMatches((TstNode<E>)node.middleChild_, pattern, keyIndex + 1, accumulator, keybuff);
-			} else {
-				// have to copy keybuff since it's mutable
-				char[] key = new char[pattern.length];
-				for (int i = 0; i < key.length; ++i)
-					key[i] = keybuff[i];
-//System.out.println("Adding word " + new String(key) + " for pattern " + new String(pattern));				
-				accumulator.add(new Pair<char[], E>(key, (E)node.middleChild_));
-			}
-		}
-		if ((c == WILDCARD || c > node.splitChar_) && node.rightChild_ != null)
-			getPatternMatches(node.rightChild_, pattern, keyIndex, accumulator, keybuff);
+		return retval.isEmpty() ? Collections.<Pair<char[], E>>emptyList() : retval;
 	}
 
 	/**
@@ -145,9 +119,9 @@ public class TstNew<E> implements Dictionary<char[], E> {
 	 */
 	public boolean isPatternInDictionary(char[] pattern) {
 		int forestIndex = pattern.length - 3;
-		if (forest_.size() <= forestIndex)
+		if (forest.size() <= forestIndex)
 			return false;
-		TstNode<E>[] heads = forest_.get(forestIndex);
+		TstNode<E>[] heads = forest.get(forestIndex);
 		if (pattern[0] != WILDCARD)
 			return isPatternFound(heads[pattern[0] - 'A'], pattern, 1);
 
@@ -157,21 +131,69 @@ public class TstNew<E> implements Dictionary<char[], E> {
 		return false;
 	}
 
+	public void rebalance() {
+		for (TstNode<E>[] rootsArray : forest)
+			for (int i = 0; i < rootsArray.length; ++i)
+				rootsArray[i] = rebalanceSubtree(rootsArray[i]);
+	}
+    
+	public String toString() {
+		StringBuilder retval = new StringBuilder();
+		retval.append("{");
+		for (int j = 0; j < forest.size(); ++j) {
+			TstNode<E>[] heads = forest.get(j);
+			if (j > 0)
+				retval.append(", ");
+			retval.append("forest[").append(j).append("] = ");
+			for (int i = 0; i < heads.length; ++i) {
+				TstNode<E> head = heads[i];
+				if (i > 0)
+					retval.append(", ");
+				String headString = head == null ? "null" : head.toString();
+				retval.append("head_[").append(i).append("] = ").append(headString);
+			}
+		}
+		retval.append("}");
+		return retval.toString();
+	}
+
+	private void getPatternMatches(TstNode<E> node, char[] pattern, int keyIndex, List<Pair<char[], E>> accumulator, char[] keybuff) {
+		char c = pattern[keyIndex];
+		//TODO consider splitting out wildcard path, but clutters code more, potentially kills L1 cache
+		if ((c == WILDCARD || c < node.splitChar) && node.leftChild != null)
+			getPatternMatches(node.leftChild, pattern, keyIndex, accumulator, keybuff);
+		if ((c == WILDCARD || c == node.splitChar) && node.middleChild != null) {
+			keybuff[keyIndex] = node.splitChar;
+			if (keyIndex < pattern.length - 1) {
+				getPatternMatches((TstNode<E>)node.middleChild, pattern, keyIndex + 1, accumulator, keybuff);
+			} else {
+				// have to copy keybuff since it's mutable
+				char[] key = new char[pattern.length];
+				for (int i = 0; i < key.length; ++i)
+					key[i] = keybuff[i];
+//System.out.println("Adding word " + new String(key) + " for pattern " + new String(pattern));				
+				accumulator.add(new Pair<char[], E>(key, (E)node.middleChild));
+			}
+		}
+		if ((c == WILDCARD || c > node.splitChar) && node.rightChild != null)
+			getPatternMatches(node.rightChild, pattern, keyIndex, accumulator, keybuff);
+	}
+
 	private boolean isPatternFound(TstNode<E> node, char[] key, int keyIndex) {
 		if (node == null)
 			return false;
 		char c = key[keyIndex];
-		if ((c == WILDCARD || c < node.splitChar_) && isPatternFound(node.leftChild_, key, keyIndex))
+		if ((c == WILDCARD || c < node.splitChar) && isPatternFound(node.leftChild, key, keyIndex))
 			return true;
-		if (c == WILDCARD || c == node.splitChar_) {
+		if (c == WILDCARD || c == node.splitChar) {
 			if (keyIndex < key.length - 1) {
-				if (isPatternFound((TstNode<E>)node.middleChild_, key, keyIndex + 1))
+				if (isPatternFound((TstNode<E>)node.middleChild, key, keyIndex + 1))
 					return true;
-			} else if (node.middleChild_ != null) {
+			} else if (node.middleChild != null) {
 				return true;
 			}
 		}
-		return ((c == WILDCARD || c > node.splitChar_) && isPatternFound(node.rightChild_, key, keyIndex));
+		return ((c == WILDCARD || c > node.splitChar) && isPatternFound(node.rightChild, key, keyIndex));
 	}
 
 	/*
@@ -225,35 +247,15 @@ public class TstNew<E> implements Dictionary<char[], E> {
 		char c = key[keyIndex];
 		if (node == null)
 			node = new TstNode<E>(c);
-		if (c < node.splitChar_)
-			node.leftChild_ = add(node.leftChild_, key, keyIndex, entry);
-		else if (c > node.splitChar_)
-			node.rightChild_ = add(node.rightChild_, key, keyIndex, entry);
+		if (c < node.splitChar)
+			node.leftChild = add(node.leftChild, key, keyIndex, entry);
+		else if (c > node.splitChar)
+			node.rightChild = add(node.rightChild, key, keyIndex, entry);
 		else if (keyIndex < key.length - 1)
-			node.middleChild_ = add((TstNode<E>)node.middleChild_, key, keyIndex + 1, entry);
+			node.middleChild = add((TstNode<E>)node.middleChild, key, keyIndex + 1, entry);
 		else
-			node.middleChild_ = entry;
+			node.middleChild = entry;
 		return node;
-	}
-
-	public String toString() {
-		StringBuilder retval = new StringBuilder();
-		retval.append("{");
-		for (int j = 0; j < forest_.size(); ++j) {
-			TstNode<E>[] heads = forest_.get(j);
-			if (j > 0)
-				retval.append(", ");
-			retval.append("forest[").append(j).append("] = ");
-			for (int i = 0; i < heads.length; ++i) {
-				TstNode<E> head = heads[i];
-				if (i > 0)
-					retval.append(", ");
-				String headString = head == null ? "null" : head.toString();
-				retval.append("head_[").append(i).append("] = ").append(headString);
-			}
-		}
-		retval.append("}");
-		return retval.toString();
 	}
 
 	// DSW tree compression, vine -> tree, do count # of left rotations starting at root
@@ -261,11 +263,11 @@ public class TstNew<E> implements Dictionary<char[], E> {
 		TstNode<E> scanner = root;
 		for (int j = 0; j < count; ++j) {
 			// Leftward rotation
-			TstNode<E> child = scanner.rightChild_;
-			scanner.rightChild_ = child.rightChild_;
-			scanner = scanner.rightChild_;
-			child.rightChild_ = scanner.leftChild_;
-			scanner.leftChild_ = child;
+			TstNode<E> child = scanner.rightChild;
+			scanner.rightChild = child.rightChild;
+			scanner = scanner.rightChild;
+			child.rightChild = scanner.leftChild;
+			scanner.leftChild = child;
 		}
 	}
 	
@@ -277,24 +279,24 @@ public class TstNew<E> implements Dictionary<char[], E> {
 		int size = 0;
 		TstNode<E> vineTail, remainder;
 		vineTail = pseudoRoot;					// vineTail always points to end of vine linked-list
-		remainder = vineTail.rightChild_;		// remainder points to head of part that still needs work
+		remainder = vineTail.rightChild;		// remainder points to head of part that still needs work
 		while (remainder != null) {
-			if (remainder.leftChild_ == null) {
+			if (remainder.leftChild == null) {
 				// Recursively rebalance middle tree, if there is one
-				if (remainder.middleChild_ instanceof TstNode)
-					remainder.middleChild_ = rebalanceSubtree((TstNode<E>)remainder.middleChild_);
+				if (remainder.middleChild instanceof TstNode)
+					remainder.middleChild = rebalanceSubtree((TstNode<E>)remainder.middleChild);
 
 				// No leftward subtree, move rightward
 				vineTail = remainder;
-				remainder = remainder.rightChild_;
+				remainder = remainder.rightChild;
 				++size;
 			} else {
 				// Eliminate leftward subtree by rightward rotation
-				TstNode<E> tempPtr = remainder.leftChild_;
-				remainder.leftChild_ = tempPtr.rightChild_;
-				tempPtr.rightChild_ = remainder;
+				TstNode<E> tempPtr = remainder.leftChild;
+				remainder.leftChild = tempPtr.rightChild;
+				tempPtr.rightChild = remainder;
 				remainder = tempPtr;
-				vineTail.rightChild_ = tempPtr;
+				vineTail.rightChild = tempPtr;
 			}
 		}
 		return size;
@@ -320,47 +322,41 @@ public class TstNew<E> implements Dictionary<char[], E> {
 	/** rebalance subtree, returning new root */
 	private TstNode<E> rebalanceSubtree(TstNode<E> root) {
 		TstNode<E> pseudoRoot = new TstNode<E>(' ');
-		pseudoRoot.rightChild_ = root;
+		pseudoRoot.rightChild = root;
 		vineToTree(pseudoRoot, treeToVine(pseudoRoot));
-		return pseudoRoot.rightChild_;
+		return pseudoRoot.rightChild;
 	}
 	
-	public void rebalance() {
-		for (TstNode<E>[] rootsArray : forest_)
-			for (int i = 0; i < rootsArray.length; ++i)
-				rootsArray[i] = rebalanceSubtree(rootsArray[i]);
-	}
-    
 
 	private static class TstNode<E> {
 		/** split character */
-		private final char splitChar_;
+		private final char splitChar;
 
 		/** left child contains all children whose curr. char is less than our split char */
-		private TstNode<E> leftChild_;
+		private TstNode<E> leftChild;
 
 		/**
 		 * in interior node, middle child contains all children whose curr. char is our split char
 		 * in leaf node, middle child points to entry
 		 */
-		private Object middleChild_;
+		private Object middleChild;
 
 		/** right child contains all children whose curr. char is greater than our split char */
-		private TstNode<E> rightChild_;
+		private TstNode<E> rightChild;
 
 		public TstNode(char splitChar) {
-			splitChar_ = splitChar;
+			this.splitChar = splitChar;
 		}
 
 		public String toString() {
 			StringBuilder retval = new StringBuilder();
-			String leftChildString = leftChild_ == null ? "null" : leftChild_.toString();
-			String middleChildString = middleChild_ == null ? "null" : middleChild_.toString();
-			String rightChildString = rightChild_ == null ? "null" : rightChild_.toString();
-			retval.append("{").append("splitChar_ = ").append(splitChar_)
-				.append(", leftChild_ = ").append(leftChildString)
-				.append(", middleChild_ = ").append(middleChildString)
-				.append(", rightChild_ = ").append(rightChildString)
+			String leftChildString = leftChild == null ? "null" : leftChild.toString();
+			String middleChildString = middleChild == null ? "null" : middleChild.toString();
+			String rightChildString = rightChild == null ? "null" : rightChild.toString();
+			retval.append("{").append("splitChar = ").append(splitChar)
+				.append(", leftChild = ").append(leftChildString)
+				.append(", middleChild = ").append(middleChildString)
+				.append(", rightChild = ").append(rightChildString)
 				.append("}");
 			return retval.toString();
 		}
@@ -369,13 +365,13 @@ public class TstNew<E> implements Dictionary<char[], E> {
 
 	private static class TstIterator<E> implements ResettableIterator<Pair<char[], E>> {
 		/** list of entries to iterate over */
-		private final List<Pair<char[], E>> entries_;
+		private final List<Pair<char[], E>> entries;
 
 		/** pointer to next entry to return */
-		private int nextPointer_;
+		private int nextPointer;
 
 		public TstIterator(List<Pair<char[], E>> entries) {
-			entries_ = entries;
+			this.entries = entries;
 			reset();
 		}
 
@@ -383,7 +379,7 @@ public class TstNew<E> implements Dictionary<char[], E> {
 		 * Reset iterator back to its initial creation state.
 		 */
 		public void reset() {
-			nextPointer_ = 0;
+			nextPointer = 0;
 		}
 
 		/**
@@ -400,18 +396,18 @@ public class TstNew<E> implements Dictionary<char[], E> {
 		 * @return whether any elements are remaining (i.e, safe to call next).
 		 */
 		public boolean hasNext() {
-			return nextPointer_ < entries_.size();
+			return nextPointer < entries.size();
 		}
 
 		public Pair<char[], E> next() {
 			Pair<char[], E> retval = peekNext();
-			++nextPointer_;
+			++nextPointer;
 			return retval;
 		}
 
 		/** just like next but without advancing iterator */
 		public Pair<char[], E> peekNext() {
-			return entries_.get(nextPointer_);
+			return entries.get(nextPointer);
 		}
 	}
 }

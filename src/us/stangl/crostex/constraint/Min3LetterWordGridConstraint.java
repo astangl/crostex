@@ -10,7 +10,7 @@ import us.stangl.crostex.Grid;
  */
 public class Min3LetterWordGridConstraint implements GridConstraint {
 	/**
-	 * @return whether grid has exactly one polyomino
+	 * @return whether all words in grid consist of at least 3 grid cells
 	 */
 	public boolean satisfiedBy(Grid grid) {
 		for (int row = 0; row < grid.getHeight(); ++row)
