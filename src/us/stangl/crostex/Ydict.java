@@ -18,87 +18,86 @@ import us.stangl.crostex.util.ResettableIterator;
  */
 public class Ydict<E> implements Dictionary<char[], E> {
 	/** flag indicating whether to use new pattern/intersection algorithm */
-	// NOTE: According to DictionariesTest, the new intersection algorithm is not correct!!!
 	private static final boolean USE_NEW_INTERSECTION_ALGORITHM = true;
-	
-    /**
-     * buckets organized by word length
-     * each element[N] contains all words of length N
-     */
-    private List<Map<String, E>> wordsOfLength = new ArrayList<Map<String, E>>();
-    
-    private Pair<char[], E>[][] wordsOfLengthArray;
-    
-    /**
-     * lenBuckets_ stored as [lengthOfWord][indexOfCharacterInWord 0..lengthOfWord - 1][character 0..25][N where N is the # of selections]
-     * each one of these elements stores an index into wordsOfLengthArray[lengthOfWord] to identify the particular word
-     */ 
-    // lenBuckets[w][x][y][z]
-    // where w == length of word
-    //       x == indexOfCharacterInWord (0..lengthOfWord - 1)
-    //       y == character (0..25)
-    //       z ranges over final array of indexes into wordsOfLengthArray[w] to identify the particular word
-    private int[][][][] lenBuckets;
-    
-    // insert words into wordsOfLength_ buckets initially
-    public void insert(char[] word, E entry) {
-        while (wordsOfLength.size() <= word.length)
-        	wordsOfLength.add(new HashMap<String, E>());
-        wordsOfLength.get(word.length).put(new String(word), entry);
-    }
+
+	/**
+	 * buckets organized by word length
+	 * each element[N] contains all words of length N
+	 */
+	private List<Map<String, E>> wordsOfLength = new ArrayList<Map<String, E>>();
+
+	private Pair<char[], E>[][] wordsOfLengthArray;
+
+	/**
+	 * lenBuckets_ stored as [lengthOfWord][indexOfCharacterInWord 0..lengthOfWord - 1][character 0..25][N where N is the # of selections]
+	 * each one of these elements stores an index into wordsOfLengthArray[lengthOfWord] to identify the particular word
+	 */ 
+	// lenBuckets[w][x][y][z]
+	// where w == length of word
+	//       x == indexOfCharacterInWord (0..lengthOfWord - 1)
+	//       y == character (0..25)
+	//       z ranges over final array of indexes into wordsOfLengthArray[w] to identify the particular word
+	private int[][][][] lenBuckets;
+
+	// insert words into wordsOfLength_ buckets initially
+	public void insert(char[] word, E entry) {
+		while (wordsOfLength.size() <= word.length)
+			wordsOfLength.add(new HashMap<String, E>());
+		wordsOfLength.get(word.length).put(new String(word), entry);
+	}
 
 	public void rebalance() {
-    	wordsOfLengthArray = new Pair[wordsOfLength.size()][];
-    	lenBuckets = new int[wordsOfLength.size()][][][];
-    	for (int i = 0; i < wordsOfLengthArray.length; ++i) {
-    		Map<String, E> wordsOfLengthMap = wordsOfLength.get(i);
-    		wordsOfLength.set(i, null);
-    		wordsOfLengthArray[i] = new Pair[wordsOfLengthMap.size()];
-    		int index = 0;
+		wordsOfLengthArray = new Pair[wordsOfLength.size()][];
+		lenBuckets = new int[wordsOfLength.size()][][][];
+		for (int i = 0; i < wordsOfLengthArray.length; ++i) {
+			Map<String, E> wordsOfLengthMap = wordsOfLength.get(i);
+			wordsOfLength.set(i, null);
+			wordsOfLengthArray[i] = new Pair[wordsOfLengthMap.size()];
+			int index = 0;
 			List<Integer>[][] aToZ = new List[i][26];
 			for (int k = 0; k < i; ++k)
 				for (int j = 0; j < 26; ++j)
 					aToZ[k][j] = new ArrayList<Integer>();
-			
+
 			List<Map.Entry<String, E>> entryList = new ArrayList<Map.Entry<String, E>>(wordsOfLengthMap.entrySet());
 			Collections.shuffle(entryList);
 			for (Map.Entry<String, E> wordOfLengthEntry : entryList) {
-    			char[] chars = wordOfLengthEntry.getKey().toCharArray();
-    			for (int j = 0; j < chars.length; ++j)
-    				aToZ[j][chars[j] - 'A'].add(index);
-    			wordsOfLengthArray[i][index++] = new Pair<char[], E>(chars, wordOfLengthEntry.getValue());
-    		}
-    		
-    		lenBuckets[i] = new int[i][][];
-    		
-    		// Now create lenBuckets_
-    		for (int letterIndex = 0; letterIndex < i; ++letterIndex) {
-    			lenBuckets[i][letterIndex] = new int[26][];
-	    		for (int j = 0; j < 26; ++j) {
-	    			int size = aToZ[letterIndex][j].size();
-	    			lenBuckets[i][letterIndex][j] = new int[size];
-	    			for (int k = 0; k < size; ++k)
-	    				lenBuckets[i][letterIndex][j][k] = aToZ[letterIndex][j].get(k);
-	    		}
-    		}
-    	}
-    	
-    	// Free up original wordsOfLength_ storage
-    	wordsOfLength = null;
-    }
+				char[] chars = wordOfLengthEntry.getKey().toCharArray();
+				for (int j = 0; j < chars.length; ++j)
+					aToZ[j][chars[j] - 'A'].add(index);
+				wordsOfLengthArray[i][index++] = new Pair<char[], E>(chars, wordOfLengthEntry.getValue());
+			}
 
-    
-    public void bulkInsert(List<Pair<char[], E>> entries) {
+			lenBuckets[i] = new int[i][][];
+
+			// Now create lenBuckets_
+			for (int letterIndex = 0; letterIndex < i; ++letterIndex) {
+				lenBuckets[i][letterIndex] = new int[26][];
+				for (int j = 0; j < 26; ++j) {
+					int size = aToZ[letterIndex][j].size();
+					lenBuckets[i][letterIndex][j] = new int[size];
+					for (int k = 0; k < size; ++k)
+						lenBuckets[i][letterIndex][j][k] = aToZ[letterIndex][j].get(k);
+				}
+			}
+		}
+
+		// Free up original wordsOfLength_ storage
+		wordsOfLength = null;
+	}
+
+
+	public void bulkInsert(List<Pair<char[], E>> entries) {
 		for (Pair<char[], E> entry : entries)
 			insert(entry.first_, entry.second_);
 	}
 
-    public List<Pair<char[], E>> getPatternMatches(char[] pattern) {
+	public List<Pair<char[], E>> getPatternMatches(char[] pattern) {
 		int len = pattern.length;
-        if (lenBuckets.length <= len)
-            return Collections.emptyList();
+		if (lenBuckets.length <= len)
+			return Collections.emptyList();
 		int[][][] buckets = lenBuckets[len];
-		
+
 		if (USE_NEW_INTERSECTION_ALGORITHM) {
 			// Use Svs + Galloping Search, as suggested by "Faster Set Intersection Algorithms for Text Searching"
 			int[][] wordLists = new int[pattern.length][];
@@ -113,23 +112,24 @@ public class Ydict<E> implements Dictionary<char[], E> {
 			// If all wildcards, return entire bucketful
 			if (wordListsSize == 0)
 				return Arrays.asList(wordsOfLengthArray[len]);
-			
+
+			// Need to copy wordLists[0] to candidateSet so we can mutate it w/o corrupting Dictionary
 			int[] candidateSet = new int[wordLists[0].length];
 			int[] oldCandidateSet = new int[wordLists[0].length];
-			
+
 			int candidateSetSize = wordLists[0].length;
 			int oldCandidateSetSize = 0;
 			System.arraycopy(wordLists[0], 0, candidateSet, 0, candidateSetSize);
 			for (int i = 1; i < wordListsSize; ++i) {
 				int[] setToCheck = wordLists[i];
-				
+
 				// swap oldCandidate <-> candidate, and clear candidateSetSize
 				oldCandidateSetSize = candidateSetSize;
 				candidateSetSize = 0;
 				int[] temp = oldCandidateSet;
 				oldCandidateSet = candidateSet;
 				candidateSet = temp;
-				
+
 				int highWaterMark = 1;
 				for (int j = 0; j < oldCandidateSetSize; ++j) {
 					int key = oldCandidateSet[j];
@@ -140,13 +140,13 @@ public class Ydict<E> implements Dictionary<char[], E> {
 					while (low < setToCheck.length && setToCheck[low] <= key)
 						low = (low << 1) + 1;
 					highWaterMark = low;
-					
+
 					int high = (low >= setToCheck.length) ? setToCheck.length - 1 : low - 1;
 					low >>= 1;
-	
-					// regular binary search on [low, high]
-					while (low <= high) {
-						int mid = (low + high) >> 1;
+
+						// regular binary search on [low, high]
+						while (low <= high) {
+							int mid = (low + high) >> 1;
 						int midVal = setToCheck[mid];
 						if (midVal < key)
 							low = mid + 1;
@@ -156,10 +156,10 @@ public class Ydict<E> implements Dictionary<char[], E> {
 							candidateSet[candidateSetSize++] = key;
 							break;
 						}
-					}
+						}
 				}
 			}
-	
+
 			List<Pair<char[], E>> retval = new ArrayList<Pair<char[], E>>(candidateSetSize);
 			for (int i = 0; i < candidateSetSize; ++i)
 				retval.add(wordsOfLengthArray[len][candidateSet[i]]);
@@ -192,11 +192,11 @@ public class Ydict<E> implements Dictionary<char[], E> {
 					}
 				}
 			}
-	
+
 			if (currIntersection == null)
 				// All wildcards -- use entire bucketfull
 				return Arrays.asList(wordsOfLengthArray[len]);
-	
+
 			List<Pair<char[], E>> retval = new ArrayList<Pair<char[], E>>(currIntersectionSize);
 			for (int i = 0; i < currIntersectionSize; ++i)
 				retval.add(wordsOfLengthArray[len][currIntersection[i]]);
@@ -204,21 +204,21 @@ public class Ydict<E> implements Dictionary<char[], E> {
 		}
 	}
 
-    public E lookup(char[] key) {
-        if (lenBuckets.length <= key.length)
-            return null;
+	public E lookup(char[] key) {
+		if (lenBuckets.length <= key.length)
+			return null;
 
-    	List<Pair<char[], E>> patternMatches = getPatternMatches(key);
-    	if (patternMatches.size() == 0)
-    		return null;
-    	if (patternMatches.size() > 1)
-    		throw new IllegalArgumentException("Got " + patternMatches.size() + " matches for " + new String(key));
-    	return patternMatches.get(0).second_;
-    }
+		List<Pair<char[], E>> patternMatches = getPatternMatches(key);
+		if (patternMatches.size() == 0)
+			return null;
+		if (patternMatches.size() > 1)
+			throw new IllegalArgumentException("Got " + patternMatches.size() + " matches for " + new String(key));
+		return patternMatches.get(0).second_;
+	}
 
-    public boolean isPatternInDictionary(char[] pattern) {
-    	return getPatternMatches(pattern).size() > 0;
-    }
+	public boolean isPatternInDictionary(char[] pattern) {
+		return getPatternMatches(pattern).size() > 0;
+	}
 
 	/**
 	 * Return resettable iterator over entries in the dictionary matching the specified pattern.
@@ -229,46 +229,46 @@ public class Ydict<E> implements Dictionary<char[], E> {
 		return new YdictIterator<E>(getPatternMatches(pattern));
 	}
 
-    // store the N elements of intersection of a and b into first N elements of result, and return N
+	// store the N elements of intersection of a and b into first N elements of result, and return N
 	// assumes a and b are both sorted in ascending order
-    private int getIntersection(int[] a, int numUsedInA, int[] b, int numUsedInB, int[] result) {
-    	if (numUsedInA == 0 || numUsedInB == 0)
-    		return 0;
-    	int aIndex = 0;
-    	int bIndex = 0;
-    	int rIndex = 0;
-    	int aElem = a[aIndex++];
-    	int bElem = b[bIndex++];
-    	while (true) {
-	    	if (aElem < bElem) {
-	    		if (aIndex >= numUsedInA)
-	    			return rIndex;
-	    		aElem = a[aIndex++];
-	    	} else if (aElem > bElem) {
-	    		if (bIndex >= numUsedInB)
-	    			return rIndex;
-	    		bElem = b[bIndex++];
-	    	} else /*if (aElem == bElem)*/ {
-	    		result[rIndex++] = aElem;
-	    		if (aIndex >= numUsedInA || bIndex >= numUsedInB)
-	    			return rIndex;
-	        	aElem = a[aIndex++];
-	        	bElem = b[bIndex++];
-	    	}
-    	}
-    }
-    
-    // put words into wordLists in order of its cardinality (length)
-    private void addWordListInOrderByCardinality(int[][] wordLists, int wordListsSize, int[] words) {
-    	int index = 0;
-    	while (index < wordListsSize && wordLists[index].length <= words.length)
-    		++index;
-    	// move any remaining elements forward to make room to stick in words
-    	for (int i = wordListsSize - 1; i >= index; --i)
-    		wordLists[i + 1] = wordLists[i];
-    	wordLists[index] = words;
-    }
-    
+	private int getIntersection(int[] a, int numUsedInA, int[] b, int numUsedInB, int[] result) {
+		if (numUsedInA == 0 || numUsedInB == 0)
+			return 0;
+		int aIndex = 0;
+		int bIndex = 0;
+		int rIndex = 0;
+		int aElem = a[aIndex++];
+		int bElem = b[bIndex++];
+		while (true) {
+			if (aElem < bElem) {
+				if (aIndex >= numUsedInA)
+					return rIndex;
+				aElem = a[aIndex++];
+			} else if (aElem > bElem) {
+				if (bIndex >= numUsedInB)
+					return rIndex;
+				bElem = b[bIndex++];
+			} else /*if (aElem == bElem)*/ {
+				result[rIndex++] = aElem;
+				if (aIndex >= numUsedInA || bIndex >= numUsedInB)
+					return rIndex;
+				aElem = a[aIndex++];
+				bElem = b[bIndex++];
+			}
+		}
+	}
+
+	// put words into wordLists in order of its cardinality (length)
+	private void addWordListInOrderByCardinality(int[][] wordLists, int wordListsSize, int[] words) {
+		int index = 0;
+		while (index < wordListsSize && wordLists[index].length <= words.length)
+			++index;
+		// move any remaining elements forward to make room to stick in words
+		for (int i = wordListsSize - 1; i >= index; --i)
+			wordLists[i + 1] = wordLists[i];
+		wordLists[index] = words;
+	}
+
 	private static class YdictIterator<E> implements ResettableIterator<Pair<char[], E>> {
 		/** list of entries to iterate over */
 		private final List<Pair<char[], E>> entries;

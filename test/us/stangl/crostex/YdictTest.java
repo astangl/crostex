@@ -9,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
@@ -25,9 +26,35 @@ public class YdictTest {
 
 	@Test
 	public void testSpeed() {
-		Ydict dict = new Ydict();
+		List<String> patterns = generatePatterns();
 		
-		String dataDirectory = "/home/alex/crappyhappy";
+		populateAndTest(new Ydict(), patterns, "Ydict");
+		populateAndTest(new Xdict(), patterns, "Xdict");
+		populateAndTest(new Trie(), patterns, "Trie");
+		populateAndTest(new TST(), patterns, "TST");
+		populateAndTest(new TstNew(), patterns, "TstNew");
+	}
+	
+	private void populateAndTest(Dictionary dict, Collection<String> patterns, String dictName)
+	{
+		populateDict(dict);
+		timePatternMatches(dict, patterns, dictName);
+	}
+	
+	private void timePatternMatches(Dictionary dict, Collection<String> patterns, String dictName)
+	{
+		long startTime = System.currentTimeMillis();
+		long totalMatches = 0;
+		for (String pattern : patterns) {
+			totalMatches += dict.getPatternMatches(pattern.toCharArray()).size();
+		}
+		long endTime = System.currentTimeMillis();
+		System.out.println("Took " + (endTime - startTime) + " ms. for " + dictName + " to return " + totalMatches);
+	}
+
+	private void populateDict(Dictionary dict)
+	{
+		String dataDirectory = "/home/alex/crostex_data";
 		boolean dictRead;
 		dictRead = readDictionaryFile(dict, dataDirectory, "SINGLE.TXT");
 		System.out.println("dictRead = " + dictRead);
@@ -38,6 +65,29 @@ public class YdictTest {
 		dict.rebalance();
 
 //		dict.bulkInsert(entries);
+	}
+	
+	private List<String> generatePatterns()
+	{
+		long seed = 12345678912l;
+		Random prng = new Random(seed);
+		
+		int numPatterns = 5000;
+		
+		List<String> words = new ArrayList<String>(numPatterns);
+		StringBuilder nextWord = new StringBuilder();
+		for (int i = 0; i < numPatterns; ++i) {
+			int len = 3 + prng.nextInt(5) + prng.nextInt(5) + prng.nextInt(5);
+			nextWord.setLength(0);
+			for (int j = 0; j < len; ++j) {
+				nextWord.append(prng.nextBoolean() ? '_' : (char)('A' + prng.nextInt(26)));
+			}
+			words.add(nextWord.toString());
+		}
+		return words;
+	}
+
+	private long testDictReadSpeed(Dictionary dict) {
 		
 		long seed = 12345678912l;
 		Random prng = new Random(seed);
@@ -63,6 +113,7 @@ public class YdictTest {
 		long endTime = System.currentTimeMillis();
 		
 		System.out.println("Took " + (endTime - startTime) + " ms. to return " + totalMatches);
+		return totalMatches;
 	}
 	
 	/** normalize raw word from dictionary; return null if word is unacceptable */
