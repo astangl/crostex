@@ -131,23 +131,20 @@ public class Ydict<E> implements Dictionary<char[], E> {
 				oldCandidateSet = candidateSet;
 				candidateSet = temp;
 
-				int highWaterMark = 1;
+				int probe = 1;
 				for (int j = 0; j < oldCandidateSetSize; ++j) {
 					int key = oldCandidateSet[j];
 					// Galloping search:
-					// Use low to probe at 1, 3, 7, 15, .. until found element greater than key
+					// Probe at 1, 3, 7, 15, .. until found element greater than key
 					// then do binary search in the last interval from prev probe to probe - 1
-					int low = highWaterMark;
-					while (low < setToCheck.length && setToCheck[low] <= key)
-						low = (low << 1) + 1;
-					highWaterMark = low;
+					while (probe < setToCheck.length && setToCheck[probe] <= key)
+						probe = (probe << 1) + 1;
+					int low = probe >> 1;
+					int high = probe >= setToCheck.length ? setToCheck.length - 1 : probe - 1;
 
-					int high = (low >= setToCheck.length) ? setToCheck.length - 1 : low - 1;
-					low >>= 1;
-
-						// regular binary search on [low, high]
-						while (low <= high) {
-							int mid = (low + high) >> 1;
+					// regular binary search on [low, high]
+					while (low <= high) {
+						int mid = (low + high) >> 1;
 						int midVal = setToCheck[mid];
 						if (midVal < key)
 							low = mid + 1;
@@ -157,13 +154,14 @@ public class Ydict<E> implements Dictionary<char[], E> {
 							candidateSet[candidateSetSize++] = key;
 							break;
 						}
-						}
+					}
 				}
 			}
 
 			List<Pair<char[], E>> retval = new ArrayList<Pair<char[], E>>(candidateSetSize);
+			Pair<char[], E>[] arr = wordsOfLengthArray[len];
 			for (int i = 0; i < candidateSetSize; ++i)
-				retval.add(wordsOfLengthArray[len][candidateSet[i]]);
+				retval.add(arr[candidateSet[i]]);
 			return retval;
 		} else {
 			// Two possibilities: all wildcards, in which case we use full entry from wordsOfLengthArray
