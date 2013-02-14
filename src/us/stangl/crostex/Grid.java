@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import us.stangl.crostex.GridWord.Direction;
+import us.stangl.crostex.dictionary.Dictionary;
 
 /**
  * Crossword grid.

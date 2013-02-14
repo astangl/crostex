@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import us.stangl.crostex.dictionary.Dictionary;
+
 /**
  * 3rd generation grid autofill algorithm.
  */

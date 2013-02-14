@@ -17,6 +17,13 @@ import java.util.logging.Logger;
 
 import org.junit.Test;
 
+import us.stangl.crostex.dictionary.Dictionary;
+import us.stangl.crostex.dictionary.TST;
+import us.stangl.crostex.dictionary.Trie;
+import us.stangl.crostex.dictionary.TstNew;
+import us.stangl.crostex.dictionary.Xdict;
+import us.stangl.crostex.dictionary.Ydict;
+
 /**
  * Check various Dictionary implementations for correctness and speed.
  */

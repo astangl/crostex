@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import us.stangl.crostex.dictionary.Dictionary;
 import us.stangl.crostex.util.CircularList;
 import us.stangl.crostex.util.Stack;
 

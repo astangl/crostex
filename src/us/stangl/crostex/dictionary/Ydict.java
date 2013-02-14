@@ -1,7 +1,7 @@
 /**
  * Copyright 2008, Alex Stangl. See LICENSE for licensing details.
  */
-package us.stangl.crostex;
+package us.stangl.crostex.dictionary;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import us.stangl.crostex.Pair;
 import us.stangl.crostex.util.ResettableIterator;
 
 

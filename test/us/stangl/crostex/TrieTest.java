@@ -7,12 +7,16 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 
 import org.junit.Test;
 
+import us.stangl.crostex.dictionary.Dictionary;
+import us.stangl.crostex.dictionary.TST;
+import us.stangl.crostex.dictionary.Trie;
+import us.stangl.crostex.dictionary.TstNew;
+import us.stangl.crostex.dictionary.Xdict;
 import us.stangl.crostex.util.ResettableIterator;
 
 /**

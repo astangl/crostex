@@ -14,6 +14,8 @@ import java.util.prefs.Preferences;
 
 import javax.swing.SwingUtilities;
 
+import us.stangl.crostex.dictionary.Dictionary;
+import us.stangl.crostex.dictionary.Ydict;
 import us.stangl.crostex.gui.MainFrame;
 
 /**

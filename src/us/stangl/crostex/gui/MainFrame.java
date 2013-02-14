@@ -28,7 +28,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 
-import us.stangl.crostex.Dictionary;
 import us.stangl.crostex.Grid;
 import us.stangl.crostex.GridsDb;
 import us.stangl.crostex.Main;
@@ -36,7 +35,8 @@ import us.stangl.crostex.Pair;
 import us.stangl.crostex.RomanNumeralGenerator;
 import us.stangl.crostex.ServiceException;
 import us.stangl.crostex.Word;
-import us.stangl.crostex.Ydict;
+import us.stangl.crostex.dictionary.Dictionary;
+import us.stangl.crostex.dictionary.Ydict;
 import us.stangl.crostex.util.Message;
 
 /**
@@ -130,7 +130,7 @@ public class MainFrame extends JFrame {
 		}
 //		gridTemplates_ = readGridDb(dataDirectory);
 		
-		// Read in dictionary trie
+		// Read in dictionaries
 		boolean dictRead;
 //		dictRead = readDictionaryFile(dataDirectory, "SINGLE.TXT");
 //		System.out.println("dictRead = " + dictRead);

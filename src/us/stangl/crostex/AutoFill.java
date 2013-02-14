@@ -3,6 +3,8 @@
  */
 package us.stangl.crostex;
 
+import us.stangl.crostex.dictionary.Dictionary;
+
 /**
  * Interface for classes providing grid autofill service.
  */
