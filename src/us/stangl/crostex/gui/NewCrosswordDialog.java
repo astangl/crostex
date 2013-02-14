@@ -13,7 +13,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.Collection;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -28,6 +27,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.AttributeSet;
@@ -139,14 +139,14 @@ public class NewCrosswordDialog extends JDialog {
 	/**
 	 * @return the height
 	 */
-	public int getHeight() {
+	public int getGridHeight() {
 		return height_;
 	}
 
 	/**
 	 * @return the width
 	 */
-	public int getWidth() {
+	public int getGridWidth() {
 		return width_;
 	}
 

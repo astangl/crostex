@@ -269,13 +269,13 @@ public class MainFrame extends JFrame {
 			System.out.println("Clicked new!");
 			
 			NewCrosswordDialog dialog = new NewCrosswordDialog(gridsDb_);
-			int height = dialog.getHeight();
-			int width = dialog.getWidth();
+			int height = dialog.getGridHeight();
+			int width = dialog.getGridWidth();
 			if (height != -1 && width != -1) {
 				new PickGridDialog(height, width);
 			}
 			
-			LOG.finest("Back from NewCrosswordDialog! width = " + dialog.getWidth() + ", height = " + dialog.getHeight());
+			LOG.finest("Back from NewCrosswordDialog! width = " + dialog.getGridWidth() + ", height = " + dialog.getGridHeight());
 			
 			// Use copy of randomly-chosen grid template
 //			int index = prng_.nextInt(gridTemplates_.size());
@@ -285,10 +285,10 @@ public class MainFrame extends JFrame {
 //				chosenGrid = new Grid(5, 5, "dummy", "dummy");
 				// Temporarily do auto-fill here
 //				trie_.insert("AAA".toCharArray(), new Word());
-				long startTime = System.currentTimeMillis();
-				boolean autofillReturn = chosenGrid.autoFill(dict_);
-				long endTime = System.currentTimeMillis();
-				System.out.println("autofill returns " + autofillReturn + ", elapsed time " + (endTime - startTime) + " ms.");
+//				long startTime = System.currentTimeMillis();
+//				boolean autofillReturn = chosenGrid.autoFill(dict_);
+//				long endTime = System.currentTimeMillis();
+//				System.out.println("autofill returns " + autofillReturn + ", elapsed time " + (endTime - startTime) + " ms.");
 
 				String tabTitle = MessageFormat.format(Message.UNTITLED_TAB_TITLE.toString(), untitledTabCounter_++);
 				Grid gridCopy = new Grid(chosenGrid);
