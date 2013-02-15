@@ -29,10 +29,12 @@ import us.stangl.crostex.dictionary.Ydict;
  */
 public class DictionariesTest {
 	/** logger */
-	private static final Logger LOG = Logger.getLogger(YdictTest.class.getName());
+	private static final Logger LOG = Logger.getLogger(DictionariesTest.class.getName());
 
 	@Test
 	public void testSpeed() {
+		// Tried making this into a list of char[] outside of the timing code
+		// but it actually made tests run slower for some reason!
 		List<String> patterns = generatePatterns();
 		
 		populateAndTest(new Ydict(), patterns, "Ydict");

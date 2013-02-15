@@ -13,6 +13,7 @@ import us.stangl.crostex.util.ResettableIterator;
 
 /**
  * Implementation of dictionary optimized for crossword pattern lookup. 
+ * @deprecated  According to DictionariesTest, this Dictionary is not correct!!!
  * NOTE: According to DictionariesTest, this Dictionary is not correct!!!
  */
 public class Xdict<E> implements Dictionary<char[], E> {
