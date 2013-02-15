@@ -44,6 +44,7 @@ public class Ydict<E> implements Dictionary<char[], E> {
 	public void insert(char[] word, E entry) {
 		while (wordsOfLength.size() <= word.length)
 			wordsOfLength.add(new HashMap<String, E>());
+		// This next line removes duplicates, always using latest version
 		wordsOfLength.get(word.length).put(new String(word), entry);
 	}
 
