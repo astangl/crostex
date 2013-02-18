@@ -24,6 +24,7 @@ import us.stangl.crostex.gui.MainFrame;
 public class Main {
 	/** set flag to true for profiling autofill */
 	private static final boolean PROFILING = false;
+	
 	/**
 	 * Main entry point, starts application running on EDT thread.
 	 * @param args command-line arguments
@@ -73,8 +74,9 @@ public class Main {
 			
 		}
 
-
-		/** normalize raw word from dictionary; return null if word is unacceptable */
+		// normalize (convert to uppercase) word from dictionary
+		// return normalized word, or null if word is unacceptable
+		// (fewer than 3 characters or having characters other than A..Z)
 		private static String normalizeWord(String rawWord) {
 			int len = rawWord.length();
 			if (len < 3)
@@ -94,16 +96,7 @@ public class Main {
 		private boolean readDictionaryFile(String dataDirectory, String filename) {
 			File dictionaryFile = new File(dataDirectory, filename);
 			BufferedReader in = null;
-//			dict_.insert("ABCD".toCharArray(), new Word());
-//			dict_.insert("BCDA".toCharArray(), new Word());
-//			dict_.insert("CDAB".toCharArray(), new Word());
-//			dict_.insert("DABC".toCharArray(), new Word());
-//			return true;
 			try {
-//				dict_.insert("XXX".toCharArray(), new Word());
-//				dict_.insert("XXXX".toCharArray(), new Word());
-//				dict_.insert("YAM".toCharArray(), new Word());
-//				dict_.insert("ZOO".toCharArray(), new Word());
 				in = new BufferedReader(new FileReader(dictionaryFile));
 				List<Pair<char[], Word>> tempList = new ArrayList<Pair<char[], Word>>(100000);
 				while (true) {
@@ -115,12 +108,6 @@ public class Main {
 					String normalizedWord = normalizeWord(rawWord);
 					if (normalizedWord != null) {
 						tempList.add(new Pair(normalizedWord.toCharArray(), new Word()));
-//						dict_.insert(normalizedWord.toCharArray(), new Word());
-						
-//	if (normalizedWord.length() == 3) {
-//		String pattern = normalizedWord.charAt(0) + "__";
-//		System.out.println("INSERTING " + normalizedWord + ", dict says " + dict_.isPatternInDictionary(pattern.toCharArray()) + " for " + pattern);
-//	}
 					}
 				}
 			} catch (FileNotFoundException e) {

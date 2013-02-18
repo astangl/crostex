@@ -4,20 +4,22 @@
 package us.stangl.crostex.gui;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import javax.swing.LayoutFocusTraversalPolicy;
 
-import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -27,6 +29,8 @@ import us.stangl.crostex.Grid;
 import us.stangl.crostex.ServiceException;
 
 public class CrosswordPanel extends JPanel {
+	private static final long serialVersionUID = 1L;
+
 	/** preferred size dimensions */
 	private static final Dimension PREFERRED_SIZE = new Dimension(300, 300);
 	
@@ -37,10 +41,26 @@ public class CrosswordPanel extends JPanel {
 		grid_ = grid;
 		setBorder(BorderFactory.createLineBorder(Color.black));
 		
-		MouseEventHandler mouseHandler = new MouseEventHandler();
-		this.addMouseListener(mouseHandler);
+		MouseEventListener mouseListener = new MouseEventListener();
+		this.addMouseListener(mouseListener);
 		
+		this.setFocusable(true);
+		this.requestFocusInWindow();
+		
+		KeyEventListener keyListener = new KeyEventListener();
+		this.addKeyListener(keyListener);
+		
+		/*
+        setFocusCycleRoot(true);
+        setFocusTraversalPolicy(new LayoutFocusTraversalPolicy() {
+                public Component getDefaultComponent(Container cont) {
+                    return CrosswordPanel.this;
+                }
+            });
+        */
 		grid_.renumberCells();
+//		this.setRequestFocusEnabled(true);
+//		this.grabFocus();
 	}
 	
 	/**
@@ -64,10 +84,44 @@ public class CrosswordPanel extends JPanel {
 		grid_.render(g2);
 	}
 	
-	private class MouseEventHandler extends MouseAdapter {
+	@Override
+	public boolean isFocusable() {
+		return true;
+	}
+	
+	private class MouseEventListener extends MouseAdapter {
+		@Override
 		public void mouseClicked(MouseEvent evt) {
+			boolean rfiwReturn = requestFocusInWindow();
+			System.out.println("requestFocusInWindow returned " + rfiwReturn);
+			System.out.println("isFocusOwner() = " + isFocusOwner());
+			Component focusComponent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+			if (focusComponent == null) {
+				System.out.println("focusComponent is null");
+			} else {
+				System.out.println("focusComponent is " + focusComponent);
+			}
+//			Component globalComponent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getGlobalFocusOwner();
+//			if (globalComponent == null) {
+//				System.out.println("globalComponent is null");
+//			} else {
+//				System.out.println("globalComponent is " + globalComponent);
+//			}
 			grid_.mouseClicked(evt);
 			CrosswordPanel.this.repaint(0);
+		}
+	}
+	
+	private class KeyEventListener extends KeyAdapter {
+		@Override
+		public void keyTyped(KeyEvent evt) {
+			System.out.println("In KeyEventListener.keyTyped");
+			grid_.keyTyped(evt);
+			CrosswordPanel.this.repaint(0);
+		}
+		@Override
+		public void keyPressed(KeyEvent evt) {
+			System.out.println("In KeyEventListener.keyPressed");
 		}
 	}
 	

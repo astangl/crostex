@@ -6,6 +6,7 @@ package us.stangl.crostex;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -21,29 +22,32 @@ import us.stangl.crostex.dictionary.Dictionary;
  */
 public class Grid 
 {
-	/** logger */
+	// logger
 	private static final Logger LOG = Logger.getLogger(Grid.class.getName());
 
-	/** cell width */
-	private int CELL_WIDTH = 24;
+	// cell width
+	private int cellWidth = 24;
 	
-	/** cell height */
-	private int CELL_HEIGHT = 24;
+	// cell height
+	private int cellHeight = 24;
 	
-	/** grid width, in number of cells */
-	private final int width_;
+	// grid width, in number of cells
+	private final int width;
 	
-	/** height, in number of cells */
-	private final int height_;
+	// height, in number of cells
+	private final int height;
 	
-	/** name of grid */
-	private String name_;
+	// name of grid
+	private String name;
 	
-	/** description for grid */
-	private String description_;
+	// description for grid
+	private String description;
 	
-	/** 2-dimensional array of Cells representing this grid */
-	private final Cell[][] cells_;
+	// 2-dimensional array of Cells representing this grid
+	private final Cell[][] cells;
+	
+	// currently selected cell, if any, else null
+	private Cell currentCell;
 
 	/**
 	 * Constructor for Grid
@@ -54,29 +58,32 @@ public class Grid
 	 */
 	public Grid(int width, int height, String name, String description)
 	{
-		width_ = width;
-		height_ = height;
-		name_ = name;
-		description_ = description;
-		cells_ = new Cell[height_][width_];
+		this.width = width;
+		this.height = height;
+		this.name = name;
+		this.description = description;
+		cells = new Cell[this.height][this.width];
 		for (int row = 0; row < height; ++row) {
 			for (int col = 0; col < width; ++col) {
-				cells_[row][col] = new Cell();
+				cells[row][col] = new Cell();
 			}
 		}
 	}
 	
 	/**
 	 * Copy constructor, copies another Grid
-	 * @param gridToCopy grid to make copy of
+	 * @param gridToCopy source grid to copy to this
 	 */
 	public Grid(Grid gridToCopy) {
 		this(gridToCopy.getWidth(), gridToCopy.getHeight(), gridToCopy.getName(), gridToCopy.getDescription());
-		for (int row = 0; row < height_; ++row) {
-			for (int col = 0; col < width_; ++col) {
+		for (int row = 0; row < height; ++row) {
+			for (int col = 0; col < width; ++col) {
 				getCell(row, col).setContents(gridToCopy.getCell(row, col).getContents());
 			}
 		}
+		this.cellHeight = gridToCopy.cellHeight;
+		this.cellWidth = gridToCopy.cellWidth;
+		this.currentCell = gridToCopy.currentCell;
 	}
 
 	/**
@@ -88,8 +95,8 @@ public class Grid
 		if (getWidth() != other.getWidth() || getHeight() != other.getHeight())
 			return false;
 		
-		for (int row = 0; row < height_; ++row)
-			for (int col = 0; col < width_; ++col)
+		for (int row = 0; row < height; ++row)
+			for (int col = 0; col < width; ++col)
 				if (getCell(row, col).isBlack() != other.getCell(row, col).isBlack())
 					return false;
 		return true;
@@ -125,22 +132,18 @@ public class Grid
 		
 		Font smallFont = font.deriveFont(8.0f);
 		LOG.finest("font size = " + font.getSize() + ", cellHeightResidual = " + cellHeightResidual
-				+ ", cellWidthResidual = " + cellWidthResidual);				
-		for (int row = 0; row < height_; ++row) {
-			for (int col = 0; col < width_; ++col) {
-				int charCode = row * height_ + col;
+				+ ", cellWidthResidual = " + cellWidthResidual);
+		for (int row = 0; row < height; ++row) {
+			for (int col = 0; col < width; ++col) {
 				Cell cell = getCell(row, col);
 				if (cell.isBlack()) {
 					g.fillRect(col * cellWidth, row * cellHeight, cellWidth, cellHeight);
 				} else {
 					if (! thumbnail) {
-						char myChar = (char)((charCode % 26) + 'A');
-//						g.drawString("" + myChar, col * cellWidth + cellWidthResidual / 2, row * cellHeight + ascent + cellHeightResidual / 2);
 						g.drawString(cell.getContents(), col * cellWidth + cellWidthResidual / 2, row * cellHeight + ascent + cellHeightResidual / 2);
 						if (cell.getNumber() > 0) {
 							g.setFont(smallFont);
-	//						g.drawString("" + (row * height_ + col), col * cellWidth, row * cellHeight + 8);
-							g.drawString("" + cell.getNumber(), col * cellWidth, row * cellHeight + 8);
+							g.drawString(Integer.toString(cell.getNumber()), col * cellWidth, row * cellHeight + 8);
 							g.setFont(font);
 						}
 					}
@@ -152,11 +155,14 @@ public class Grid
 //		g.fillRect(0, 0, 30, 30);
 	}
 
+	/**
+	 * Print grid to specitied PrintStream.
+	 * @param stream PrintStream to print grid to
+	 */
 	public void printToStream(PrintStream stream) {
 		StringBuilder temp = new StringBuilder();
-		for (int row = 0; row < height_; ++row) {
-			for (int col = 0; col < width_; ++col) {
-				int charCode = row * height_ + col;
+		for (int row = 0; row < height; ++row) {
+			for (int col = 0; col < width; ++col) {
 				Cell cell = getCell(row, col);
 				if (cell.isBlack()) {
 					temp.append('#');
@@ -171,12 +177,15 @@ public class Grid
 		}
 	}
 	
+	/**
+	 * Regenerate numbers in all the cells by examining each cell to see which ones start words.
+	 */
 	public void renumberCells() {
 		int currNumber = 1;
 		
-		for (int row = 0; row < height_; ++row)
-			for (int col = 0; col < width_; ++col)
-				cells_[row][col].setNumber(isStartOfAcrossWord(row, col) || isStartOfDownWord(row, col) ? currNumber++ : 0);
+		for (int row = 0; row < height; ++row)
+			for (int col = 0; col < width; ++col)
+				cells[row][col].setNumber(isStartOfAcrossWord(row, col) || isStartOfDownWord(row, col) ? currNumber++ : 0);
 	}
 
 	/**
@@ -187,7 +196,7 @@ public class Grid
 	 * @return whether the specified (row, col) starts an across word
 	 */
 	public boolean isStartOfAcrossWord(int row, int col) {
-		return ! cells_[row][col].isBlack() && ((col == 0 || cells_[row][col - 1].isBlack()) && (col < width_ - 1 && ! cells_[row][col + 1].isBlack()));
+		return ! cells[row][col].isBlack() && ((col == 0 || cells[row][col - 1].isBlack()) && (col < width - 1 && ! cells[row][col + 1].isBlack()));
 	}
 
 	/**
@@ -198,7 +207,7 @@ public class Grid
 	 * @return whether the specified (row, col) starts a down word
 	 */
 	public boolean isStartOfDownWord(int row, int col) {
-		return ! cells_[row][col].isBlack() && ((row == 0 || cells_[row - 1][col].isBlack()) && (row < height_ - 1 && ! cells_[row + 1][col].isBlack()));
+		return ! cells[row][col].isBlack() && ((row == 0 || cells[row - 1][col].isBlack()) && (row < height - 1 && ! cells[row + 1][col].isBlack()));
 	}
 
 	/**
@@ -207,61 +216,65 @@ public class Grid
 	 * @return cell based upon 0-based row and col
 	 */
 	public Cell getCell(int row, int col) {
-		return cells_[row][col];
+		return cells[row][col];
 	}
 	
-	private Cell getCellForXY(int x, int y) {
-		if (x < 0 || x > getCellWidth() * width_ || y < 0 || y > getCellHeight() * height_)
-			return null;
-		int row = y / getCellHeight();
-		int col = x / getCellWidth();
-		return getCell(row, col);
-	}
-	
-	private int getCellWidth()	{
-		return CELL_WIDTH;
-	}
-	
-	private int getCellHeight()	{
-		return CELL_HEIGHT;
-	}
-	
+	/**
+	 * Handle mouse clicked event.
+	 * @param evt mouse clicked event from AWT
+	 */
 	public void mouseClicked(MouseEvent evt) {
 		LOG.finest("mouse clicked at " + evt.getX() + ", " + evt.getY());
 		Cell cell = getCellForXY(evt.getX(), evt.getY());
 		if (cell != null) {
-			cell.setContents("A");
+			currentCell = cell;
+			currentCell.setContents("A");
 			renumberCells();
 		}
 	}
 
 	/**
-	 * @return the height
+	 * Handle key typed event.
+	 * @param evt key typed event from AWT
 	 */
-	public int getHeight() {
-		return height_;
-	}
-
-	/**
-	 * @return the width
-	 */
-	public int getWidth() {
-		return width_;
+	public void keyTyped(KeyEvent evt) {
+		char c = evt.getKeyChar();
+		if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') {
+			c = Character.toUpperCase(c);
+			if (currentCell != null) {
+				currentCell.setContents(String.valueOf(c));
+				renumberCells();
+			}
+		}
 	}
 	
+	public int getHeight() {
+		return height;
+	}
+
+	public int getWidth() {
+		return width;
+	}
+	
+	/**
+	 * @return the total number of black cells
+	 */
 	public int getNumberBlackCells() {
 		int retval = 0;
-		for (int row = 0; row < height_; ++row)
-			for (int col = 0; col < width_; ++col)
-				if (cells_[row][col].isBlack())
+		for (int row = 0; row < height; ++row)
+			for (int col = 0; col < width; ++col)
+				if (cells[row][col].isBlack())
 					++retval;
 		return retval;
 	}
 	
+	/**
+	 * @return the total number of across words + down words
+	 */
 	public int getNumberOfWords() {
 		int retval = 0;
-		for (int row = 0; row < height_; ++row)
-			for (int col = 0; col < width_; ++col) {
+		for (int row = 0; row < height; ++row)
+			for (int col = 0; col < width; ++col) {
 				if (isStartOfAcrossWord(row, col))
 					retval++;
 				if (isStartOfDownWord(row, col))
@@ -270,15 +283,18 @@ public class Grid
 		return retval;
 	}
 	
+	/**
+	 * @return list of across words
+	 */
 	public List<GridWord> getAcrossWords() {
 		int counter = 0;
 		List<GridWord> retval = new ArrayList<GridWord>();
-		for (int row = 0; row < height_; ++row)
-			for (int col = 0; col < width_; ++col) {
+		for (int row = 0; row < height; ++row)
+			for (int col = 0; col < width; ++col) {
 				if (isStartOfAcrossWord(row, col)) {
 					counter++;
 					int colEnd = col;
-					while (colEnd < width_ && ! getCell(row, colEnd).isBlack())
+					while (colEnd < width && ! getCell(row, colEnd).isBlack())
 						colEnd++;
 					Cell[] cells = new Cell[colEnd - col];
 					for (int i = 0; i < cells.length; ++i)
@@ -291,15 +307,18 @@ public class Grid
 		return retval;
 	}
 	
+	/**
+	 * @return list of down words
+	 */
 	public List<GridWord> getDownWords() {
 		int counter = 0;
 		List<GridWord> retval = new ArrayList<GridWord>();
-		for (int row = 0; row < height_; ++row)
-			for (int col = 0; col < width_; ++col) {
+		for (int row = 0; row < height; ++row)
+			for (int col = 0; col < width; ++col) {
 				if (isStartOfDownWord(row, col)) {
 					counter++;
 					int rowEnd = row;
-					while (rowEnd < height_ && ! getCell(rowEnd, col).isBlack())
+					while (rowEnd < height && ! getCell(rowEnd, col).isBlack())
 						rowEnd++;
 					Cell[] cells = new Cell[rowEnd - row];
 					for (int i =0; i < cells.length; ++i)
@@ -316,31 +335,36 @@ public class Grid
 		return new AutoFiller7().autoFill(this, dict);
 	}
 
-	/**
-	 * @return the description
-	 */
 	public String getDescription() {
-		return description_;
+		return description;
 	}
 
-	/**
-	 * @param description the description to set
-	 */
 	public void setDescription(String description) {
-		description_ = description;
+		this.description = description;
 	}
 
-	/**
-	 * @return the name
-	 */
 	public String getName() {
-		return name_;
+		return name;
 	}
 
-	/**
-	 * @param name the name to set
-	 */
 	public void setName(String name) {
-		name_ = name;
+		this.name = name;
 	}
+	
+	private Cell getCellForXY(int x, int y) {
+		if (x < 0 || x > getCellWidth() * width || y < 0 || y > getCellHeight() * height)
+			return null;
+		int row = y / getCellHeight();
+		int col = x / getCellWidth();
+		return getCell(row, col);
+	}
+	
+	private int getCellWidth()	{
+		return cellWidth;
+	}
+	
+	private int getCellHeight()	{
+		return cellHeight;
+	}
+	
 }

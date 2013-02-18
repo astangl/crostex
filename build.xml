@@ -12,7 +12,7 @@
 
     <target name="compile" depends="init" description="compile the source">
         <!-- Compile java source code into ${build} -->
-        <javac srcdir="${src}" destdir="${build}" excludes="test/**"/>
+        <javac srcdir="${src}" destdir="${build}" excludes="test/**" includeantruntime="false"/>
     </target>
 
     <target name="jar" depends="compile" description="build jarfile">

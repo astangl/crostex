@@ -50,20 +50,17 @@ public class MainFrame extends JFrame {
 	private static final Dimension PREFERRED_SIZE = new Dimension(800, 600);
 	
 	/** map of grid templates,  name -> template */
-	private GridsDb gridsDb_;
+	private GridsDb gridsDb;
 //	private Map<String, Grid> gridTemplates_ = new HashMap<String, Grid>();
 	
 	/** tabbed pane */
 	private JTabbedPane tabbedPane_;
 	
 	/** counter for numbering Untitled tabs */
-	private int untitledTabCounter_ = 1;
+	private int untitledTabCounter = 1;
 	
-	/** pseudorandom number generator */
-	private Random prng_ = new Random();
-
 	/** File menu option to save grid as template */
-	private JMenuItem saveAsTemplate_ = new JMenuItem(Message.FILE_MENU_OPTION_SAVE_GRID_AS_TEMPLATE.toString());
+	private JMenuItem saveAsTemplate = new JMenuItem(Message.FILE_MENU_OPTION_SAVE_GRID_AS_TEMPLATE.toString());
 
 	/** Dictionary */
 	private Dictionary<char[], Word> dict_ = new Ydict<Word>();
@@ -124,7 +121,7 @@ public class MainFrame extends JFrame {
 		
 		// Read all grid templates from the grids database
 		try {
-			gridsDb_ = GridsDb.read(dataDirectory);
+			gridsDb = GridsDb.read(dataDirectory);
 		} catch (ServiceException e) {
 			LOG.log(Level.SEVERE, "ServiceException caught", e);
 		}
@@ -168,10 +165,10 @@ public class MainFrame extends JFrame {
 		JMenu fileMenu = new JMenu(Message.FILE_MENU_HEADER.toString());
 		
 		JMenuItem newItem = new JMenuItem(Message.FILE_MENU_OPTION_NEW.toString());
-		saveAsTemplate_.setEnabled(false);
+		saveAsTemplate.setEnabled(false);
 		JMenuItem exitItem = new JMenuItem(Message.FILE_MENU_OPTION_EXIT.toString());
 		fileMenu.add(newItem);
-		fileMenu.add(saveAsTemplate_);
+		fileMenu.add(saveAsTemplate);
 		fileMenu.addSeparator();
 		fileMenu.add(exitItem);
 		
@@ -184,7 +181,7 @@ public class MainFrame extends JFrame {
 			}
 		});
 
-		saveAsTemplate_.addActionListener(new SaveAsTemplateActionListener());
+		saveAsTemplate.addActionListener(new SaveAsTemplateActionListener());
 		
 //		fileMenu.add(new NewAction());
 		menuBar.add(fileMenu);
@@ -220,16 +217,7 @@ public class MainFrame extends JFrame {
 	private boolean readDictionaryFile(String dataDirectory, String filename) {
 		File dictionaryFile = new File(dataDirectory, filename);
 		BufferedReader in = null;
-//		dict_.insert("ABCD".toCharArray(), new Word());
-//		dict_.insert("BCDA".toCharArray(), new Word());
-//		dict_.insert("CDAB".toCharArray(), new Word());
-//		dict_.insert("DABC".toCharArray(), new Word());
-//		return true;
 		try {
-//			dict_.insert("XXX".toCharArray(), new Word());
-//			dict_.insert("XXXX".toCharArray(), new Word());
-//			dict_.insert("YAM".toCharArray(), new Word());
-//			dict_.insert("ZOO".toCharArray(), new Word());
 			in = new BufferedReader(new FileReader(dictionaryFile));
 			List<Pair<char[], Word>> tempList = new ArrayList<Pair<char[], Word>>(100000);
 			while (true) {
@@ -241,12 +229,6 @@ public class MainFrame extends JFrame {
 				String normalizedWord = normalizeWord(rawWord);
 				if (normalizedWord != null) {
 					tempList.add(new Pair(normalizedWord.toCharArray(), new Word()));
-//					dict_.insert(normalizedWord.toCharArray(), new Word());
-					
-//if (normalizedWord.length() == 3) {
-//	String pattern = normalizedWord.charAt(0) + "__";
-//	System.out.println("INSERTING " + normalizedWord + ", dict says " + dict_.isPatternInDictionary(pattern.toCharArray()) + " for " + pattern);
-//}
 				}
 			}
 		} catch (FileNotFoundException e) {
@@ -268,7 +250,7 @@ public class MainFrame extends JFrame {
 		public void actionPerformed(ActionEvent evt) {
 			System.out.println("Clicked new!");
 			
-			NewCrosswordDialog dialog = new NewCrosswordDialog(gridsDb_);
+			NewCrosswordDialog dialog = new NewCrosswordDialog(gridsDb);
 			int height = dialog.getGridHeight();
 			int width = dialog.getGridWidth();
 			if (height != -1 && width != -1) {
@@ -277,9 +259,6 @@ public class MainFrame extends JFrame {
 			
 			LOG.finest("Back from NewCrosswordDialog! width = " + dialog.getGridWidth() + ", height = " + dialog.getGridHeight());
 			
-			// Use copy of randomly-chosen grid template
-//			int index = prng_.nextInt(gridTemplates_.size());
-//			System.out.println("Copying grid " + gridTemplates_.get(index));
 			Grid chosenGrid = dialog.getSelectedGridTemplate();
 			if (chosenGrid != null) {
 //				chosenGrid = new Grid(5, 5, "dummy", "dummy");
@@ -290,12 +269,16 @@ public class MainFrame extends JFrame {
 //				long endTime = System.currentTimeMillis();
 //				System.out.println("autofill returns " + autofillReturn + ", elapsed time " + (endTime - startTime) + " ms.");
 
-				String tabTitle = MessageFormat.format(Message.UNTITLED_TAB_TITLE.toString(), untitledTabCounter_++);
+				String tabTitle = MessageFormat.format(Message.UNTITLED_TAB_TITLE.toString(), untitledTabCounter++);
 				Grid gridCopy = new Grid(chosenGrid);
-				tabbedPane_.addTab(tabTitle, new CrosswordPanel(gridCopy));
+				CrosswordPanel crosswordPanel = new CrosswordPanel(gridCopy);
+				tabbedPane_.addTab(tabTitle, crosswordPanel);
 				tabbedPane_.setSelectedIndex(tabbedPane_.getTabCount() - 1);
+				crosswordPanel.setFocusable(true);
+				crosswordPanel.requestFocusInWindow();
+				//crosswordPanel.requestFocus();
 			}
-			saveAsTemplate_.setEnabled(true);
+			saveAsTemplate.setEnabled(true);
 //			tabbedPane_.addTab(title, component);
 			
 //			// create new non-modal dialog box
@@ -317,7 +300,7 @@ public class MainFrame extends JFrame {
 			
 			CrosswordPanel selectedPanel = (CrosswordPanel)tabbedPane_.getSelectedComponent();
 			Grid gridCopy = new Grid(selectedPanel.getGrid());
-			SaveGridTemplateDialog dialog = new SaveGridTemplateDialog(gridsDb_, gridCopy);
+			SaveGridTemplateDialog dialog = new SaveGridTemplateDialog(gridsDb, gridCopy);
 			dialog.getName();
 			JTextField nameField = dialog.getNameField();
 			JTextField descriptionField = dialog.getDescriptionField();
