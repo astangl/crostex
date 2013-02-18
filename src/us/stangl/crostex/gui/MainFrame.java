@@ -274,9 +274,8 @@ public class MainFrame extends JFrame {
 				CrosswordPanel crosswordPanel = new CrosswordPanel(gridCopy);
 				tabbedPane_.addTab(tabTitle, crosswordPanel);
 				tabbedPane_.setSelectedIndex(tabbedPane_.getTabCount() - 1);
-				crosswordPanel.setFocusable(true);
-				crosswordPanel.requestFocusInWindow();
-				//crosswordPanel.requestFocus();
+//				crosswordPanel.setFocusable(true);
+//				crosswordPanel.requestFocusInWindow();
 			}
 			saveAsTemplate.setEnabled(true);
 //			tabbedPane_.addTab(title, component);
