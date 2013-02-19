@@ -13,15 +13,15 @@ import us.stangl.crostex.constraint.OnePolyominoGridConstraint;
 public class GridGenerator {
 	private final float MIN_PROPORTION_BLACK = 0.04f;		// minimum proportion of allowable black 0-1
 	private final float MAX_PROPORTION_BLACK = 0.66f;		// maximum proportion of allowable black 0-1
-	private final int height_;
-	private final int width_;
-	private final int minNumberBlack_;
-	private final int maxNumberBlack_;
-	private final boolean[] crosswordState_;
-	private int blackCount_ = 0;
+	private final int height;
+	private final int width;
+	private final int minNumberBlack;
+	private final int maxNumberBlack;
+	private final boolean[] crosswordState;
+	private int blackCount = 0;
 	
 	/** flag indicating whether there is an odd number of cells (and therefore overlap in crosswordState_ symmetry) */
-	private boolean oddNumberCells_;
+	private boolean oddNumberCells;
 	
 	/** one polyomino grid constraint */
 	private GridConstraint ONE_POLYOMINO_GRID_CONSTRAINT = new OnePolyominoGridConstraint();
@@ -30,14 +30,14 @@ public class GridGenerator {
 	private GridConstraint THREE_LETTER_WORD_GRID_CONSTRAINT = new Min3LetterWordGridConstraint();
 	
 	public GridGenerator(int height, int width) {
-		height_ = height;
-		width_ = width;
-		int numCells = height_ * width_;
+		this.height = height;
+		this.width = width;
+		int numCells = this.height * this.width;
 		int numCellsToVary = (numCells + 1) / 2;		// halve # of cells due to rotational symmetry
-		crosswordState_ = new boolean[numCellsToVary];
-		minNumberBlack_ = (int)(MIN_PROPORTION_BLACK * numCells + 0.5);
-		maxNumberBlack_ = (int)(MAX_PROPORTION_BLACK * numCells + 0.5);
-		oddNumberCells_ = (numCells % 2) != 0;
+		crosswordState = new boolean[numCellsToVary];
+		minNumberBlack = (int)(MIN_PROPORTION_BLACK * numCells + 0.5);
+		maxNumberBlack = (int)(MAX_PROPORTION_BLACK * numCells + 0.5);
+		oddNumberCells = (numCells % 2) != 0;
 	}
 	
 	public void generateAll() {
@@ -48,17 +48,17 @@ public class GridGenerator {
 
 		int counter = 0;
 		while (true) {
-			Grid grid = new Grid(width_, height_, "", "");
-			int lastCellIndex = width_ * height_ - 1;
+			Grid grid = new Grid(width, height, "", "");
+			int lastCellIndex = width * height - 1;
 			int blackCount = 0;
-			for (int row = 0; row < height_; ++row)
-				for (int col = 0; col < width_; ++col) {
-					int index = row * width_ + col;
-					if (index >= crosswordState_.length) {
+			for (int row = 0; row < height; ++row)
+				for (int col = 0; col < width; ++col) {
+					int index = row * width + col;
+					if (index >= crosswordState.length) {
 						// accommodate lower half of grid by mirroring upper half
 						index = lastCellIndex - index;
 					}
-					if (crosswordState_[index]) {
+					if (crosswordState[index]) {
 						grid.getCell(row, col).setBlack(true);
 						++blackCount;
 					}
@@ -85,31 +85,31 @@ public class GridGenerator {
 			boolean retval = incrementState();
 			if (! retval)
 				return retval;
-		} while (blackCount_ < minNumberBlack_ || blackCount_ > maxNumberBlack_);
+		} while (blackCount < minNumberBlack || blackCount > maxNumberBlack);
 		return true;
 	}
 	
 	/** increment crossword puzzle state. Return true unless rolling over back to zero */
 	private boolean incrementState() {
 		boolean retval = true;
-		int lastElementIndex = crosswordState_.length - 1;
+		int lastElementIndex = crosswordState.length - 1;
 		// start at last element and scan towards start, looking for false, flipping all trues to false...
 		int index = lastElementIndex;
-		while (index >= 0 && crosswordState_[index]) {
-			--blackCount_;
+		while (index >= 0 && crosswordState[index]) {
+			--blackCount;
 			// Decrement black count again for lower half of puzzle unless on middle square which isn't duplicated
-			if (index < lastElementIndex || !oddNumberCells_)
-				--blackCount_;
-			crosswordState_[index--] = false;
+			if (index < lastElementIndex || !oddNumberCells)
+				--blackCount;
+			crosswordState[index--] = false;
 		}
 			
 		// If index < 0, no 0 digits found, so we are wrapping around, and no 1 is necessary
 		if (index >= 0) {
-			crosswordState_[index] = true;
-			++blackCount_;
+			crosswordState[index] = true;
+			++blackCount;
 			// Increment black count again for lower half of puzzle unless on middle square which isn't duplicated
-			if (index < lastElementIndex || !oddNumberCells_)
-				++blackCount_;
+			if (index < lastElementIndex || !oddNumberCells)
+				++blackCount;
 		} else {
 			retval = false;
 		}

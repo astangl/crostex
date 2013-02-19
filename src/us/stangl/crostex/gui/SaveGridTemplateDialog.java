@@ -29,16 +29,16 @@ import us.stangl.crostex.util.Message;
 public class SaveGridTemplateDialog  extends JDialog {
 	private static final long serialVersionUID = 1L;
 
-	/** name text field */
+	// name text field
 	private JTextField nameField = new JTextField(20);
 	
-	/** description text field */
+	// description text field
 	private JTextField descriptionField = new JTextField(20);
 	
-	/** reference to main grids db */
+	// reference to main grids db
 	private final GridsDb gridsDb;
 	
-	/** reference to grid being saved */
+	// reference to grid being saved
 	private final Grid grid;
 
 	public SaveGridTemplateDialog(GridsDb gridsDb, Grid grid) {
@@ -50,7 +50,6 @@ public class SaveGridTemplateDialog  extends JDialog {
 		JButton okButton = new JButton(Message.BUTTON_OK.toString());
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				System.out.println("Clicked OK");
 				String name = nameField.getText().trim();
 				String description = descriptionField.getText().trim();
 				if (name.length() == 0 || description.length() == 0) {
@@ -124,29 +123,27 @@ public class SaveGridTemplateDialog  extends JDialog {
 	 * Panel for a New Crossword dialog box.
 	 */
 	private class SaveGridTemplatePanel extends JPanel {
-		/** name label */
-		private JLabel nameLabel_ = new JLabel(Message.LABEL_NAME.toString());
+		private static final long serialVersionUID = 1L;
+
+		// name label
+		private JLabel nameLabel = new JLabel(Message.LABEL_NAME.toString());
 		
-		/** description label */
-		private JLabel descriptionLabel_ = new JLabel(Message.LABEL_DESCRIPTION.toString());
-		
+		// description label
+		private JLabel descriptionLabel = new JLabel(Message.LABEL_DESCRIPTION.toString());
 
 		public SaveGridTemplatePanel() {
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 			Box nameBox = new Box(BoxLayout.X_AXIS);
-			nameBox.add(nameLabel_);
+			nameBox.add(nameLabel);
 			nameBox.add(Box.createRigidArea(new Dimension(5, 0)));
 			nameBox.add(nameField);
 			add(nameBox);
 			
 			Box descriptionBox = new Box(BoxLayout.X_AXIS);
-			descriptionBox.add(descriptionLabel_);
+			descriptionBox.add(descriptionLabel);
 			descriptionBox.add(Box.createRigidArea(new Dimension(5, 0)));
 			descriptionBox.add(descriptionField);
 			add(descriptionBox);
-
-//			add(nameField_);
-//			add(descriptionField_);
 		}
 	}
 }

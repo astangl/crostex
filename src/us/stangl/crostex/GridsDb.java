@@ -24,14 +24,14 @@ public class GridsDb {
 	private static final String GRIDSDB_FILENAME = "gridsdb.xml";
 
 	/** grids in collection */
-	private Collection<Grid> grids_;
+	private Collection<Grid> grids;
 	
 	/**
 	 * Private constructor. Clients should use factory method below.
 	 * @param grids
 	 */
 	private GridsDb(Collection<Grid> grids) {
-		grids_ = grids;
+		this.grids = grids;
 	}
 	
 	public static GridsDb read(String dataDirectory) throws ServiceException {
@@ -67,7 +67,7 @@ public class GridsDb {
 					System.out.println("Version = " + version);
 				} else if (elementName.equals("grid")) {
 					String gridName = element.getAttribute("name");
-					System.out.println("Parsing grid " + gridName);
+					LOG.fine("Parsing grid " + gridName);
 					String description = element.getAttribute("description");
 					NodeList rowElements = element.getElementsByTagName("row");
 					int firstRowLength = -1;
@@ -111,7 +111,7 @@ public class GridsDb {
 			}
 		}
 		Node firstChild = documentElement.getFirstChild();
-		System.out.println("First child = " + firstChild.toString());
+		LOG.finest("First child = " + firstChild.toString());
 //		} catch (SAXException e) {
 //			System.err.println("Caught SAXException: " + e);
 //		} catch (ParserConfigurationException e) {
@@ -128,7 +128,7 @@ public class GridsDb {
 		Document doc = DOMSerializer.newDocument("grids");
 		Element rootElement = doc.getDocumentElement();
 		rootElement.setAttribute("schemaVersion", "0.1");
-		for (Grid grid : grids_) {
+		for (Grid grid : grids) {
 			Element gridElement = doc.createElement("grid");
 			gridElement.setAttribute("name", grid.getName());
 			gridElement.setAttribute("description", grid.getDescription());
@@ -153,6 +153,6 @@ public class GridsDb {
 	 * @return the grids
 	 */
 	public Collection<Grid> getGrids() {
-		return grids_;
+		return grids;
 	}
 }
