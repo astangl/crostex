@@ -33,7 +33,7 @@ public class Trie<E> implements Dictionary<char[], E> {
 	/** Trie bulkInsert merely does a sequential insert */
 	public void bulkInsert(List<Pair<char[], E>> entries) {
 		for (Pair<char[], E> pair : entries)
-			insert(pair.first_, pair.second_);
+			insert(pair.first, pair.second);
 	}
 
 	public void insert(char[] key, E word) {

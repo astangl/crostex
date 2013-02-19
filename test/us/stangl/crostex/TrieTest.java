@@ -110,16 +110,16 @@ public class TrieTest {
 		ResettableIterator<Pair<char[], Word>> it = dict.getIterator("_E_".toCharArray());
 		assertTrue(it.hasNext());
 //		System.out.println(new String(it.next().first_));
-		assertTrue(Arrays.equals("BEN".toCharArray(), it.next().first_));
+		assertTrue(Arrays.equals("BEN".toCharArray(), it.next().first));
 		assertTrue(it.hasNext());
 		assertTrue(it.hasNext());
 		
 //		System.out.println(new String(it.next().first_));
-		assertTrue(Arrays.equals("DEF".toCharArray(), it.next().first_));
+		assertTrue(Arrays.equals("DEF".toCharArray(), it.next().first));
 		assertTrue(it.hasNext());
-		assertTrue(Arrays.equals("HEN".toCharArray(), it.next().first_));
+		assertTrue(Arrays.equals("HEN".toCharArray(), it.next().first));
 		assertTrue(it.hasNext());
-		assertTrue(Arrays.equals("PEZ".toCharArray(), it.next().first_));
+		assertTrue(Arrays.equals("PEZ".toCharArray(), it.next().first));
 		assertFalse(it.hasNext());
 		
 		it = dict.getIterator("__Y".toCharArray());
@@ -127,19 +127,19 @@ public class TrieTest {
 		
 		it = dict.getIterator("A_E_".toCharArray());
 		assertTrue(it.hasNext());
-		assertTrue(Arrays.equals("ALEX".toCharArray(), it.next().first_));
+		assertTrue(Arrays.equals("ALEX".toCharArray(), it.next().first));
 		assertTrue(it.hasNext());
 		assertTrue(it.hasNext());
 		//System.out.println(new String(it.next()));
-		assertTrue(Arrays.equals("APED".toCharArray(), it.next().first_));
+		assertTrue(Arrays.equals("APED".toCharArray(), it.next().first));
 		assertTrue(it.hasNext());
 //System.out.println(new String(it.next().first_));
-		assertTrue(Arrays.equals("APER".toCharArray(), it.next().first_));
+		assertTrue(Arrays.equals("APER".toCharArray(), it.next().first));
 		assertTrue(it.hasNext());
-		assertTrue(Arrays.equals("APEX".toCharArray(), it.next().first_));
+		assertTrue(Arrays.equals("APEX".toCharArray(), it.next().first));
 //		System.out.println(new String(it.next().first_));
 		while (it.hasNext()) {
-			System.out.println("Bonus words! " + new String(it.next().first_));
+			System.out.println("Bonus words! " + new String(it.next().first));
 		}
 		assertFalse(it.hasNext());
 		

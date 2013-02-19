@@ -7,13 +7,13 @@ package us.stangl.crostex;
  * Generic triple for constructing simple 3-tuples.
  */
 public class Triple<F, S, T> {
-	public final F first_;
-	public final S second_;
-	public final T third_;
+	public final F first;
+	public final S second;
+	public final T third;
 	
 	public Triple(F first, S second, T third) {
-		first_ = first;
-		second_ = second;
-		third_ = third;
+		this.first = first;
+		this.second = second;
+		this.third = third;
 	}
 }

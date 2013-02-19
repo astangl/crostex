@@ -7,71 +7,93 @@ package us.stangl.crostex;
  * Object representing a single cell/box in a crossword puzzle.
  */
 public class Cell {
-	enum CellType { EMPTY, BLACK, CHAR, STRING };
+//	enum CellType { EMPTY, BLACK, STRING };
 	
-	/** cell type */
-	private CellType cellType_ = CellType.EMPTY;
+	// cell type
+//	private CellType cellType = CellType.EMPTY;
 
-	/** cell contents, when single char */
-	private char charContent_;
+	// cell contents, when string contents
+	private String stringContents = "";
 	
-	/** cell contents, when string contents */
-	private String stringContents_ = "";
+	// cell number, if any; 0 means no cell number
+	private int number;
 	
-	/** cell number, if any; 0 means no cell number */
-	private int number_;
+	private boolean black;
 	
 	public boolean isBlack() {
-		return stringContents_ == null;
+		return black;
+//		return cellType == CellType.BLACK;
+//		return stringContents_ == null;
 	}
 	
-	public void setBlack() {
-		stringContents_ = null;
-		cellType_ = CellType.BLACK;
+	public void setBlack(boolean black) {
+		this.black = black;
+//		stringContents_ = null;
+//		cellType = CellType.BLACK;
+	}
+	
+	public void toggleBlack() {
+		black = !black;
 	}
 
+	/**
+	 * @return whether this is a non-black, empty cell
+	 */
 	public boolean isEmpty() {
-		return cellType_ == CellType.EMPTY;
+		return !black && stringContents.length() == 0;
+//		return cellType == CellType.EMPTY;
 	}
 	
 	public void setEmpty() {
-		cellType_ = CellType.EMPTY;
+		black = false;
+		stringContents = "";
+		// cellType = CellType.EMPTY;
+	}
+
+	/*
+	public String getStateAsString() {
 	}
 	
+	public void restoreStateFromString() {
+	}
+	*/
 	public String getContents() {
-		if (cellType_ == CellType.STRING)
-			return stringContents_;
-		if (cellType_ == CellType.CHAR)
-			return "" + charContent_;
-		if (cellType_ == CellType.EMPTY)
-			return "";
-		return null;
+//		return black ? null : stringContents;
+		return stringContents;
 	}
 
 	/** for compatability setContents(null) and getContents() == null can be used to set/check BLACK. Better to use setBlack/isBlack though. */
 	public void setContents(String contents) {
-		stringContents_ = contents;
-		cellType_ = contents == null ? CellType.BLACK : 
+		stringContents = contents;
+		/*
+		cellType = contents == null ? CellType.BLACK : 
 			(contents.length() == 0 ? CellType.EMPTY : CellType.STRING);
-		if (cellType_ == CellType.STRING)
-			stringContents_ = contents;
+		if (cellType == CellType.STRING)
+			stringContents = contents;
+			*/
+	}
+	
+	/**
+	 * Copy state from the specified cell, making this cell an exact copy of other.
+	 * @param other cell to copy in to this one
+	 */
+	public void copyFrom(Cell other) {
+		stringContents = other.stringContents;
+		number = other.number;
+		black = other.black;
 	}
 
 	/** append contents to the builder in the most efficient way possible */
 	public void appendContents(StringBuilder builder) {
-		if (cellType_ == CellType.STRING)
-			builder.append(stringContents_);
-		else if (cellType_ == CellType.CHAR)
-			builder.append(charContent_);
+		if (! black)
+			builder.append(stringContents);
 	}
 	
 	/** append contents to the array in the most efficient way possible */
 	public void appendContents(char[] array, int fillPointer) {
-		if (cellType_ == CellType.CHAR)
-			array[fillPointer] = charContent_;
-		else if (cellType_ == CellType.STRING) {
-			for (int i = 0; i < stringContents_.length(); ++i) {
-				array[fillPointer + i] = stringContents_.charAt(i);
+		if (! black) {
+			for (int i = 0; i < stringContents.length(); ++i) {
+				array[fillPointer + i] = stringContents.charAt(i);
 			}
 		}
 	}
@@ -80,11 +102,9 @@ public class Cell {
 	public boolean confirmContents(char[] array, int startIndex, int len) {
 		if (getContentsSize() != len)
 			return false;
-		if (cellType_ == CellType.CHAR)
-			return array[startIndex] == charContent_;
-		else if (cellType_ == CellType.STRING) {
-			for (int i = 0; i < stringContents_.length(); ++i)
-				if (stringContents_.charAt(i) != array[startIndex + i])
+		if (! black) {
+			for (int i = 0; i < stringContents.length(); ++i)
+				if (stringContents.charAt(i) != array[startIndex + i])
 					return false;
 			return true;
 		}
@@ -92,42 +112,34 @@ public class Cell {
 	}
 	
 	public int getContentsSize() {
-		if (cellType_ == CellType.CHAR)
-			return 1;
-		if (cellType_ == CellType.STRING)
-			return stringContents_.length();
+		if (! black)
+			return stringContents.length();
 		return 0;
 	}
 	
-	public void setContents(char c) {
-		charContent_ = c;
-		cellType_ = CellType.CHAR;
-	}
-	
 	public int getNumber() {
-		return number_;
+		return number;
 	}
 	
 	public void setNumber(int number) {
-		number_ = number;
+		this.number = number;
 	}
 	
 	public boolean isEligibleForAutofill() {
-		return cellType_ == CellType.EMPTY;
+		return !black && stringContents.length() == 0;
+//		cellType == CellType.EMPTY;
 //		return multicharContents_ != null && multicharContents_.length() == 0;
 	}
 	
 	
 	public String toString() {
 		StringBuilder retval = new StringBuilder();
-		retval.append("{cellType_ = ")
-			.append(cellType_)
-			.append(", charContent_ = ")
-			.append(charContent_ != '\0' ? charContent_ : "")
-			.append(", stringContents_ = ")
-			.append(stringContents_)
-			.append(", number_ = ")
-			.append(number_);
+		retval.append(", stringContents = ")
+			.append(stringContents)
+			.append(", number = ")
+			.append(number)
+			.append(", black = ")
+			.append(black);
 		return retval.toString();
 	}
 }

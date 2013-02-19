@@ -3,6 +3,7 @@
  */
 package us.stangl.crostex;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
@@ -25,11 +26,21 @@ public class Grid
 	// logger
 	private static final Logger LOG = Logger.getLogger(Grid.class.getName());
 
+	private static final Color LIGHT_YELLOW = new Color(238, 238, 192);
+	
+	private static final Color VERY_LIGHT_GRAY = new Color(238, 238, 238);
+
 	// cell width
 	private int cellWidth = 24;
 	
 	// cell height
 	private int cellHeight = 24;
+	
+	// x-offset of upper-left corner of grid in graphics context
+	private int xoffset = 0;
+	
+	// y-offset of upper-left corner of grid in graphics context
+	private int yoffset = 0;
 	
 	// grid width, in number of cells
 	private final int width;
@@ -48,6 +59,15 @@ public class Grid
 	
 	// currently selected cell, if any, else null
 	private Cell currentCell;
+	
+	// row (y position) of currently selected cell, if any, else -1
+	private int currentRow = -1;
+	
+	// column (x position) of currently selected cell, if any, else -1
+	private int currentColumn = -1;
+	
+	// current direction that cursor is moving, as letters are typed -- North, South, East, or West
+	private NsewDirection currentDirection = NsewDirection.NORTH;
 
 	/**
 	 * Constructor for Grid
@@ -78,7 +98,7 @@ public class Grid
 		this(gridToCopy.getWidth(), gridToCopy.getHeight(), gridToCopy.getName(), gridToCopy.getDescription());
 		for (int row = 0; row < height; ++row) {
 			for (int col = 0; col < width; ++col) {
-				getCell(row, col).setContents(gridToCopy.getCell(row, col).getContents());
+				getCell(row, col).copyFrom(gridToCopy.getCell(row, col));
 			}
 		}
 		this.cellHeight = gridToCopy.cellHeight;
@@ -133,22 +153,48 @@ public class Grid
 		Font smallFont = font.deriveFont(8.0f);
 		LOG.finest("font size = " + font.getSize() + ", cellHeightResidual = " + cellHeightResidual
 				+ ", cellWidthResidual = " + cellWidthResidual);
+		g.setColor(Color.BLACK);
 		for (int row = 0; row < height; ++row) {
 			for (int col = 0; col < width; ++col) {
 				Cell cell = getCell(row, col);
 				if (cell.isBlack()) {
-					g.fillRect(col * cellWidth, row * cellHeight, cellWidth, cellHeight);
+					g.fillRect(xoffset + col * cellWidth, yoffset + row * cellHeight, cellWidth, cellHeight);
 				} else {
 					if (! thumbnail) {
-						g.drawString(cell.getContents(), col * cellWidth + cellWidthResidual / 2, row * cellHeight + ascent + cellHeightResidual / 2);
+						// Color currently selected cell light yellow, and color next cell to visit with a triangle indicator
+						if (currentCell == cell) {
+							g.setColor(LIGHT_YELLOW);
+							g.fillRect(xoffset + col * cellWidth, yoffset + row * cellHeight, cellWidth, cellHeight);
+							g.setColor(Color.BLACK);
+						} else if (currentDirection == NsewDirection.NORTH && row < height-1 && getCell(row+1, col) == currentCell) {
+							g.setColor(LIGHT_YELLOW);
+							int x[] = new int[3];
+							int y[] = new int[3];
+							x[0] = xoffset + col * cellWidth;
+							x[2] = xoffset + (col + 1) * cellWidth - 1;
+							x[1] = (x[0] + x[2]) / 2;
+							y[0] = yoffset + (row + 1) * cellHeight - 1;
+							y[1] = y[0] - cellHeight / 2;
+							y[2] = y[0];
+							g.fillPolygon(x, y, 3);
+							g.setColor(Color.BLACK);
+						} else if (currentDirection == NsewDirection.SOUTH && row > 0 && getCell(row-1, col) == currentCell) {
+							
+						} else if (currentDirection == NsewDirection.EAST && col > 0 && getCell(row, col-1) == currentCell) {
+							
+						} else if (currentDirection == NsewDirection.WEST && col < width-1 && getCell(row, col+1) == currentCell) {
+							
+						}
+						g.drawString(cell.getContents(), xoffset + col * cellWidth + cellWidthResidual / 2,
+								yoffset + row * cellHeight + ascent + cellHeightResidual / 2);
 						if (cell.getNumber() > 0) {
 							g.setFont(smallFont);
-							g.drawString(Integer.toString(cell.getNumber()), col * cellWidth, row * cellHeight + 8);
+							g.drawString(Integer.toString(cell.getNumber()), xoffset + col * cellWidth, yoffset + row * cellHeight + 8);
 							g.setFont(font);
 						}
 					}
 				}
-				g.drawRect(col * cellWidth, row * cellHeight, cellWidth, cellHeight);
+				g.drawRect(xoffset + col * cellWidth, yoffset + row * cellHeight, cellWidth, cellHeight);
 				
 			}
 		}
@@ -225,11 +271,17 @@ public class Grid
 	 */
 	public void mouseClicked(MouseEvent evt) {
 		LOG.finest("mouse clicked at " + evt.getX() + ", " + evt.getY());
-		Cell cell = getCellForXY(evt.getX(), evt.getY());
-		if (cell != null) {
-			currentCell = cell;
-			currentCell.setContents("A");
-			renumberCells();
+		int row = getRowForMouseYPosition(evt.getY());
+		int column = getColumnForMouseXPosition(evt.getX());
+		if (row != -1 && column != -1) {
+			currentCell = getCell(row, column);
+			currentRow = row;
+			currentColumn = column;
+			//Cell cell = getCellForXY(evt.getX(), evt.getY());
+//			if (cell != null) {
+//				currentCell = cell;
+//				renumberCells();
+//			}
 		}
 	}
 
@@ -241,10 +293,17 @@ public class Grid
 		char c = evt.getKeyChar();
 		if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') {
 			c = Character.toUpperCase(c);
-			if (currentCell != null) {
+			if (currentCell != null && !currentCell.isBlack()) {
 				currentCell.setContents(String.valueOf(c));
+				advanceCursor();
 				renumberCells();
 			}
+		}
+	}
+	
+	public void toggleCurrentCell() {
+		if (currentCell != null) {
+			currentCell.toggleBlack();
 		}
 	}
 	
@@ -357,6 +416,30 @@ public class Grid
 		int row = y / getCellHeight();
 		int col = x / getCellWidth();
 		return getCell(row, col);
+	}
+	
+	// return grid column corresponding to the specified mouse click x position, if any, else -1
+	private int getColumnForMouseXPosition(int x) {
+		return x < xoffset || x > xoffset + cellWidth * width ? -1 : (x - xoffset) / cellWidth;
+	}
+	
+	// return grid row corresponding to the specified mouse click y position, if any, else -1
+	private int getRowForMouseYPosition(int y) {
+		return y < yoffset || y > yoffset + cellHeight * height ? -1 : (y - yoffset) / cellHeight;
+	}
+	
+	// move cursor one position in the currently-selected direction, if possible
+	private void advanceCursor() {
+		if (currentDirection == NsewDirection.NORTH && currentRow > 0) {
+			--currentRow;
+		} else if (currentDirection == NsewDirection.SOUTH && currentRow < height - 1) {
+			++currentRow;
+		} else if (currentDirection == NsewDirection.EAST && currentColumn < width - 1) {
+			++currentColumn;
+		} else if (currentDirection == NsewDirection.WEST && currentColumn > 0) {
+			--currentColumn;
+		}
+		currentCell = getCell(currentRow, currentColumn);
 	}
 	
 	private int getCellWidth()	{

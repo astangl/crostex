@@ -34,13 +34,13 @@ import java.io.IOException;
  */
 public class FileSaver {
 	/** target file, designates the actual file (which may already exist) that we want to ultimately write to */
-	private final File targetFile_;
+	private final File targetFile;
 	
 	/** temp file, where new file writing tentatively occurs */
-	private final File tempFile_;
+	private final File tempFile;
 	
 	/** flag tracking whether stream/writer has been retrieved */
-	private boolean isReturnedStreamOrWriter_;
+	private boolean isReturnedStreamOrWriter;
 	
 	/**
 	 * Public constructor, accepting a File argument designating file ultimately to be written.
@@ -48,10 +48,10 @@ public class FileSaver {
 	 * @throws IOException if operation cannot complete successfully due to IO error
 	 */
 	public FileSaver(File targetFile) throws IOException {
-		targetFile_ = targetFile;
-		tempFile_ = new File(targetFile_.getAbsolutePath() + ".tmp");
-		tempFile_.createNewFile();
-		tempFile_.deleteOnExit();
+		this.targetFile = targetFile;
+		tempFile = new File(this.targetFile.getAbsolutePath() + ".tmp");
+		tempFile.createNewFile();
+		tempFile.deleteOnExit();
 	}
 	
 	/**
@@ -60,11 +60,11 @@ public class FileSaver {
 	 * @throws FileNotFoundException if unable to successfully complete operation due to inability to open temp file
 	 */
 	public FileOutputStream getFileOutputStream() throws FileNotFoundException {
-		if (isReturnedStreamOrWriter_) {
+		if (isReturnedStreamOrWriter) {
 			throw new IllegalStateException("Called getFileOutputStream or getFileWriter more than once");
 		}
-		isReturnedStreamOrWriter_ = true;
-		return new FileOutputStream(tempFile_);
+		isReturnedStreamOrWriter = true;
+		return new FileOutputStream(tempFile);
 	}
 	
 	/**
@@ -73,11 +73,11 @@ public class FileSaver {
 	 * @throws IOException if unable to successfully complete operation due to inability to open temp file
 	 */
 	public FileWriter getFileWriter() throws IOException {
-		if (isReturnedStreamOrWriter_) {
+		if (isReturnedStreamOrWriter) {
 			throw new IllegalStateException("Called getFileOutputStream or getFileWriter more than once");
 		}
-		isReturnedStreamOrWriter_ = true;
-		return new FileWriter(tempFile_);
+		isReturnedStreamOrWriter = true;
+		return new FileWriter(tempFile);
 	}
 	
 	/**
@@ -86,18 +86,18 @@ public class FileSaver {
 	 * @throws IOException if unable to successfully complete operation due to IO problems (i.e., inability to rename files)
 	 */
 	public void commit() throws IOException {
-		if (! isReturnedStreamOrWriter_) {
+		if (! isReturnedStreamOrWriter) {
 			throw new IllegalStateException("Called commit without ever calling getFileOutputStream or getFileWriter");
 		}
 
 		// Try to delete existing backup file, if it exists, then rename target file, if it already exists, to backup file name
-		File backupFile = new File(targetFile_.getAbsolutePath() + ".bak");
+		File backupFile = new File(targetFile.getAbsolutePath() + ".bak");
 		backupFile.delete();
-		if (targetFile_.exists() && ! targetFile_.renameTo(backupFile)) {
-			throw new IOException("Could not rename " + targetFile_ + " to " + backupFile);
+		if (targetFile.exists() && ! targetFile.renameTo(backupFile)) {
+			throw new IOException("Could not rename " + targetFile + " to " + backupFile);
 		}
-		if (! tempFile_.renameTo(targetFile_)) {
-			throw new IOException("Could not rename " + tempFile_ + " to " + targetFile_);
+		if (! tempFile.renameTo(targetFile)) {
+			throw new IOException("Could not rename " + tempFile + " to " + targetFile);
 		}
 		// Not resetting state here since it seems cleaner to create a new FileSaver each time
 	}

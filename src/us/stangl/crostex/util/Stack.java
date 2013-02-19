@@ -10,18 +10,19 @@ package us.stangl.crostex.util;
  * EmptyStackException instead of ArrayIndexOutOfBoundsException? No thanks. 
  */
 public class Stack<E> {
-	/** slots for holding elements */
-	private E[] slots_;
+	// slots for holding elements
+	private E[] slots;
 	
-	/** fill pointer, index of next member of slots_ to write into. If equal 0, stack is empty */
-	private int fillPointer_;
+	// fill pointer, index of next member of slots to write into. If equal 0, stack is empty
+	private int fillPointer;
 	
 	/**
 	 * Constructor specifying initial capacity
 	 * @param initialCapacity
 	 */
+	@SuppressWarnings("unchecked")
 	public Stack(int initialCapacity) {
-		slots_ = (E[])new Object[initialCapacity];
+		slots = (E[])new Object[initialCapacity];
 	}
 	
 	/**
@@ -32,13 +33,13 @@ public class Stack<E> {
 	}
 
 	public void push(E entry) {
-		if (fillPointer_ >= slots_.length)
+		if (fillPointer >= slots.length)
 			growSlots();
-		slots_[fillPointer_++] = entry;
+		slots[fillPointer++] = entry;
 	}
 	
 	public boolean empty() {
-		return fillPointer_ == 0;
+		return fillPointer == 0;
 	}
 
 	/**
@@ -46,7 +47,7 @@ public class Stack<E> {
 	 * @throws ArrayIndexOutOfBoundsException if stack empty
 	 */
 	public E peek() {
-		return slots_[fillPointer_ - 1];
+		return slots[fillPointer - 1];
 	}
 	
 	/**
@@ -54,20 +55,21 @@ public class Stack<E> {
 	 * @throws ArrayIndexOutOfBoundsException if stack empty
 	 */
 	public E pop() {
-		return slots_[--fillPointer_];
+		return slots[--fillPointer];
 	}
 	
 	public boolean contains(E obj) {
-		for (int i = 0; i < fillPointer_; ++i)
-			if (slots_[i] == obj)
+		for (int i = 0; i < fillPointer; ++i)
+			if (slots[i] == obj)
 				return true;
 		return false;
 	}
 	
 	private void growSlots() {
-		E[] newSlots = (E[])new Object[(slots_.length * 3) / 2 + 1];
-		for (int i = 0; i < slots_.length; ++i)
-			newSlots[i] = slots_[i];
-		slots_ = newSlots;
+		@SuppressWarnings("unchecked")
+		E[] newSlots = (E[])new Object[(slots.length * 3) / 2 + 1];
+		for (int i = 0; i < slots.length; ++i)
+			newSlots[i] = slots[i];
+		slots = newSlots;
 	}
 }

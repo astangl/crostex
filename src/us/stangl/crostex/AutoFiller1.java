@@ -262,7 +262,7 @@ public class AutoFiller1 implements AutoFill {
 AcrossWord:
 		for (ResettableIterator<Pair<char[], Word>> it = dict.getIterator(gridWord.getPattern()); it.hasNext(); ) {
 			Pair<char[], Word> tuple = it.next();
-			gridWord.setAutofillContents(tuple.first_, fillConfig);
+			gridWord.setAutofillContents(tuple.first, fillConfig);
 //			saveNewWordIntoGrid(gridWord, tuple, originalValueStore);
 //			Pair<GridWord, Integer> pair = it.next();
 			for (GridWord downWord : intersectingDownWords) {

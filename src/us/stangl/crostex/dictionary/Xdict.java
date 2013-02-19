@@ -54,7 +54,7 @@ public class Xdict<E> implements Dictionary<char[], E> {
     
     public void bulkInsert(List<Pair<char[], E>> entries) {
 		for (Pair<char[], E> entry : entries)
-			insert(entry.first_, entry.second_);
+			insert(entry.first, entry.second);
 	}
 
 	public List<Pair<char[], E>> getPatternMatches(char[] pattern) {
@@ -75,7 +75,7 @@ public class Xdict<E> implements Dictionary<char[], E> {
         List<Pair<char[], E>> list = letterSlots[freqs[0]][key[freqs[0]] - 'A'];
 candidates:
         for (Pair<char[], E> candidate : list) {
-            char[] text = candidate.first_;
+            char[] text = candidate.first;
             
             for (int i = 1; i < freqs.length; ++i) {
                 int freqIndex = freqs[i];
@@ -83,7 +83,7 @@ candidates:
                     continue candidates;
             }
 
-            return candidate.second_;
+            return candidate.second;
         }
         return null;
     }
@@ -230,7 +230,7 @@ candidates:
 	    		return;
 	    	Pair<char[], E> nextToReturn = peekNext();
 
-	    	if (nextToReturn.first_[index] == badChar)
+	    	if (nextToReturn.first[index] == badChar)
 	    		findNext();
 	    }
 
@@ -249,7 +249,7 @@ candidates:
 	    }
 	    
         public Pair<char[], E> peekNext() {
-        	lastKeyReturned = next.first_;
+        	lastKeyReturned = next.first;
         	return next;
         }
 
@@ -283,7 +283,7 @@ candidates:
 candidates:
             while (nextListIndex < candidates.size()) {
                 Pair<char[], E> candidate = candidates.get(nextListIndex++);
-                char[] text = candidate.first_;
+                char[] text = candidate.first;
                 
                 for (int i = 1; i < freqs.length; ++i) {
                     int freqIndex = freqs[i];

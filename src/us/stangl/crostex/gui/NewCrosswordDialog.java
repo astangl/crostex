@@ -27,7 +27,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.AttributeSet;
@@ -42,6 +41,8 @@ import us.stangl.crostex.util.Message;
  * Dialog box prompting for creation of a new crossword.
  */
 public class NewCrosswordDialog extends JDialog {
+	private static final long serialVersionUID = 1L;
+
 	/** chosen width and height, -1 if cancelled */
 	private int height_ = -1;
 	private int width_ = -1;
@@ -154,6 +155,7 @@ public class NewCrosswordDialog extends JDialog {
 	 * Panel for a New Crossword dialog box.
 	 */
 	private class NewCrosswordPanel extends JPanel {
+		private static final long serialVersionUID = 1L;
 
 		public NewCrosswordPanel() {
 			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -162,6 +164,8 @@ public class NewCrosswordDialog extends JDialog {
 		}
 		
 		private class LeftPanel extends JPanel {
+			private static final long serialVersionUID = 1L;
+
 			public LeftPanel() {
 				setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 				add(new DimensionPanel());
@@ -171,6 +175,8 @@ public class NewCrosswordDialog extends JDialog {
 		}
 		
 		private class DimensionPanel extends JPanel {
+			private static final long serialVersionUID = 1L;
+
 			/** button group */
 			private ButtonGroup buttonGroup_ = new ButtonGroup();
 			
@@ -233,6 +239,8 @@ public class NewCrosswordDialog extends JDialog {
 			}
 
 			private class CustomDimensionPanel extends JPanel {
+				private static final long serialVersionUID = 1L;
+
 				public CustomDimensionPanel() {
 					setAlignmentX(0.0f);
 					Box outerBox = new Box(BoxLayout.X_AXIS);
@@ -284,6 +292,8 @@ public class NewCrosswordDialog extends JDialog {
 			
 			// Integer document for enforcing validation of Integer textfields
 			private class IntegerDocument extends PlainDocument {
+				private static final long serialVersionUID = 1L;
+
 				public void insertString(int offset, String s, AttributeSet attributeSet) throws BadLocationException {
 					try {
 						if (Integer.parseInt(s) > 0) {
@@ -300,6 +310,8 @@ public class NewCrosswordDialog extends JDialog {
 
 	
 		private class GridPickerPanel extends JPanel {
+			private static final long serialVersionUID = 1L;
+
 			public GridPickerPanel() {
 				setBorder(BorderFactory.createTitledBorder(Message.PANEL_GRID_PICKER_TITLE.toString()));
 //				setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -324,13 +336,16 @@ public class NewCrosswordDialog extends JDialog {
 		}
 	}
 	private class GridPreviewPanel extends JPanel {
+		private static final long serialVersionUID = 1L;
+
 		public GridPreviewPanel() {
 			setBorder(BorderFactory.createTitledBorder(Message.PANEL_PREVIEW_TITLE.toString()));
 			add(new GridPreviewSubpanel());
 		}
 		
 		private class GridPreviewSubpanel extends JPanel {
-			
+			private static final long serialVersionUID = 1L;
+
 			public GridPreviewSubpanel() {
 				setPreferredSize(new Dimension(23 * 5 + 1, 23 * 5 + 1));
 			}

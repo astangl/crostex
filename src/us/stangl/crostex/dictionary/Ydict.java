@@ -91,7 +91,7 @@ public class Ydict<E> implements Dictionary<char[], E> {
 
 	public void bulkInsert(List<Pair<char[], E>> entries) {
 		for (Pair<char[], E> entry : entries)
-			insert(entry.first_, entry.second_);
+			insert(entry.first, entry.second);
 	}
 
 	public List<Pair<char[], E>> getPatternMatches(char[] pattern) {
@@ -213,7 +213,7 @@ public class Ydict<E> implements Dictionary<char[], E> {
 			return null;
 		if (patternMatches.size() > 1)
 			throw new IllegalArgumentException("Got " + patternMatches.size() + " matches for " + new String(key));
-		return patternMatches.get(0).second_;
+		return patternMatches.get(0).second;
 	}
 
 	public boolean isPatternInDictionary(char[] pattern) {

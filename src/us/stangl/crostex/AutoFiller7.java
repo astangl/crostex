@@ -184,8 +184,8 @@ System.out.println("eliminatingExplanationParents is of size " + eliminatingExpl
 //		private Map<char[], Pair<Pair<char[], Word>, Set<GridWord>>> explanations_ = new HashMap<char[], Pair<Pair<char[], Word>, Set<GridWord>>>();
 
 for (Map.Entry<char[], Pair<Pair<char[], Word>, Set<GridWord>>> entry : workTuple.explanations_.entrySet()) {
-	System.out.println("Entry key = " + new String(entry.getKey()) + ", eliminated value = " + new String(entry.getValue().first_.first_));
-	for (GridWord gw : entry.getValue().second_) {
+	System.out.println("Entry key = " + new String(entry.getKey()) + ", eliminated value = " + new String(entry.getValue().first.first));
+	for (GridWord gw : entry.getValue().second) {
 		System.out.println("gw = " + gw);
 	}
 }
@@ -350,7 +350,7 @@ System.out.println("Setting breadth to " + maxBreadth);
 
 			Set<char[]> explanationKeys = explanations_.keySet();
 			for (Pair<char[], Word> match : matches)
-				if (! explanationKeys.contains(match.first_))
+				if (! explanationKeys.contains(match.first))
 					choices_.add(match);
 //System.out.println("Exiting setPattern, currPattern_ = " + new String(currPattern_));			
 		}
@@ -378,7 +378,7 @@ System.out.println("Setting breadth to " + maxBreadth);
 			// exclude anything in an explanation
 			Set<char[]> explanationKeys = explanations_.keySet();
 			for (Pair<char[], Word> match : dict_.getPatternMatches(currPattern_))
-				if (! explanationKeys.contains(match.first_))
+				if (! explanationKeys.contains(match.first))
 					choices_.add(match);
 //System.out.println("leaving resetPattern, currPattern_ = " + new String(currPattern_));			
 		}
@@ -410,7 +410,7 @@ System.out.println("Setting breadth to " + maxBreadth);
 			Set<char[]> explanationKeys = explanations_.keySet();
 CHOICELOOP:	while (choicesChecked++ < choicesSize) {
 				Pair<char[], Word> choice = choices_.getNext();
-				char[] choiceWord = choice.first_;
+				char[] choiceWord = choice.first;
 				// Check and see if this choiceWord has been eliminated
 				if (explanationKeys.contains(choiceWord))
 					continue;
@@ -455,7 +455,7 @@ CHOICELOOP:	while (choicesChecked++ < choicesSize) {
 		}
 
 		private void addChildExplanation(Pair<char[], Word> choice, GridWord child) {
-			char[] choiceWord = choice.first_;
+			char[] choiceWord = choice.first;
 			// add explanation with child's cross words, and delete choice
 			Set<GridWord> eliminatingExplanation = new HashSet<GridWord>();
 			for (GridWord crossingWord : wordToCrossingWordsMap_.get(child))
@@ -472,11 +472,11 @@ CHOICELOOP:	while (choicesChecked++ < choicesSize) {
 			for (Iterator<Map.Entry<char[], Pair<Pair<char[], Word>, Set<GridWord>>>> it = explanations_.entrySet().iterator(); it.hasNext(); ) {
 				Map.Entry<char[], Pair<Pair<char[], Word>, Set<GridWord>>> entry = it.next();
 				Pair<Pair<char[], Word>, Set<GridWord>> value = entry.getValue();
-				if (value.second_.contains(gridWord)) {
+				if (value.second.contains(gridWord)) {
 					it.remove();
 					// Only add back to choices if it conforms to current pattern
-					if (conformsToPattern(value.first_.first_, currPattern))
-						choices_.add(value.first_);
+					if (conformsToPattern(value.first.first, currPattern))
+						choices_.add(value.first);
 				}
 			}
 		}
@@ -500,7 +500,7 @@ CHOICELOOP:	while (choicesChecked++ < choicesSize) {
 			// Not checking for existing explanation here because there shouldn't be one yet
 			Pair<Pair<char[], Word>, Set<GridWord>> explanation = new Pair<Pair<char[], Word>, Set<GridWord>>
 				(lastChoice_, new HashSet<GridWord>(gridWords));
-			explanations_.put(lastChoice_.first_, explanation);
+			explanations_.put(lastChoice_.first, explanation);
 
 			// Remove the most recent choice from choices, and undo
 			choices_.deletePrev();
@@ -516,7 +516,7 @@ CHOICELOOP:	while (choicesChecked++ < choicesSize) {
 		public Set<GridWord> getExplainingGridwords() {
 			Set<GridWord> retval = new HashSet<GridWord>();
 			for (Pair<Pair<char[], Word>, Set<GridWord>> value : explanations_.values())
-				retval.addAll(value.second_);
+				retval.addAll(value.second);
 			return retval;
 		}
 

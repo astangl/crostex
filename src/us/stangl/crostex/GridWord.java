@@ -16,27 +16,27 @@ public class GridWord {
 	private static final boolean DEBUG = false;
 	
 	/** number associated with word */
-	private final int number_;
+	private final int number;
 	
 	public enum Direction { ACROSS, DOWN };
 	
 	/** direction of word */
-	private final Direction direction_;
+	private final Direction direction;
 	
 	/** Cells comprising word */
-	private final Cell[] cells_;
+	private final Cell[] cells;
 	
 	/** scratchpad to use for building pattern */
 	private char[] patternScratchpad_ = new char[0];
 	
 	public GridWord(Cell[] cells, Direction direction, int number) {
-		number_ = number;
-		direction_ = direction;
-		cells_ = cells;
+		this.number = number;
+		this.direction = direction;
+		this.cells = cells;
 	}
 	
 	public boolean isEligibleForAutofill() {
-		for (Cell cell : cells_) {
+		for (Cell cell : cells) {
 			if (cell.isEligibleForAutofill())
 				return true;
 		}
@@ -45,7 +45,7 @@ public class GridWord {
 
 	public int getNumberCellsRequiringAutofill() {
 		int retval = 0;
-		for (Cell cell : cells_)
+		for (Cell cell : cells)
 			if (cell.isEligibleForAutofill())
 				++retval;
 		return retval;
@@ -53,14 +53,14 @@ public class GridWord {
 
 	/** return intersection cell, if any, otherwise null */
 	public Cell getIntersection(GridWord otherWord) {
-		for (Cell cell : cells_)
+		for (Cell cell : cells)
 			if (otherWord.contains(cell))
 				return cell;
 		return null;
 	}
 	
 	public boolean contains(Cell cell) {
-		for (Cell myCell : cells_) {
+		for (Cell myCell : cells) {
 			if (cell == myCell)
 				return true;
 		}
@@ -69,7 +69,7 @@ public class GridWord {
 	
 	/** whether it describes a complete word */
 	public boolean isComplete() {
-		for (Cell cell : cells_) {
+		for (Cell cell : cells) {
 			String cellContents = cell.getContents();
 			if (cellContents == null || cellContents.length() == 0)
 				return false;
@@ -80,7 +80,7 @@ public class GridWord {
 	/** return String described by GridWord */
 	public String getContents() {
 		StringBuilder retval = new StringBuilder();
-		for (Cell cell : cells_) {
+		for (Cell cell : cells) {
 			String cellContents = cell.getContents();
 			if (cellContents != null)
 				retval.append(cellContents);
@@ -90,8 +90,8 @@ public class GridWord {
 	
 	/** return zero-based index of Cell in this GridWord, or -1 if the cell is not in this GridWord */
 	public int indexOf(Cell cell) {
-		for (int i = 0; i < cells_.length; ++i)
-			if (cells_[i] == cell)
+		for (int i = 0; i < cells.length; ++i)
+			if (cells[i] == cell)
 				return i;
 		return -1;
 	}
@@ -116,11 +116,11 @@ public class GridWord {
 	 * @throw IllegalArgumentException if trying to replace value of a non-autofill cell
 	 */ 
 	public void setAutofillContents(char[] contents, Pair<Cell[], int[]> fillConfig) {
-		Cell[] cells = fillConfig.first_;
-		int[] indexes = fillConfig.second_;
+		Cell[] cells = fillConfig.first;
+		int[] indexes = fillConfig.second;
 		int len = cells.length;
 		for (int i = 0; i < len; ++i) {
-			cells[i].setContents(contents[indexes[i]]);
+			cells[i].setContents(String.valueOf(contents[indexes[i]]));
 		}
 //		int index = 0;
 //		for (Cell cell : cells_) {
@@ -152,7 +152,7 @@ public class GridWord {
 	/** return contents as Map<Cell, String> */
 	public Map<Cell, String> getContentsAsMap() {
 		Map<Cell, String> retval = new HashMap<Cell, String>();
-		for (Cell cell : cells_)
+		for (Cell cell : cells)
 			retval.put(cell, cell.getContents());
 		return retval;
 	}
@@ -160,14 +160,14 @@ public class GridWord {
 	/** return configuration of all cells in word which are eligible for autofill */
 	public Pair<Cell[], int[]> getFillConfig() {
 		int autoFillCellCount = 0;
-		for (Cell cell : cells_)
+		for (Cell cell : cells)
 			if (cell.isEligibleForAutofill())
 				++autoFillCellCount;
 		Cell[] autoFillCells = new Cell[autoFillCellCount];
 		int[] indexes = new int[autoFillCellCount];
 		int cellIndex = 0;
 		int keyIndex = 0;
-		for (Cell cell : cells_) {
+		for (Cell cell : cells) {
 			if (cell.isEligibleForAutofill()) {
 				autoFillCells[cellIndex] = cell;
 				indexes[cellIndex++] = keyIndex++;
@@ -180,21 +180,21 @@ public class GridWord {
 
 	/** restore word back to its original state, reflected in the saveConfig argument, from an earlier getFillConfig */
 	public void restoreFromFillConfig(Pair<Cell[], int[]> saveConfig) {
-		int len = saveConfig.first_.length;
+		int len = saveConfig.first.length;
 		for (int i = 0; i < len; ++i)
-			saveConfig.first_[i].setEmpty();
+			saveConfig.first[i].setEmpty();
 	}
 	
 	/** restore all cells from previously saved contents from getContentsAsMap */
 	public void restoreFromMap(Map<Cell, String> oldValues) {
-		for (Cell cell : cells_)
+		for (Cell cell : cells)
 			cell.setContents(oldValues.get(cell));
 	}
 
 	/** return pattern described by this GridWord, possibly containing _ wildcards representing unknown/autofillable cells */
 	public char[] getPattern() {
 		int index = 0;
-		for (Cell cell : cells_) {
+		for (Cell cell : cells) {
 			if (cell.isEligibleForAutofill()) {
 				if (index >= patternScratchpad_.length)
 					growPattern();
@@ -234,7 +234,7 @@ public class GridWord {
 	/** return zero-based index of Cell in the pattern associated with this GridWord, or -1 if the cell is not associated with this GridWord */
 	public int indexOfCellInPattern(Cell cell) {
 		int retval = 0;
-		for (Cell cellTemp : cells_) {
+		for (Cell cellTemp : cells) {
 			if (cell == cellTemp)
 				return retval;
 			if (cellTemp.isEligibleForAutofill())
@@ -250,27 +250,27 @@ public class GridWord {
 	 * @return the direction
 	 */
 	public Direction getDirection() {
-		return direction_;
+		return direction;
 	}
 
 	/**
 	 * @return the number
 	 */
 	public int getNumber() {
-		return number_;
+		return number;
 	}
 	
 	public String toString() {
 		StringBuilder retval = new StringBuilder();
 		retval.append("{number_ = ")
-			.append(number_)
+			.append(number)
 			.append(", direction_ = ")
-			.append(direction_)
+			.append(direction)
 			.append(", cells_ = [");
-		for (int i = 0; i < cells_.length; ++i) {
+		for (int i = 0; i < cells.length; ++i) {
 			if (i > 0)
 				retval.append(", ");
-			retval.append(cells_[i]);
+			retval.append(cells[i]);
 		}
 		retval.append("]}");
 		return retval.toString();
@@ -280,7 +280,7 @@ public class GridWord {
 	 * @return the cells
 	 */
 	public Cell[] getCells() {
-		return cells_;
+		return cells;
 	}
 
 }

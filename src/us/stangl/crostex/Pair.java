@@ -7,11 +7,11 @@ package us.stangl.crostex;
  * Generic pair for constructing simple tuples.
  */
 public class Pair<F, S> {
-	public final F first_;
-	public final S second_;
+	public final F first;
+	public final S second;
 	
 	public Pair(F first, S second) {
-		first_ = first;
-		second_ = second;
+		this.first = first;
+		this.second = second;
 	}
 }

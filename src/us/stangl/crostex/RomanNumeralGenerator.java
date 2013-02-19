@@ -15,7 +15,7 @@ public class RomanNumeralGenerator {
 	public static final int MAX_VALUE = 3999;
 	
 	/** for each element [i], where i > 0, holds list of RomanNumeral of the specified length */
-	List<List<String>> bucketsOfLength_ = new ArrayList<List<String>>();
+	List<List<String>> bucketsOfLength = new ArrayList<List<String>>();
 	
 	/**
 	 * Return Roman numeral string representation of specified value.
@@ -212,9 +212,9 @@ public class RomanNumeralGenerator {
 	}
 	
 	private List<String> getBucketOfLength(int length) {
-		while (bucketsOfLength_.size() <= length) {
-			bucketsOfLength_.add(new ArrayList<String>());
+		while (bucketsOfLength.size() <= length) {
+			bucketsOfLength.add(new ArrayList<String>());
 		}
-		return bucketsOfLength_.get(length);
+		return bucketsOfLength.get(length);
 	}
 }

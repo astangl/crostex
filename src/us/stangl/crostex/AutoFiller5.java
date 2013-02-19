@@ -215,7 +215,7 @@ CHOICELOOP:
 			// Checking against choicesSize so we can detect when we have wrapped around
 			while (nonZeroChoicesChecked < MAX_NUM_CHOICES && choicesChecked++ < choicesSize) {
 				Pair<char[], Word> choice = choices_.getNext();
-				char[] choiceWord = choice.first_;
+				char[] choiceWord = choice.first;
 //				word_.setAutofillContents(choice.first_, savedConfig_);
 //				if (avoidCell != null && avoidCell.getContents().equals(cellContents))
 					
@@ -258,7 +258,7 @@ CHOICELOOP:
 			}
 			
 			// Put best word in and update candidates for all its intersecting words, then loop back for next cheapest word choice
-			word_.setAutofillContents(bestChoice.first_, savedConfig_);
+			word_.setAutofillContents(bestChoice.first, savedConfig_);
 			for (GridWord child : children_)
 				wordPossibilities_.put(child, dict_.getPatternMatches(child.getPattern()));
 			
@@ -277,7 +277,7 @@ CHOICELOOP:
 			// Checking against choicesSize so we can detect when we have wrapped around
 			while (nonZeroChoicesChecked < MAX_NUM_CHOICES && choicesChecked++ < choicesSize) {
 				Pair<char[], Word> choice = choices_.getNext();
-				char[] choiceWord = choice.first_;
+				char[] choiceWord = choice.first;
 				
 				long childProduct = 1L;
 				// Now check all its children
@@ -313,7 +313,7 @@ CHOICELOOP:
 			}
 			
 			// Put best word in and update candidates for all its intersecting words, then loop back for next cheapest word choice
-			word_.setAutofillContents(bestChoice.first_, savedConfig_);
+			word_.setAutofillContents(bestChoice.first, savedConfig_);
 			for (GridWord child : children_)
 				wordPossibilities_.put(child, dict_.getPatternMatches(child.getPattern()));
 			

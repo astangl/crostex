@@ -6,13 +6,15 @@ package us.stangl.crostex.util;
 import java.util.ResourceBundle;
 
 /**
- * 
+ * Enumeration of all displayed strings. Every value here should have a corresponding
+ * value in Messages.properties (and any translated versions).
  */
 public enum Message {
 	FILE_MENU_HEADER,				// header for File menu (e.g., File)
 	FILE_MENU_OPTION_NEW,			// File menu New ... option
 	FILE_MENU_OPTION_EXIT,			// File menu Exit option
 	FILE_MENU_OPTION_SAVE_GRID_AS_TEMPLATE,	// File menu Save Grid as Template... option
+	CELL_POPUP_MENU_OPTION_TOGGLE_CELL_BLACK,	// popup menu for cell, option to toggle cell black/white
 	BUTTON_15X15,					// 15 x 15 button
 	BUTTON_21X21,					// 21 x 21 button
 	BUTTON_23X23,					// 23 x 23 button

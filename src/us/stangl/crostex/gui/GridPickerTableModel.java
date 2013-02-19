@@ -17,8 +17,10 @@ import us.stangl.crostex.util.Message;
  * Table model for Grid Picker
  */
 public class GridPickerTableModel extends AbstractTableModel {
+	private static final long serialVersionUID = 1L;
+
 	/** full collection of underlying grids, of all sizes */
-	private final Collection<Grid> grids_;
+	private final Collection<Grid> grids;
 
 	/** column names */
 	private final String[] COLUMN_NAMES = new String[] {Message.TEXT_NAME.toString(), Message.TEXT_DESCRIPTION.toString(),
@@ -31,10 +33,10 @@ public class GridPickerTableModel extends AbstractTableModel {
 	 * row in the table, even if the full collection has none of the
 	 * specified size.
 	 */ 
-	private List<Grid> eligibleGrids_ = new ArrayList<Grid>();
+	private List<Grid> eligibleGrids = new ArrayList<Grid>();
 	
 	public GridPickerTableModel(Collection<Grid> grids) {
-		grids_ = grids;
+		this.grids = grids;
 	}
 
 	/**
@@ -48,7 +50,7 @@ public class GridPickerTableModel extends AbstractTableModel {
 	 * @see javax.swing.table.TableModel#getRowCount()
 	 */
 	public int getRowCount() {
-		return eligibleGrids_.size();
+		return eligibleGrids.size();
 	}
 
 	/**
@@ -61,9 +63,9 @@ public class GridPickerTableModel extends AbstractTableModel {
 	public Object getValueAt(int row, int col) {
 		if (col >= getColumnCount())
 			throw new IllegalArgumentException("Invalid col value: " + col);
-		if (row >= eligibleGrids_.size())
-			throw new IllegalArgumentException("Invalid row value: " + row + ". Only " + eligibleGrids_.size() + " rows available.");
-		Grid grid = eligibleGrids_.get(row);
+		if (row >= eligibleGrids.size())
+			throw new IllegalArgumentException("Invalid row value: " + row + ". Only " + eligibleGrids.size() + " rows available.");
+		Grid grid = eligibleGrids.get(row);
 		if (col == 0)
 			return grid.getName();
 		if (col == 1)
@@ -77,15 +79,15 @@ public class GridPickerTableModel extends AbstractTableModel {
 	}
 	
 	public Grid getGridAtRow(int row) {
-		return eligibleGrids_.get(row);
+		return eligibleGrids.get(row);
 	}
 	
 	public void setGridDimensions(int width, int height) {
-		eligibleGrids_.clear();
+		eligibleGrids.clear();
 		boolean emptyGridIncluded = false;
-		for (Grid grid : grids_) {
+		for (Grid grid : grids) {
 			if (grid.getHeight() == height && grid.getWidth() == width) {
-				eligibleGrids_.add(grid);
+				eligibleGrids.add(grid);
 				if (grid.getNumberBlackCells() == 0)
 					emptyGridIncluded = true;
 			}
@@ -94,7 +96,7 @@ public class GridPickerTableModel extends AbstractTableModel {
 			// Must include an extra empty grid
 			String name = MessageFormat.format(Message.DEFAULT_GRID_NAME.toString(), width, height);
 			String description = MessageFormat.format(Message.DEFAULT_GRID_DESCRIPTION.toString(), width, height);
-			eligibleGrids_.add(new Grid(width, height, name, description));
+			eligibleGrids.add(new Grid(width, height, name, description));
 		}
 		
 		// Notify JTable that its data has changed

@@ -12,30 +12,32 @@ import java.util.Map;
 public class LruCache<K, V> {
 
 	/** data holder */
-	private final LinkedHashMap<K, V> cache_;
+	private final LinkedHashMap<K, V> cache;
 	
 	public LruCache(int capacity) {
-		cache_ = new LruHashMap<K, V>(capacity);
+		cache = new LruHashMap<K, V>(capacity);
 	}
 	
 	public V get(K key) {
-		return cache_.get(key);
+		return cache.get(key);
 	}
 	
 	public void put(K key, V value) {
-		cache_.put(key, value);
+		cache.put(key, value);
 	}
 	
 	private static class LruHashMap<K, V> extends LinkedHashMap<K, V> {
+		private static final long serialVersionUID = 1L;
+
 		/** saved capacity */
-		private final int capacity_;
+		private final int capacity;
 		
 		public LruHashMap(int capacity) {
 			super(capacity, 0.75f, true);
-			capacity_ = capacity;
+			this.capacity = capacity;
 		}
 	    protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
-	    	return size() > capacity_;
+	    	return size() > capacity;
 	    }
 	}
 }

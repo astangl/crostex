@@ -265,8 +265,8 @@ public class AutoFiller0 implements AutoFill {
 			ResettableIterator<Pair<char[], Word>> acrossIt) {
 		// Now check intersecting down words to make sure they're all still OK
 		for (Pair<GridWord, Integer> gridWordPair : gridWords) {
-			if (! dict.isPatternInDictionary(gridWordPair.first_.getPattern())) {
-				acrossIt.avoidLetterAt(gridWordPair.second_);
+			if (! dict.isPatternInDictionary(gridWordPair.first.getPattern())) {
+				acrossIt.avoidLetterAt(gridWordPair.second);
 				
 				// Tried not breaking out of loop immediately here, but it seemed to reduce performance.
 				return false;
@@ -280,7 +280,7 @@ public class AutoFiller0 implements AutoFill {
 		// First restore previous value, if there was one.
 //		Map<Cell, String> prevValue = oldValueStore.get(gridWord);
 //		gridWord.restoreFromMap(prevValue);
-		gridWord.setAutofillContents(tuple.first_, oldValueStore.get(gridWord));
+		gridWord.setAutofillContents(tuple.first, oldValueStore.get(gridWord));
 	}
 	
 //	/** return usable word from this iterator, if there is one, else null */ 

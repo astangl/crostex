@@ -59,7 +59,7 @@ public class GridGenerator {
 						index = lastCellIndex - index;
 					}
 					if (crosswordState_[index]) {
-						grid.getCell(row, col).setBlack();
+						grid.getCell(row, col).setBlack(true);
 						++blackCount;
 					}
 				}

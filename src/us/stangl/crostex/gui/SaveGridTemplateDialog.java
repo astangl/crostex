@@ -27,38 +27,39 @@ import us.stangl.crostex.util.Message;
  * Dialog box for saving a grid as a new template.
  */
 public class SaveGridTemplateDialog  extends JDialog {
-	
+	private static final long serialVersionUID = 1L;
+
 	/** name text field */
-	private JTextField nameField_ = new JTextField(20);
+	private JTextField nameField = new JTextField(20);
 	
 	/** description text field */
-	private JTextField descriptionField_ = new JTextField(20);
+	private JTextField descriptionField = new JTextField(20);
 	
 	/** reference to main grids db */
-	private final GridsDb gridsDb_;
+	private final GridsDb gridsDb;
 	
 	/** reference to grid being saved */
-	private final Grid grid_;
+	private final Grid grid;
 
 	public SaveGridTemplateDialog(GridsDb gridsDb, Grid grid) {
 		super((Frame)null, Message.DIALOG_TITLE_SAVE_GRID_TEMPLATE.toString(), true);
-		gridsDb_ = gridsDb;
-		grid_ = grid;
+		this.gridsDb = gridsDb;
+		this.grid = grid;
 		
 		JPanel buttonsPanel = new JPanel();
 		JButton okButton = new JButton(Message.BUTTON_OK.toString());
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				System.out.println("Clicked OK");
-				String name = nameField_.getText().trim();
-				String description = descriptionField_.getText().trim();
+				String name = nameField.getText().trim();
+				String description = descriptionField.getText().trim();
 				if (name.length() == 0 || description.length() == 0) {
 					JOptionPane.showMessageDialog(SaveGridTemplateDialog.this,
 							Message.DIALOG_TEXT_NONEMPTY_NAME_DESCRIPTION.toString(),
 							Message.DIALOG_TITLE_NONEMPTY_NAME_DESCRIPTION.toString(),
 							JOptionPane.ERROR_MESSAGE);
 				} else {
-					for (Grid grid : gridsDb_.getGrids()) {
+					for (Grid grid : SaveGridTemplateDialog.this.gridsDb.getGrids()) {
 						if (grid.getName().equals(name)) {
 							String msg = MessageFormat.format(Message.DIALOG_TEXT_OVERWRITE_EXISTING_GRID.toString(), name);
 							int confirmOverwrite = JOptionPane.showConfirmDialog(SaveGridTemplateDialog.this,
@@ -70,7 +71,7 @@ public class SaveGridTemplateDialog  extends JDialog {
 								return;
 							}
 						}
-						if (grid.isStructureEqualTo(grid_)) {
+						if (grid.isStructureEqualTo(SaveGridTemplateDialog.this.grid)) {
 							String msg = MessageFormat.format(Message.DIALOG_TEXT_CONFIRM_DUPLICATE_GRID.toString(), grid.getName());
 							int confirmOverwrite = JOptionPane.showConfirmDialog(SaveGridTemplateDialog.this,
 									msg,
@@ -106,16 +107,16 @@ public class SaveGridTemplateDialog  extends JDialog {
 	}
 	
 	public JTextField getNameField() {
-		return nameField_;
+		return nameField;
 	}
 	public JTextField getDescriptionField() {
-		return descriptionField_;
+		return descriptionField;
 	}
 
 	/** abort dialog box, for example, when Cancel is clicked */
 	private void abort() {
-		nameField_ = null;
-		descriptionField_ = null;
+		nameField = null;
+		descriptionField = null;
 		dispose();
 	}
 	
@@ -135,13 +136,13 @@ public class SaveGridTemplateDialog  extends JDialog {
 			Box nameBox = new Box(BoxLayout.X_AXIS);
 			nameBox.add(nameLabel_);
 			nameBox.add(Box.createRigidArea(new Dimension(5, 0)));
-			nameBox.add(nameField_);
+			nameBox.add(nameField);
 			add(nameBox);
 			
 			Box descriptionBox = new Box(BoxLayout.X_AXIS);
 			descriptionBox.add(descriptionLabel_);
 			descriptionBox.add(Box.createRigidArea(new Dimension(5, 0)));
-			descriptionBox.add(descriptionField_);
+			descriptionBox.add(descriptionField);
 			add(descriptionBox);
 
 //			add(nameField_);

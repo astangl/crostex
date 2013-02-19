@@ -22,16 +22,16 @@ public class SymmetryGridConstraintTest {
 		
 		assertTrue(constraint.satisfiedBy(grid));
 		
-		grid.getCell(0, 4).setBlack();
+		grid.getCell(0, 4).setBlack(true);
 		assertFalse(constraint.satisfiedBy(grid));
 		
-		grid.getCell(1, 1).setBlack();
+		grid.getCell(1, 1).setBlack(true);
 		assertFalse(constraint.satisfiedBy(grid));
 
-		grid.getCell(4, 0).setBlack();
+		grid.getCell(4, 0).setBlack(true);
 		assertFalse(constraint.satisfiedBy(grid));
 		
-		grid.getCell(3, 3).setBlack();
+		grid.getCell(3, 3).setBlack(true);
 		assertTrue(constraint.satisfiedBy(grid));
 		
 	}

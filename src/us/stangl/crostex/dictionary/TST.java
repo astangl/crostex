@@ -164,7 +164,7 @@ public class TST<E> implements Dictionary<char[], E> {
 		// First insert middle element from our subarray...
 		int middleIndex = (highIndex + lowIndex) / 2;
 		Pair<char[], E> middleEntry = entries.get(middleIndex);
-		insert(middleEntry.first_, middleEntry.second_);
+		insert(middleEntry.first, middleEntry.second);
 
 		// ...now recursively do left and right subarrays
 		bulkInsert(entries, lowIndex, middleIndex - 1);
@@ -306,7 +306,7 @@ public class TST<E> implements Dictionary<char[], E> {
 		    		return;
 		    	Pair<char[], E> nextToReturn = peekNext();
 	
-		    	if (nextToReturn.first_[index] == badChar)
+		    	if (nextToReturn.first[index] == badChar)
 		    		findNext();
 	    	}
 	    }

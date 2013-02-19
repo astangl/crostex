@@ -237,7 +237,7 @@ public class TstNew<E> implements Dictionary<char[], E> {
 		// First insert middle element from our subarray...
 		int middleIndex = (highIndex + lowIndex) / 2;
 		Pair<char[], E> middleEntry = entries.get(middleIndex);
-		insert(middleEntry.first_, middleEntry.second_);
+		insert(middleEntry.first, middleEntry.second);
 
 		// ...now recursively do left and right subarrays
 		bulkInsert(entries, lowIndex, middleIndex - 1);

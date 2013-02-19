@@ -248,7 +248,7 @@ AcrossWord:
 //		for (ResettableIterator<Pair<char[], Word>> it = dict.getIterator(gridWord.getPattern()); it.hasNext(); ) {
 		for (Iterator<Pair<char[], Word>> it = candidates.iterator(); it.hasNext(); ) {
 			Pair<char[], Word> tuple = it.next();
-			gridWord.setAutofillContents(tuple.first_, fillConfig);
+			gridWord.setAutofillContents(tuple.first, fillConfig);
 			
 			// Clear alreadyChecked flags
 			int numToCheck = alreadyChecked.length;
@@ -316,7 +316,7 @@ AcrossWord:
 					Pair<Character, GridWord> previouslyCheckedPair = previouslyChecked.get(previouslyCheckedIndex);
 
 //System.out.println("previouslyCheckedPair.first_ = " + previouslyCheckedPair.first_ + ", intersectChar = " + intersectChar + ", previouslyCheckedPair.second_ = " + previouslyCheckedPair.second_ + ", intersectingWordOfInterest = " + intersectingWordOfInterest);
-					if (previouslyCheckedPair.first_ == intersectChar && previouslyCheckedPair.second_ == intersectingWordOfInterest)
+					if (previouslyCheckedPair.first == intersectChar && previouslyCheckedPair.second == intersectingWordOfInterest)
 					{
 						System.out.println("Found match! unboxing worked!");
 						skipChildCheck = true;

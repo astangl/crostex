@@ -252,7 +252,7 @@ AcrossWord:
 			
 			// Try candidate
 			Pair<char[], Word> tuple = it.next();
-			gridWord.setAutofillContents(tuple.first_, fillConfig);
+			gridWord.setAutofillContents(tuple.first, fillConfig);
 			
 			// First, check all intersecting words completed by this word, making sure they are in dictionary. If not, try another candidate.
 			for (GridWord crossWord : crossWordsAlmostComplete)

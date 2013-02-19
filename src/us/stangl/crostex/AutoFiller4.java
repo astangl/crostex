@@ -238,7 +238,7 @@ AcrossWord:
 				if (nextWork.iterator_.hasNext()) {
 					// Try candidate
 					Pair<char[], Word> tuple = nextWork.iterator_.next();
-					gridWord.setAutofillContents(tuple.first_, nextWork.savedConfig_);
+					gridWord.setAutofillContents(tuple.first, nextWork.savedConfig_);
 					
 //System.out.println("Trying new word " + new String(tuple.first_));
 					// First, check all intersecting words completed by this word, making sure they are in dictionary. If not, try another candidate.

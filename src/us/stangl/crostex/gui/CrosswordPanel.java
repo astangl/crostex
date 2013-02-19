@@ -7,14 +7,19 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -23,18 +28,25 @@ import us.stangl.crostex.Cell;
 import us.stangl.crostex.DOMSerializer;
 import us.stangl.crostex.Grid;
 import us.stangl.crostex.ServiceException;
+import us.stangl.crostex.util.Message;
 
 public class CrosswordPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 
-	/** preferred size dimensions */
+	private static final Logger LOG = Logger.getLogger(CrosswordPanel.class.getName());
+
+	// preferred size dimensions
 	private static final Dimension PREFERRED_SIZE = new Dimension(300, 300);
 	
-	/** associated crossword grid */
-	private final Grid grid_;
+	// associated crossword grid
+	private final Grid grid;
+	
+	// popup menu for cells
+	private JPopupMenu cellPopupMenu = new JPopupMenu();
+	
 	
 	public CrosswordPanel(Grid grid) {
-		grid_ = grid;
+		this.grid = grid;
 		setBorder(BorderFactory.createLineBorder(Color.black));
 		
 		MouseEventListener mouseListener = new MouseEventListener();
@@ -46,7 +58,12 @@ public class CrosswordPanel extends JPanel {
 		KeyEventListener keyListener = new KeyEventListener();
 		this.addKeyListener(keyListener);
 		
-		grid_.renumberCells();
+		this.grid.renumberCells();
+		
+		JMenuItem toggleCellBlackWhiteItem = new JMenuItem(Message.CELL_POPUP_MENU_OPTION_TOGGLE_CELL_BLACK.toString());
+		cellPopupMenu.add(toggleCellBlackWhiteItem);
+		toggleCellBlackWhiteItem.setActionCommand("Toggle cell between black/white");
+		toggleCellBlackWhiteItem.addActionListener(new ToggleCellActionListener());
 	}
 	
 	/**
@@ -67,30 +84,7 @@ public class CrosswordPanel extends JPanel {
 //		g.drawString("This is my custom panel", 10, 20);
 		
 		// Draw grid
-		grid_.render(g2);
-	}
-	
-	private class MouseEventListener extends MouseAdapter {
-		@Override
-		public void mouseClicked(MouseEvent evt) {
-			boolean rfiwReturn = requestFocusInWindow();
-			//LOG.finest("requestFocusInWindow returned " + rfiwReturn);
-			grid_.mouseClicked(evt);
-			CrosswordPanel.this.repaint(0);
-		}
-	}
-	
-	private class KeyEventListener extends KeyAdapter {
-		@Override
-		public void keyTyped(KeyEvent evt) {
-			System.out.println("In KeyEventListener.keyTyped");
-			grid_.keyTyped(evt);
-			CrosswordPanel.this.repaint(0);
-		}
-		@Override
-		public void keyPressed(KeyEvent evt) {
-			System.out.println("In KeyEventListener.keyPressed");
-		}
+		grid.render(g2);
 	}
 	
 	public void save(String dataDirectory, String filename) throws ServiceException {
@@ -115,11 +109,11 @@ public class CrosswordPanel extends JPanel {
 		
 		Element americanElement = doc.createElement("american");
 		Element gridElement = doc.createElement("grid");
-		gridElement.setAttribute("rows", "" + grid_.getHeight());
-		gridElement.setAttribute("columns", "" + grid_.getWidth());
-		for (int row = 0; row < grid_.getHeight(); ++row) {
-			for (int col = 0; col < grid_.getWidth(); ++col) {
-				Cell cell = grid_.getCell(row, col);
+		gridElement.setAttribute("rows", "" + grid.getHeight());
+		gridElement.setAttribute("columns", "" + grid.getWidth());
+		for (int row = 0; row < grid.getHeight(); ++row) {
+			for (int col = 0; col < grid.getWidth(); ++col) {
+				Cell cell = grid.getCell(row, col);
 				Element cellElement;
 				if (cell.isBlack()) {
 					cellElement = doc.createElement("blank");
@@ -153,7 +147,51 @@ public class CrosswordPanel extends JPanel {
 	}
 	
 	public Grid getGrid() {
-		return grid_;
+		return grid;
+	}
+	
+	private class MouseEventListener extends MouseAdapter {
+		// Have to override pressed, clicked, and released because popup trigger could
+		// be associated with any of the 3, depending upon the platform
+		@Override
+		public void mouseClicked(MouseEvent evt) {
+			boolean rfiwReturn = requestFocusInWindow();
+			LOG.finest("requestFocusInWindow returned " + rfiwReturn);
+			grid.mouseClicked(evt);
+			CrosswordPanel.this.repaint(0);
+			maybeShowPopup(evt);
+		}
+		@Override
+		public void mousePressed(MouseEvent evt) {
+			maybeShowPopup(evt);
+		}
+		@Override
+		public void mouseReleased(MouseEvent evt) {
+			maybeShowPopup(evt);
+		}
+
+		// show popup menu, if appropriate mouse trigger was performed
+		private void maybeShowPopup(MouseEvent evt) {
+			if (evt.isPopupTrigger()) {
+				cellPopupMenu.show(CrosswordPanel.this, evt.getX(), evt.getY());
+			}
+		}
+	}
+	
+	private class KeyEventListener extends KeyAdapter {
+		@Override
+		public void keyTyped(KeyEvent evt) {
+			grid.keyTyped(evt);
+			CrosswordPanel.this.repaint(0);
+		}
+	}
+	
+	private class ToggleCellActionListener implements ActionListener {
+		public void actionPerformed(ActionEvent evt) {
+			grid.toggleCurrentCell();
+			grid.renumberCells();
+			CrosswordPanel.this.repaint(0);
+		}
 	}
 	
 //	private Document getStateAsDocument() {

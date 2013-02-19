@@ -28,11 +28,11 @@ import org.xml.sax.SAXException;
  * Utility class to serialize a Document into a file.
  */
 public class DOMSerializer {
-	/** logger */
+	// logger
 	private static final Logger LOG = Logger.getLogger(DOMSerializer.class.getName());
 
-	/** default transformer factory */
-	private final TransformerFactory tfactory_ = TransformerFactory.newInstance();
+	// default transformer factory
+	private final TransformerFactory tfactory = TransformerFactory.newInstance();
 
 	/**
 	 * Serialize DOM document into the specified output file. Uses FileSaver to safely perform operation.
@@ -42,8 +42,8 @@ public class DOMSerializer {
 	 */
 	public void serialize(Document doc, File outputFile) throws ServiceException {
 		try {
-			tfactory_.setAttribute("indent-number", "2");
-			Transformer serializer = tfactory_.newTransformer();
+			tfactory.setAttribute("indent-number", "2");
+			Transformer serializer = tfactory.newTransformer();
 			
 			setProperty(serializer, "method", "xml");
 			setProperty(serializer, "indent", "yes");

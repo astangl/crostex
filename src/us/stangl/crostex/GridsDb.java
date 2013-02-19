@@ -95,9 +95,10 @@ public class GridsDb {
 							char nextChar = rowText.charAt(k);
 							Cell nextCell = newGrid.getCell(j, k);
 							if (nextChar == '.') {
+								nextCell.setBlack(false);
 								nextCell.setContents("");
 							} else if (nextChar == 'X') {
-								nextCell.setBlack();
+								nextCell.setBlack(true);
 							} else {
 								throw new RuntimeException("Unexpected character " + nextChar
 										+ " found in gridsdb row value " + rowText);

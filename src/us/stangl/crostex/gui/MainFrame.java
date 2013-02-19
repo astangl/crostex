@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -43,6 +42,8 @@ import us.stangl.crostex.util.Message;
  * Main GUI frame.
  */
 public class MainFrame extends JFrame {
+	private static final long serialVersionUID = 1L;
+
 	/** logger */
 	private static final Logger LOG = Logger.getLogger(MainFrame.class.getName());
 
@@ -228,7 +229,7 @@ public class MainFrame extends JFrame {
 				}
 				String normalizedWord = normalizeWord(rawWord);
 				if (normalizedWord != null) {
-					tempList.add(new Pair(normalizedWord.toCharArray(), new Word()));
+					tempList.add(new Pair<char[], Word>(normalizedWord.toCharArray(), new Word()));
 				}
 			}
 		} catch (FileNotFoundException e) {

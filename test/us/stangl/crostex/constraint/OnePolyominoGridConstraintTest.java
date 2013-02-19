@@ -17,11 +17,11 @@ public class OnePolyominoGridConstraintTest extends TestCase {
 		Grid grid = new Grid(3, 3, "", "");
 		GridConstraint constraint = new OnePolyominoGridConstraint();
 		assertTrue(constraint.satisfiedBy(grid));
-		grid.getCell(1, 1).setBlack();
+		grid.getCell(1, 1).setBlack(true);
 		assertTrue(constraint.satisfiedBy(grid));
-		grid.getCell(0, 2).setBlack();
+		grid.getCell(0, 2).setBlack(true);
 		assertTrue(constraint.satisfiedBy(grid));
-		grid.getCell(2, 0).setBlack();
+		grid.getCell(2, 0).setBlack(true);
 		assertFalse(constraint.satisfiedBy(grid));
 	}
 }
