@@ -299,7 +299,7 @@ public class MainFrame extends JFrame {
 			System.out.println("in actionPerformed");
 			
 			CrosswordPanel selectedPanel = (CrosswordPanel)tabbedPane_.getSelectedComponent();
-			Grid gridCopy = new Grid(selectedPanel.getGrid());
+			Grid gridCopy = new Grid(selectedPanel.getCrossword().getGrid());
 			SaveGridTemplateDialog dialog = new SaveGridTemplateDialog(gridsDb, gridCopy);
 			dialog.getName();
 			JTextField nameField = dialog.getNameField();
