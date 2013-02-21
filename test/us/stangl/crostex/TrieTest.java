@@ -17,6 +17,7 @@ import us.stangl.crostex.dictionary.TST;
 import us.stangl.crostex.dictionary.Trie;
 import us.stangl.crostex.dictionary.TstNew;
 import us.stangl.crostex.dictionary.Xdict;
+import us.stangl.crostex.util.Pair;
 import us.stangl.crostex.util.ResettableIterator;
 
 /**

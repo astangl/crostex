@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import us.stangl.crostex.GridWord.Direction;
+import us.stangl.crostex.autofill.AutoFiller7;
 import us.stangl.crostex.dictionary.Dictionary;
 
 /**
@@ -448,6 +449,30 @@ public class Grid
 	
 	private int getCellHeight()	{
 		return cellHeight;
+	}
+
+	public Cell getCurrentCell() {
+		return currentCell;
+	}
+
+	public void setCurrentCell(Cell currentCell) {
+		this.currentCell = currentCell;
+	}
+
+	public int getCurrentRow() {
+		return currentRow;
+	}
+
+	public void setCurrentRow(int currentRow) {
+		this.currentRow = currentRow;
+	}
+
+	public int getCurrentColumn() {
+		return currentColumn;
+	}
+
+	public void setCurrentColumn(int currentColumn) {
+		this.currentColumn = currentColumn;
 	}
 	
 }

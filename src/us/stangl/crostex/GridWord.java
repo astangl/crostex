@@ -6,6 +6,8 @@ package us.stangl.crostex;
 import java.util.HashMap;
 import java.util.Map;
 
+import us.stangl.crostex.util.Pair;
+
 /**
  * Word in a Grid.
  */

@@ -30,13 +30,13 @@ import javax.swing.JTextField;
 import us.stangl.crostex.Grid;
 import us.stangl.crostex.GridsDb;
 import us.stangl.crostex.Main;
-import us.stangl.crostex.Pair;
 import us.stangl.crostex.RomanNumeralGenerator;
 import us.stangl.crostex.ServiceException;
 import us.stangl.crostex.Word;
 import us.stangl.crostex.dictionary.Dictionary;
 import us.stangl.crostex.dictionary.Ydict;
 import us.stangl.crostex.util.Message;
+import us.stangl.crostex.util.Pair;
 
 /**
  * Main GUI frame.

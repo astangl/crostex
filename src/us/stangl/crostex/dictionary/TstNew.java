@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import us.stangl.crostex.Pair;
+import us.stangl.crostex.util.Pair;
 import us.stangl.crostex.util.ResettableIterator;
 
 /**

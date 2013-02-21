@@ -1,27 +1,30 @@
 /**
  * Copyright 2008, Alex Stangl. See LICENSE for licensing details.
  */
-package us.stangl.crostex;
+package us.stangl.crostex.autofill;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import us.stangl.crostex.Cell;
+import us.stangl.crostex.Grid;
+import us.stangl.crostex.GridWord;
+import us.stangl.crostex.Word;
 import us.stangl.crostex.dictionary.Dictionary;
-import us.stangl.crostex.util.LruCache;
-import us.stangl.crostex.util.Stack;
+import us.stangl.crostex.util.Pair;
+import us.stangl.crostex.util.ResettableIterator;
 
 /**
- * 4th generation auto-fill algorithm.
- * Iterative implementation of DFS.
+ * 0th generation grid auto-fill algorithm.
  */
-public class AutoFiller4 implements AutoFill {
+public class AutoFiller0 implements AutoFill {
 	public boolean autoFill(Grid grid, Dictionary<char[], Word> dict) {
-       // Find all full words in xword, store in set for duplicate checking
+        // Find all full words in xword, store in set for duplicate checking
 		Set<String> wordsAlreadyInUse = new HashSet<String>();
 		List<GridWord> acrossWords = grid.getAcrossWords();
 		List<GridWord> downWords = grid.getDownWords();
@@ -29,7 +32,9 @@ public class AutoFiller4 implements AutoFill {
 		List<GridWord> downWordsToFill = new ArrayList<GridWord>();
 		Map<GridWord, Pair<Cell[], int[]>> originalValueStore = new HashMap<GridWord, Pair<Cell[], int[]>>();
 		
+//		System.out.println("acrossWords = ");
 		for (GridWord gw : acrossWords) {
+//System.out.println(gw);
 			if (gw.isEligibleForAutofill()) {
 				if (! dict.isPatternInDictionary(gw.getPattern()))
 					return false;						// cannot satisfy this across word
@@ -40,7 +45,9 @@ public class AutoFiller4 implements AutoFill {
 			}
 		}
 		
+//System.out.println("downWords = ");
 		for (GridWord gw : downWords) {
+//System.out.println(gw);
 			if (gw.isEligibleForAutofill()) {
 				if (! dict.isPatternInDictionary(gw.getPattern()))
 					return false;						// cannot satisfy this down word
@@ -99,14 +106,14 @@ public class AutoFiller4 implements AutoFill {
 //		
 //		// So, last word iterates most often. Each time it completes an iteration, bump the one before it and reset it
 //
-//		List<ResettableIterator<Pair<char[], Word>>> iteratorList = new ArrayList<ResettableIterator<Pair<char[], Word>>>(acrossWordsToFill.size());
-//		for (GridWord gw : acrossWordsToFill) {
-//			ResettableIterator<Pair<char[], Word>> it = dict.getIterator(gw.getPattern());
-//			if (! it.hasNext())
-//				// Cannot fill this!
-//				return false;
-//			iteratorList.add(it);
-//		}
+		List<ResettableIterator<Pair<char[], Word>>> iteratorList = new ArrayList<ResettableIterator<Pair<char[], Word>>>(acrossWordsToFill.size());
+		for (GridWord gw : acrossWordsToFill) {
+			ResettableIterator<Pair<char[], Word>> it = dict.getIterator(gw.getPattern());
+			if (! it.hasNext())
+				// Cannot fill this!
+				return false;
+			iteratorList.add(it);
+		}
 		
 		// Seems like we should have 2 phases here.
 		// First phase, start populating each partial across words, starting from top, checking intersecting DOWN words,
@@ -137,20 +144,23 @@ public class AutoFiller4 implements AutoFill {
 		}
 		return false;
 	*/	
-		GridWord firstWord = acrossWordsToFill.get(0);
+//		GridWord firstWord = acrossWordsToFill.get(0);
 		
 		// free up things we don't really need
 		downToAcrossWordMap = null;
 		acrossToDownWordMap = null;
+		originalValueStore = null;
 		wordsAlreadyInUse = null;
 		acrossWords = null;
 		downWords = null;
-		return populateWord4(firstWord, wordToCrossingWordsMap, originalValueStore, dict, dict.getPatternMatches(firstWord.getPattern()));
+
+		//		dict.getPatternMatches(firstWord.getPattern());
+//		return populateWord(firstWord, wordToCrossingWordsMap, originalValueStore, dict, dict.getPatternMatches(firstWord.getPattern()));
 
 //		return populateWord(acrossWordsToFill.get(0), acrossToDownWordMap, downToAcrossWordMap, originalValueStore, dict, wordTracker);
 		
 //		return populateAcrossWord(0, acrossWordsToFill, iteratorList, acrossToDownWordMap, originalValueStore, dict);
-
+		return false;
 		/*
 		int index = 0;
 		GridWord gridWord = acrossWordsToFill.get(index);
@@ -216,156 +226,77 @@ public class AutoFiller4 implements AutoFill {
 	*/
 	}
 
-	/** non-recursive attempt to solve crossword */
-	private boolean populateWord4(GridWord gridWord,
-			Map<GridWord, List<GridWord>> wordToCrossingWordsMap,
+	private boolean populateAcrossWord(int index,
+			List<GridWord> acrossWordsToFill,
+			List<ResettableIterator<Pair<char[], Word>>> iteratorList,
+			Map<GridWord, List<Pair<GridWord, Integer>>> acrossToDownWordMap,
 			Map<GridWord, Pair<Cell[], int[]>> originalValueStore,
-			Dictionary<char[], Word> dict,
-			List<Pair<char[], Word>> candidates)
+			Dictionary<char[], Word> dict)
 	{
-		// deferredWork contains work that we still need to do
-		Stack<DeferredWorkTuple> deferredWork = new Stack<DeferredWorkTuple>();
-		
-		// Seed the stack. First unit of work has no parent, so null
-		// whenever we push deferredWord, save a reference back to its source, so if deferredWork cannot
-		// be successfully completed, later, we rollback everything back to the source, and proceed with next candidate for source
-		DeferredWorkTuple nextWork = new DeferredWorkTuple(gridWord, null, candidates.iterator(), wordToCrossingWordsMap);
-		LruCache<String, List<Pair<char[], Word>>> cache = new LruCache<String, List<Pair<char[], Word>>>(200);
-		boolean needNewWord = true;
-AcrossWord:
-		while (true) {
-			while (needNewWord) {
-				if (nextWork.iterator_.hasNext()) {
-					// Try candidate
-					Pair<char[], Word> tuple = nextWork.iterator_.next();
-					gridWord.setAutofillContents(tuple.first, nextWork.savedConfig_);
-					
-//System.out.println("Trying new word " + new String(tuple.first_));
-					// First, check all intersecting words completed by this word, making sure they are in dictionary. If not, try another candidate.
-					for (GridWord crossWord : nextWork.crossWordsAlmostComplete_)
-						if (dict.lookup(crossWord.getContents().toCharArray()) == null)
-							continue AcrossWord;
-//System.out.println("All crossWordsAlmostComplete_ in dict for word " + new String(tuple.first_));
-
-					needNewWord = false;
-					nextWork.resetNeedingWork();
-				} else {
-					// ran out of choices, so we have a failure and need to rollback to our source
-					GridWord parent = nextWork.parent_;
-					if (parent == null)
-						return false;									// we have failed at the top level
-					while (nextWork.word_ != parent) {
-//System.out.println("Restoring to saved config " + nextWork.word_.getNumber() + " " + nextWork.word_.getDirection());							
-						nextWork.word_.restoreFromFillConfig(nextWork.savedConfig_);
-						nextWork = deferredWork.pop();
-					}
-				}
-			}
-
-			// Find crossWordNeedingMoreWork that has the fewest possibilities
-			int smallestListSize = Integer.MAX_VALUE;
-			List<Pair<char[], Word>> smallestListOfMatches = null;
-			GridWord bestWord = null;
-			for (Iterator<GridWord> it = nextWork.crossWordsNeedingWork_.iterator(); it.hasNext(); ) {
-				GridWord word = it.next();
-				if (! word.isEligibleForAutofill()) {
-//		System.out.println("Skipping " + word.getNumber() + " " + word.getDirection() + " " + word.getContents() + " because it's already complete.");
-					it.remove();
-					continue;							// word already completed, skip it
-				}
-				char[] pattern = word.getPattern();
-				String patternString = new String(pattern);
-				List<Pair<char[], Word>> matches = cache.get(patternString);
-				if (matches == null) {
-					matches = dict.getPatternMatches(pattern);
-					cache.put(patternString, matches);
-				}
-
-//				List<Pair<char[], Word>> matches = dict.getPatternMatches(pattern);
-//		System.out.println("word = " + word.getNumber() + " " + word.getDirection() + " " + word.getContents() + ", matches size = " + matches.size() + " for pattern " + new String(pattern));						
-//					System.out.println("index = " + intersectingWordIndex + ", candidate = " + new String(tuple.first_) + ", matches size = " + matches.size() + " for pattern " + new String(intersectPattern));						
-				if (matches.size() == 0) {
-					// intersecting word cannot be filled, try another candidate
-					needNewWord = true;
-					continue AcrossWord;
-				}
-					
-				if (matches.size() < smallestListSize) {
-					smallestListSize = matches.size();
-					smallestListOfMatches = matches;
-					bestWord = word;
-				}
-			}
-			if (bestWord == null) {
-				// We're done with this branch, pop everything off the stack and look for other deferred work
-				if (deferredWork.empty())
-					return true;				// We're done!
-
-				nextWork = deferredWork.pop();
-			} else {
-				deferredWork.push(nextWork);
-				nextWork = new DeferredWorkTuple(bestWord, nextWork.word_, smallestListOfMatches.iterator(), wordToCrossingWordsMap);
-				needNewWord = true;
+//		if (index >= acrossWordsToFill.size())
+//			return true;							// We've hit the bottom, so all is good
+		GridWord gridWord = acrossWordsToFill.get(index);
+		ResettableIterator<Pair<char[], Word>> it = iteratorList.get(index);
+		List<Pair<GridWord, Integer>> intersectingDownWords = acrossToDownWordMap.get(gridWord);
+		it.reset();
+		while (it.hasNext()) {
+			Pair<char[], Word> tuple = it.next();
+			saveNewWordIntoGrid(gridWord, tuple, originalValueStore);
+			// Now check intersecting down words to make sure they're all still OK
+			if (checkGridWordPatternsAllInTrie(intersectingDownWords, dict, it)) {
+				if (index + 1 >= acrossWordsToFill.size())
+					return true;
+				// Try to fill in across words below
+				if (populateAcrossWord(index + 1, acrossWordsToFill, iteratorList, acrossToDownWordMap, originalValueStore, dict))
+					return true;
+				
+//				// Reset all the iterators for every across word below
+//				for (int index2 = index + 1; index2 < acrossWordsToFill.size(); ++index2)
+//					iteratorList.get(index2).reset();
 			}
 		}
+		// We've run out of word candidates with none meeting the criteria. Restore GridWord and return failure
+
+		//TODO Use a DAG or other dependency mapping to backtrack to previous across words that need to change,
+		//     and leave ones alone that are still OK for now.
+//		gridWord.restoreFromMap(originalValueStore.get(gridWord));
+		gridWord.restoreFromFillConfig(originalValueStore.get(gridWord));
+		return false;
 	}
 	
-	
-	private static class DeferredWorkTuple {
-		/** grid word we are working on */
-		public final GridWord word_;
-		
-		/** parent word, or null if this is top-level */
-		public final GridWord parent_;
-		
-		/** saved config, used for rollback */
-		public final Pair<Cell[], int[]> savedConfig_;
-		
-		/** iterator over this word's candidates */
-		public final Iterator<Pair<char[], Word>> iterator_;
-		
-		/** list of GridWord which intersect ours and are almost complete, i.e., the intersection is their only empty square */
-		public List<GridWord> crossWordsAlmostComplete_;
-		
-		/** list of GridWord which intersect ours and need additional work */
-		public List<GridWord> crossWordsNeedingWork_;
-		
-		/** original list of GridWord which intersect ours and need additional work */
-		public List<GridWord> originalCrossWordsNeedingWork_;
-		
-		/** boolean indicating whether we need to try a new word candidate */
-//		public boolean needNewWord_;
-		
-		public DeferredWorkTuple(GridWord word, GridWord parent, 
-				Iterator<Pair<char[], Word>> iterator, Map<GridWord, List<GridWord>> wordToCrossingWordsMap) {
-			word_ = word;
-			parent_ = parent;
-			savedConfig_ = word.getFillConfig();
-			iterator_ = iterator;
-//			needNewWord_ = true;
-		
-			// new work tuple
-			// Get list of words currently crossing nextWord at blank cells partitioned into 2 collections:
-			// crossWordsAlmostComplete, words whose only empty cell is the intersecting cell, and
-			// crossWordsNeedingMoreWork, words which have other empty cells besides the one intersecting with gridWord
-			// words that intersect gridWord at non-empty cells are ignored, as they need no further attention
-			List<GridWord> crossWords = wordToCrossingWordsMap.get(word_);
-			crossWordsAlmostComplete_ = new ArrayList<GridWord>(crossWords.size());
-			crossWordsNeedingWork_ = new ArrayList<GridWord>(crossWords.size());
-			for (GridWord crossWord : crossWords) {
-				Cell intersection = word_.getIntersection(crossWord);
-				if (intersection.isEmpty()) {
-					if (crossWord.getNumberCellsRequiringAutofill() == 1)
-						crossWordsAlmostComplete_.add(crossWord);
-					else
-						crossWordsNeedingWork_.add(crossWord);
-				}
+	/** return boolean indicating whether the patterns for all the GridWords in the collection are in the trie */
+	private boolean checkGridWordPatternsAllInTrie(Collection<Pair<GridWord, Integer>> gridWords,
+			Dictionary<char[], Word> dict,
+			ResettableIterator<Pair<char[], Word>> acrossIt) {
+		// Now check intersecting down words to make sure they're all still OK
+		for (Pair<GridWord, Integer> gridWordPair : gridWords) {
+			if (! dict.isPatternInDictionary(gridWordPair.first.getPattern())) {
+				acrossIt.avoidLetterAt(gridWordPair.second);
+				
+				// Tried not breaking out of loop immediately here, but it seemed to reduce performance.
+				return false;
 			}
-			originalCrossWordsNeedingWork_ = new ArrayList<GridWord>(crossWordsNeedingWork_);
 		}
-		
-		public void resetNeedingWork() {
-			crossWordsNeedingWork_= new ArrayList<GridWord>(originalCrossWordsNeedingWork_);
-		}
+		return true;
 	}
+
+//	private void saveNewWordIntoGrid(GridWord gridWord, Pair<char[], Word> tuple, Map<GridWord, Map<Cell, String>> oldValueStore) {
+	private void saveNewWordIntoGrid(GridWord gridWord, Pair<char[], Word> tuple, Map<GridWord, Pair<Cell[], int[]>> oldValueStore) {
+		// First restore previous value, if there was one.
+//		Map<Cell, String> prevValue = oldValueStore.get(gridWord);
+//		gridWord.restoreFromMap(prevValue);
+		gridWord.setAutofillContents(tuple.first, oldValueStore.get(gridWord));
+	}
+	
+//	/** return usable word from this iterator, if there is one, else null */ 
+//	private TrieTuple getAvailableWordFromIterator(ResettableIterator<TrieTuple> it, Set<String> wordsAlreadyInUse) {
+//		while (true) {
+//			if (! it.hasNext())
+//				return null;
+//			TrieTuple tuple = it.next();
+//			String wordText = new String(tuple.text_);
+////			if (! wordsAlreadyInUse.contains(wordText))
+//				return tuple;
+//		}
+//	}
 }

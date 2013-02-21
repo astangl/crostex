@@ -14,6 +14,10 @@ public class RomanNumeralGenerator {
 	/** largest numeral we can generate */
 	public static final int MAX_VALUE = 3999;
 	
+	// arrays of roman numeral parts and their corresponding numeric value 
+	private static String[] ROMAN_NUMERAL_PRIMITIVE_STRINGS = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+	private static int[] ROMAN_NUMBER_PRIMITIVE_VALUES = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+	
 	/** for each element [i], where i > 0, holds list of RomanNumeral of the specified length */
 	List<List<String>> bucketsOfLength = new ArrayList<List<String>>();
 	
@@ -32,72 +36,13 @@ public class RomanNumeralGenerator {
 		//TODO if performance suffers, consider making this StringBuilder an instance variable
 		StringBuilder retval = new StringBuilder();
 		
-		int temp = value;
-		
-		// First generate M's until left with value less than 1000
-		while (temp >= 1000) {
-			retval.append('M');
-			temp -= 1000;
-		}
-		
-		if (temp >= 900) {
-			retval.append("CM");
-			temp -= 900;
-		}
-		
-		if (temp >= 500) {
-			retval.append("D");
-			temp -= 500;
-		}
-		
-		if (temp >= 400) {
-			retval.append("CD");
-			temp -= 400;
-		}
-		
-		while (temp >= 100) {
-			retval.append('C');
-			temp -= 100;
-		}
-		
-		if (temp >= 90) {
-			retval.append("XC");
-			temp -= 90;
-		}
-		
-		if (temp >= 50) {
-			retval.append('L');
-			temp -= 50;
-		}
-		
-		if (temp >= 40) {
-			retval.append("XL");
-			temp -= 40;
-		}
-		
-		while (temp >= 10) {
-			retval.append('X');
-			temp -= 10;
-		}
-		
-		if (temp >= 9) {
-			retval.append("IX");
-			temp -= 9;
-		}
-		
-		if (temp >= 5) {
-			retval.append('V');
-			temp -= 5;
-		}
-		
-		if (temp >= 4) {
-			retval.append("IV");
-			temp -= 4;
-		}
-		
-		while (temp >= 1) {
-			retval.append('I');
-			--temp;
+		for (int i = 0; i < ROMAN_NUMBER_PRIMITIVE_VALUES.length; ++i) {
+			int val = ROMAN_NUMBER_PRIMITIVE_VALUES[i];
+			String string = ROMAN_NUMERAL_PRIMITIVE_STRINGS[i];
+			while (value >= val) {
+				retval.append(string);
+				value -= val;
+			}
 		}
 		
 		return retval.toString();
@@ -106,69 +51,13 @@ public class RomanNumeralGenerator {
 	public static int getValueOfRomanNumeral(String numeral) {
 		int retval = 0;
 		int index = 0;
-		while (numeral.startsWith("M", index)) {
-			retval += 1000;
-			++index;
-		}
-		
-		if (numeral.startsWith("CM", index)) {
-			retval += 900;
-			index += 2;
-		}
-		
-		if (numeral.startsWith("D", index)) {
-			retval += 500;
-			++index;
-		}
-		
-		if (numeral.startsWith("CD", index)) {
-			retval += 400;
-			index += 2;
-		}
-		
-		while (numeral.startsWith("C", index)) {
-			retval += 100;
-			++index;
-		}
-		
-		if (numeral.startsWith("XC", index)) {
-			retval += 90;
-			index += 2;
-		}
-		
-		if (numeral.startsWith("L", index)) {
-			retval += 50;
-			++index;
-		}
-		
-		if (numeral.startsWith("XL", index)) {
-			retval += 40;
-			index += 2;
-		}
-		
-		while (numeral.startsWith("X", index)) {
-			retval += 10;
-			++index;
-		}
-		
-		if (numeral.startsWith("IX", index)) {
-			retval += 9;
-			index += 2;
-		}
-		
-		if (numeral.startsWith("V", index)) {
-			retval += 5;
-			++index;
-		}
-		
-		if (numeral.startsWith("IV", index)) {
-			retval += 4;
-			index += 2;
-		}
-		
-		while (numeral.startsWith("I", index)) {
-			retval++;
-			++index;
+		for (int i = 0; i < ROMAN_NUMBER_PRIMITIVE_VALUES.length; ++i) {
+			int val = ROMAN_NUMBER_PRIMITIVE_VALUES[i];
+			String string = ROMAN_NUMERAL_PRIMITIVE_STRINGS[i];
+			while (numeral.startsWith(string, index)) {
+				retval += val;
+				index += string.length();
+			}
 		}
 		
 		if (index != numeral.length())

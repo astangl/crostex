@@ -23,6 +23,7 @@ import us.stangl.crostex.dictionary.Trie;
 import us.stangl.crostex.dictionary.TstNew;
 import us.stangl.crostex.dictionary.Xdict;
 import us.stangl.crostex.dictionary.Ydict;
+import us.stangl.crostex.util.Pair;
 
 /**
  * Check various Dictionary implementations for correctness and speed.

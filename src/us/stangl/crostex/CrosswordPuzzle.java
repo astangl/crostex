@@ -23,6 +23,9 @@ public class CrosswordPuzzle {
 	
 	private String author;
 	
+	// whether rotational symmetry is being maintained
+	private boolean maintainingSymmetry = true;
+	
 	public CrosswordPuzzle(Grid grid) {
 		this.grid = new Grid(grid);
 	}
@@ -40,7 +43,17 @@ public class CrosswordPuzzle {
 	}
 	
 	public void toggleCurrentCell() {
-		grid.toggleCurrentCell();
+		int currentRow = grid.getCurrentRow();
+		int currentColumn = grid.getCurrentColumn();
+		Cell currentCell = grid.getCell(currentRow, currentColumn);
+		boolean blackWhite = ! currentCell.isBlack();
+		currentCell.setBlack(blackWhite);
+		if (maintainingSymmetry) {
+			int otherRow = grid.getHeight() - 1 - currentRow;
+			int otherColumn = grid.getWidth() - 1 - currentColumn;
+			grid.getCell(otherRow, otherColumn).setBlack(blackWhite);
+		}
+//		grid.toggleCurrentCell();
 	}
 	
 	public Grid getGrid() {
@@ -108,6 +121,14 @@ public class CrosswordPuzzle {
 			childElement.appendChild(doc.createTextNode(childValue));
 			parent.appendChild(childElement);
 		}
+	}
+
+	public boolean isMaintainingSymmetry() {
+		return maintainingSymmetry;
+	}
+
+	public void setMaintainingSymmetry(boolean maintainingSymmetry) {
+		this.maintainingSymmetry = maintainingSymmetry;
 	}
 	
 }

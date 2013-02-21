@@ -17,6 +17,7 @@ import javax.swing.SwingUtilities;
 import us.stangl.crostex.dictionary.Dictionary;
 import us.stangl.crostex.dictionary.Ydict;
 import us.stangl.crostex.gui.MainFrame;
+import us.stangl.crostex.util.Pair;
 
 /**
  * Main class to startup application.

@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import us.stangl.crostex.Pair;
+import us.stangl.crostex.util.Pair;
 import us.stangl.crostex.util.ResettableIterator;
 
 

@@ -1,8 +1,10 @@
 /**
  * Copyright 2008, Alex Stangl. See LICENSE for licensing details.
  */
-package us.stangl.crostex;
+package us.stangl.crostex.autofill;
 
+import us.stangl.crostex.Grid;
+import us.stangl.crostex.Word;
 import us.stangl.crostex.dictionary.Dictionary;
 
 /**

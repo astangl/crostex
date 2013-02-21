@@ -1,7 +1,7 @@
 /**
  * Copyright 2008, Alex Stangl. See LICENSE for licensing details.
  */
-package us.stangl.crostex;
+package us.stangl.crostex.util;
 
 /**
  * Generic triple for constructing simple 3-tuples.

@@ -1,7 +1,7 @@
 /**
  * Copyright 2008, Alex Stangl. See LICENSE for licensing details.
  */
-package us.stangl.crostex;
+package us.stangl.crostex.autofill;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,7 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import us.stangl.crostex.Cell;
+import us.stangl.crostex.Grid;
+import us.stangl.crostex.GridWord;
+import us.stangl.crostex.Word;
 import us.stangl.crostex.dictionary.Dictionary;
+import us.stangl.crostex.util.Pair;
 import us.stangl.crostex.util.ResettableIterator;
 
 /**
