@@ -474,5 +474,19 @@ public class Grid
 	public void setCurrentColumn(int currentColumn) {
 		this.currentColumn = currentColumn;
 	}
+
+	/**
+	 * @return the currentDirection
+	 */
+	public NsewDirection getCurrentDirection() {
+		return currentDirection;
+	}
+
+	/**
+	 * @param currentDirection the currentDirection to set
+	 */
+	public void setCurrentDirection(NsewDirection currentDirection) {
+		this.currentDirection = currentDirection;
+	}
 	
 }

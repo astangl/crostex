@@ -11,6 +11,10 @@ import java.io.File;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import us.stangl.crostex.command.CommandBuffer;
+import us.stangl.crostex.command.EnterCharacterToCellCommand;
+import us.stangl.crostex.command.ToggleCurrentCellCommand;
+
 /**
  * Object representing a crossword puzzle under construction.
  * @author Alex Stangl
@@ -22,6 +26,9 @@ public class CrosswordPuzzle {
 	private String title;
 	
 	private String author;
+	
+	// command buffer to hold mutating user commands, for undo/redo purposes
+	private CommandBuffer<CrosswordPuzzle> commandBuffer = new CommandBuffer<CrosswordPuzzle>(this);
 	
 	// whether rotational symmetry is being maintained
 	private boolean maintainingSymmetry = true;
@@ -39,25 +46,66 @@ public class CrosswordPuzzle {
 	}
 
 	public void keyTyped(KeyEvent evt) {
-		grid.keyTyped(evt);
+		char keyChar = evt.getKeyChar();
+		if (keyChar == '\u001a') {
+			// Control Z -- trigger undo
+			if (commandBuffer.haveCommandsToUndo())
+				commandBuffer.undo();
+		} else if (keyChar == '\u0019') {
+			// Control Y -- trigger redo
+			if (commandBuffer.haveCommandsToRedo())
+				commandBuffer.redo();
+		} else {
+			//grid.keyTyped(evt);
+			char c = evt.getKeyChar();
+			if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') {
+				c = Character.toUpperCase(c);
+				Cell currentCell = grid.getCurrentCell();
+				if (currentCell != null && !currentCell.isBlack()) {
+					commandBuffer.applyCommand(new EnterCharacterToCellCommand(this, c));
+				}
+			}
+		}
 	}
 	
 	public void toggleCurrentCell() {
-		int currentRow = grid.getCurrentRow();
-		int currentColumn = grid.getCurrentColumn();
-		Cell currentCell = grid.getCell(currentRow, currentColumn);
-		boolean blackWhite = ! currentCell.isBlack();
-		currentCell.setBlack(blackWhite);
-		if (maintainingSymmetry) {
-			int otherRow = grid.getHeight() - 1 - currentRow;
-			int otherColumn = grid.getWidth() - 1 - currentColumn;
-			grid.getCell(otherRow, otherColumn).setBlack(blackWhite);
-		}
-//		grid.toggleCurrentCell();
+		commandBuffer.applyCommand(new ToggleCurrentCellCommand(this));
 	}
 	
 	public Grid getGrid() {
 		return grid;
+	}
+	
+	public Cell getCell(int row, int column) {
+		return grid.getCell(row, column);
+	}
+	
+	public int getHeight() {
+		return grid.getHeight();
+	}
+	
+	public int getWidth() {
+		return grid.getWidth();
+	}
+	
+	public int getCurrentRow() {
+		return grid.getCurrentRow();
+	}
+	
+	public void setCurrentRow(int currentRow) {
+		grid.setCurrentRow(currentRow);
+	}
+	
+	public int getCurrentColumn() {
+		return grid.getCurrentColumn();
+	}
+	
+	public void setCurrentColumn(int currentColumn) {
+		grid.setCurrentColumn(currentColumn);
+	}
+	
+	public NsewDirection getCurrentDirection() {
+		return grid.getCurrentDirection();
 	}
 	
 	public void render(Graphics2D g) {
