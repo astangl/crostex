@@ -103,6 +103,7 @@ public class Ydict<E> implements Dictionary<char[], E> {
 		if (USE_NEW_INTERSECTION_ALGORITHM) {
 			// Use Svs + Galloping Search, as suggested by "Faster Set Intersection Algorithms for Text Searching"
 			int[][] wordLists = new int[pattern.length][];
+			//TODO investigate whether something like QuickSort might work better than this insertion sort here
 			int wordListsSize = 0;
 			for (int index = 0; index < len; ++index) {
 				char c = pattern[index];

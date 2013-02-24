@@ -15,8 +15,10 @@ public class RomanNumeralGenerator {
 	public static final int MAX_VALUE = 3999;
 	
 	// arrays of roman numeral parts and their corresponding numeric value 
-	private static String[] ROMAN_NUMERAL_PRIMITIVE_STRINGS = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
-	private static int[] ROMAN_NUMBER_PRIMITIVE_VALUES = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+	private static final String[] ROMAN_NUMERAL_PRIMITIVE_STRINGS =
+		{"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+	private static final int[] ROMAN_NUMBER_PRIMITIVE_VALUES = 
+		{1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
 	
 	/** for each element [i], where i > 0, holds list of RomanNumeral of the specified length */
 	List<List<String>> bucketsOfLength = new ArrayList<List<String>>();
@@ -91,19 +93,16 @@ public class RomanNumeralGenerator {
 		RomanNumeralGenerator instance = new RomanNumeralGenerator();
 		
 		List<String> list = instance.generateAllNumeralsOfLength(7);
-		for (String numeral : list) {
+		for (String numeral : list)
 			System.out.println(numeral);
-		}
-//		for (int i = 1; i <= 1000; ++i) {
+//		for (int i = 1; i <= 1000; ++i)
 //			System.out.println(i + " = " + instance.getRomanNumeral(i));
-//		}
 		
 	}
 	
 	private List<String> getBucketOfLength(int length) {
-		while (bucketsOfLength.size() <= length) {
+		while (bucketsOfLength.size() <= length)
 			bucketsOfLength.add(new ArrayList<String>());
-		}
 		return bucketsOfLength.get(length);
 	}
 }

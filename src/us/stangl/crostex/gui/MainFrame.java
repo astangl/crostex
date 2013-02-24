@@ -51,15 +51,14 @@ import us.stangl.crostex.util.Pair;
 public class MainFrame extends JFrame {
 	private static final long serialVersionUID = 1L;
 
-	/** logger */
+	// logger
 	private static final Logger LOG = Logger.getLogger(MainFrame.class.getName());
 
-	/** preferred size dimensions */
+	// preferred size dimensions
 	private static final Dimension PREFERRED_SIZE = new Dimension(800, 600);
 	
-	/** map of grid templates,  name -> template */
+	// map of grid templates,  name -> template
 	private GridsDb gridsDb;
-//	private Map<String, Grid> gridTemplates_ = new HashMap<String, Grid>();
 	
 	// top-level tabbed pane
 	private JTabbedPane topLevelTabbedPane = new JTabbedPane();
@@ -78,9 +77,12 @@ public class MainFrame extends JFrame {
 
 	// Edit menu option to redo
 	private JMenuItem redoItem = newMenuItem(Message.EDIT_MENU_OPTION_REDO);
+
+	// Edit menu option to set current cell to black
+	private JMenuItem setToBlackItem = newMenuItem(Message.EDIT_MENU_OPTION_SET_TO_BLACK);
 	
-	/** Dictionary */
-	private Dictionary<char[], Word> dict_ = new Ydict<Word>();
+	// Dictionary
+	private Dictionary<char[], Word> dict = new Ydict<Word>();
 	
 	public MainFrame() {
 		super(Message.MAIN_FRAME_TITLE.toString());
@@ -141,24 +143,24 @@ public class MainFrame extends JFrame {
 		} catch (ServiceException e) {
 			LOG.log(Level.SEVERE, "ServiceException caught", e);
 		}
-//		gridTemplates_ = readGridDb(dataDirectory);
 		
 		// Read in dictionaries
-		boolean dictRead;
-//		dictRead = readDictionaryFile(dataDirectory, "SINGLE.TXT");
-//		System.out.println("dictRead = " + dictRead);
-		dictRead = readDictionaryFile(dataDirectory, "CROSSWD.TXT");
-		System.out.println("dictRead = " + dictRead);
-		dictRead = readDictionaryFile(dataDirectory, "CRSWD-D.TXT");
-		System.out.println("dictRead = " + dictRead);
+		int nbrDictionariesRead = 0;
+//		if (readDictionaryFile(dataDirectory, "SINGLE.TXT"))
+//			++nbrDictionariesRead;
+		if (readDictionaryFile(dataDirectory, "CROSSWD.TXT"))
+			++nbrDictionariesRead;
+		if (readDictionaryFile(dataDirectory, "CRSWD-D.TXT"))
+			++nbrDictionariesRead;
+		LOG.info("Read " + nbrDictionariesRead + " dictionaries");
 		
 		// Add all roman numerals to dictionary
 		RomanNumeralGenerator romanNumeralGenerator = new RomanNumeralGenerator();
 		Word dummyWord = new Word();
 		for (int len = 1; len <= 15; ++len)
 			for (String numeral : romanNumeralGenerator.generateAllNumeralsOfLength(len))
-				dict_.insert(numeral.toCharArray(), dummyWord);
-		dict_.rebalance();
+				dict.insert(numeral.toCharArray(), dummyWord);
+		dict.rebalance();
 		
 		
 		topLevelTabbedPane.addChangeListener(new TopLevelTabbedPaneChangeListener());
@@ -206,7 +208,7 @@ public class MainFrame extends JFrame {
 				if (crosswordPanel != null) {
 					CrosswordPuzzle crossword = crosswordPanel.getCrossword();
 					crossword.undo();
-					enableDisableUndoRedo();
+					resetEditMenuState();
 					crosswordPanel.repaint(0);
 				}
 			}
@@ -219,17 +221,31 @@ public class MainFrame extends JFrame {
 				if (crosswordPanel != null) {
 					CrosswordPuzzle crossword = crosswordPanel.getCrossword();
 					crossword.redo();
-					enableDisableUndoRedo();
+					resetEditMenuState();
 					crosswordPanel.repaint(0);
 				}
 			}
 		});
 		redoItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_MASK));
 		
+		setToBlackItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				CrosswordPanel crosswordPanel = (CrosswordPanel)topLevelTabbedPane.getSelectedComponent();
+				if (crosswordPanel != null) {
+					CrosswordPuzzle crossword = crosswordPanel.getCrossword();
+					crossword.setCurrentCellBlack();
+					resetEditMenuState();
+					crosswordPanel.repaint(0);
+				}
+			}
+		});
+		setToBlackItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, 0));
+		
 		JMenu editMenu = new JMenu(Message.EDIT_MENU_HEADER.toString());
 		editMenu.add(undoItem);
 		editMenu.add(redoItem);
 		editMenu.addSeparator();
+		editMenu.add(setToBlackItem);
 		topLevelMenuBar.add(editMenu);
 		getRootPane().setJMenuBar(topLevelMenuBar);
 	}
@@ -277,7 +293,8 @@ public class MainFrame extends JFrame {
 			while (true) {
 				String rawWord = in.readLine();
 				if (rawWord == null) {
-					dict_.bulkInsert(tempList);
+					dict.bulkInsert(tempList);
+					LOG.info("Successfully read dictionary " + dictionaryFile);
 					return true;
 				}
 				String normalizedWord = normalizeWord(rawWord);
@@ -309,9 +326,13 @@ public class MainFrame extends JFrame {
 	/**
 	 * Set undo/redo enabled/disabled based upon whether these operation can be performed on current CrosswordPuzzle.
 	 */
-	public void enableDisableUndoRedo() {
+	public void resetEditMenuState() {
 		CrosswordPanel crosswordPanel = (CrosswordPanel)topLevelTabbedPane.getSelectedComponent();
-		if (crosswordPanel != null) {
+		if (crosswordPanel == null) {
+			undoItem.setEnabled(false);
+			redoItem.setEnabled(false);
+			
+		} else {
 			CrosswordPuzzle crossword = crosswordPanel.getCrossword();
 			undoItem.setEnabled(crossword.isAbleToUndo());
 			redoItem.setEnabled(crossword.isAbleToRedo());
@@ -388,7 +409,7 @@ public class MainFrame extends JFrame {
 	
 	private class TopLevelTabbedPaneChangeListener implements ChangeListener {
 		public void stateChanged(ChangeEvent evt) {
-			enableDisableUndoRedo();
+			resetEditMenuState();
 		}
 	}
 }

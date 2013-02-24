@@ -17,13 +17,13 @@ import org.w3c.dom.NodeList;
  * Grids template database.
  */
 public class GridsDb {
-	/** logger */
+	// logger
 	private static final Logger LOG = Logger.getLogger(GridsDb.class.getName());
 	
-	/** grids template filename */
+	// grids template filename
 	private static final String GRIDSDB_FILENAME = "gridsdb.xml";
 
-	/** grids in collection */
+	// grids in collection
 	private Collection<Grid> grids;
 	
 	/**

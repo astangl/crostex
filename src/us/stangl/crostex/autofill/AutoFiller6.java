@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import us.stangl.crostex.AcrossDownDirection;
 import us.stangl.crostex.Cell;
 import us.stangl.crostex.Grid;
 import us.stangl.crostex.GridWord;
 import us.stangl.crostex.Word;
-import us.stangl.crostex.GridWord.Direction;
 import us.stangl.crostex.dictionary.Dictionary;
 import us.stangl.crostex.util.CircularList;
 import us.stangl.crostex.util.Pair;
@@ -206,7 +206,7 @@ MAINLOOP:
 		 * @return true if able to find another possibility for this tuple, intersecting one of the specified wordsThatNeedChange
 		 */
 		public boolean getNextBestChoice(List<GridWord> wordsThatNeedChange) {
-			Direction wordDirection = word_.getDirection();
+			AcrossDownDirection wordDirection = word_.getDirection();
 			
 			//TODO lazy create intersectionCells
 			List<Cell> intersectionCells = new ArrayList<Cell>(wordsThatNeedChange.size());

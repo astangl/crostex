@@ -67,5 +67,6 @@ public class ToggleCurrentCellCommand implements UndoableCommand<CrosswordPuzzle
 			Pair<Integer, Integer> rc = coordinates.get(i);
 			puzzle.getCell(rc.first, rc.second).setBlack(values.get(i));
 		}
+		puzzle.renumberCells();
 	}
 }

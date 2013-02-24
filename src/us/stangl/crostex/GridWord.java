@@ -12,24 +12,22 @@ import us.stangl.crostex.util.Pair;
  * Word in a Grid.
  */
 public class GridWord {
-	/** flag to enable additional debug code */
+	// flag to enable additional debug code
 	private static final boolean DEBUG = false;
 	
-	/** number associated with word */
+	// number associated with word
 	private final int number;
 	
-	public enum Direction { ACROSS, DOWN };
+	// direction of word
+	private final AcrossDownDirection direction;
 	
-	/** direction of word */
-	private final Direction direction;
-	
-	/** Cells comprising word */
+	// Cells comprising word
 	private final Cell[] cells;
 	
-	/** scratchpad to use for building pattern */
+	// scratchpad to use for building pattern
 	private char[] patternScratchpad_ = new char[0];
 	
-	public GridWord(Cell[] cells, Direction direction, int number) {
+	public GridWord(Cell[] cells, AcrossDownDirection direction, int number) {
 		this.number = number;
 		this.direction = direction;
 		this.cells = cells;
@@ -220,17 +218,6 @@ public class GridWord {
 		return patternScratchpad_;
 	}
 
-	private void growPattern() {
-		growPattern(1);
-	}
-
-	private void growPattern(int numElementsToAdd) {
-		char[] newScratch = new char[patternScratchpad_.length + numElementsToAdd];
-		for (int i = 0; i < patternScratchpad_.length; ++i)
-			newScratch[i] = patternScratchpad_[i];
-		patternScratchpad_ = newScratch;
-	}
-
 	/** return zero-based index of Cell in the pattern associated with this GridWord, or -1 if the cell is not associated with this GridWord */
 	public int indexOfCellInPattern(Cell cell) {
 		int retval = 0;
@@ -245,11 +232,10 @@ public class GridWord {
 		return -1;
 	}
 
-
 	/**
 	 * @return the direction
 	 */
-	public Direction getDirection() {
+	public AcrossDownDirection getDirection() {
 		return direction;
 	}
 
@@ -282,5 +268,17 @@ public class GridWord {
 	public Cell[] getCells() {
 		return cells;
 	}
+
+	private void growPattern() {
+		growPattern(1);
+	}
+
+	private void growPattern(int numElementsToAdd) {
+		char[] newScratch = new char[patternScratchpad_.length + numElementsToAdd];
+		for (int i = 0; i < patternScratchpad_.length; ++i)
+			newScratch[i] = patternScratchpad_[i];
+		patternScratchpad_ = newScratch;
+	}
+
 
 }

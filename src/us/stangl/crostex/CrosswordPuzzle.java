@@ -13,6 +13,7 @@ import org.w3c.dom.Element;
 
 import us.stangl.crostex.command.CommandBuffer;
 import us.stangl.crostex.command.EnterCharacterToCellCommand;
+import us.stangl.crostex.command.SetCurrentCellBlackCommand;
 import us.stangl.crostex.command.ToggleCurrentCellCommand;
 
 /**
@@ -58,6 +59,10 @@ public class CrosswordPuzzle {
 	
 	public void toggleCurrentCell() {
 		commandBuffer.applyCommand(new ToggleCurrentCellCommand(this));
+	}
+	
+	public void setCurrentCellBlack() {
+		commandBuffer.applyCommand(new SetCurrentCellBlackCommand(this));
 	}
 	
 	public Grid getGrid() {

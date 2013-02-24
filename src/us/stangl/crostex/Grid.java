@@ -1,6 +1,9 @@
 /**
  * Copyright 2008, Alex Stangl. See LICENSE for licensing details.
  */
+/**
+ * Copyright 2008, Alex Stangl. See LICENSE for licensing details.
+ */
 package us.stangl.crostex;
 
 import java.awt.Color;
@@ -14,13 +17,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import us.stangl.crostex.GridWord.Direction;
 import us.stangl.crostex.autofill.AutoFiller7;
 import us.stangl.crostex.dictionary.Dictionary;
 
 /**
  * Crossword grid.
- * @author alex
+ * @author Alex Stangl
  */
 public class Grid 
 {
@@ -359,7 +361,7 @@ public class Grid
 					Cell[] cells = new Cell[colEnd - col];
 					for (int i = 0; i < cells.length; ++i)
 						cells[i] = getCell(row, col + i);
-					retval.add(new GridWord(cells, Direction.ACROSS, counter));
+					retval.add(new GridWord(cells, AcrossDownDirection.ACROSS, counter));
 				}
 				else if (isStartOfDownWord(row, col))
 					counter++;
@@ -383,7 +385,7 @@ public class Grid
 					Cell[] cells = new Cell[rowEnd - row];
 					for (int i =0; i < cells.length; ++i)
 						cells[i] = getCell(row + i, col);
-					retval.add(new GridWord(cells, Direction.DOWN, counter));
+					retval.add(new GridWord(cells, AcrossDownDirection.DOWN, counter));
 				}
 				else if (isStartOfAcrossWord(row, col))
 					counter++;
