@@ -39,7 +39,7 @@ public class CommandBuffer<T> {
 	
 	public void undo() {
 		if (doneCommands.empty())
-			throw new IllegalStateException("Attempt too undo empty CommandBuffer");
+			throw new IllegalStateException("Attempt to undo empty CommandBuffer");
 		UndoableCommand<T> command = doneCommands.pop();
 		command.unApply(target);
 		undoneCommands.push(command);
@@ -47,7 +47,7 @@ public class CommandBuffer<T> {
 	
 	public void redo() {
 		if (undoneCommands.empty())
-			throw new IllegalStateException("Attempt too redo CommandBuffer with nothing to redo");
+			throw new IllegalStateException("Attempt to redo CommandBuffer with nothing to redo");
 		UndoableCommand<T> command = undoneCommands.pop();
 		command.apply(target);
 		doneCommands.push(command);
