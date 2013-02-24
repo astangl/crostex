@@ -6,11 +6,12 @@ package us.stangl.crostex.gui;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.MessageFormat;
@@ -28,9 +29,11 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import us.stangl.crostex.CrosswordPuzzle;
 import us.stangl.crostex.Grid;
 import us.stangl.crostex.GridsDb;
 import us.stangl.crostex.Main;
@@ -68,13 +71,13 @@ public class MainFrame extends JFrame {
 	private JMenuBar topLevelMenuBar = new JMenuBar();
 	
 	// File menu option to save grid as template
-	private JMenuItem saveAsTemplate = new JMenuItem(Message.FILE_MENU_OPTION_SAVE_GRID_AS_TEMPLATE.toString());
+	private JMenuItem saveAsTemplate = newMenuItem(Message.FILE_MENU_OPTION_SAVE_GRID_AS_TEMPLATE);
 
 	// Edit menu option to undo
-	private JMenuItem undoItem = new JMenuItem(Message.EDIT_MENU_OPTION_UNDO.toString());
+	private JMenuItem undoItem = newMenuItem(Message.EDIT_MENU_OPTION_UNDO);
 
 	// Edit menu option to redo
-	private JMenuItem redoItem = new JMenuItem(Message.EDIT_MENU_OPTION_REDO.toString());
+	private JMenuItem redoItem = newMenuItem(Message.EDIT_MENU_OPTION_REDO);
 	
 	/** Dictionary */
 	private Dictionary<char[], Word> dict_ = new Ydict<Word>();
@@ -197,6 +200,32 @@ public class MainFrame extends JFrame {
 //		fileMenu.add(new NewAction());
 		topLevelMenuBar.add(fileMenu);
 		
+		undoItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				CrosswordPanel crosswordPanel = (CrosswordPanel)topLevelTabbedPane.getSelectedComponent();
+				if (crosswordPanel != null) {
+					CrosswordPuzzle crossword = crosswordPanel.getCrossword();
+					crossword.undo();
+					enableDisableUndoRedo();
+					crosswordPanel.repaint(0);
+				}
+			}
+		});
+		undoItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_MASK));
+		
+		redoItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				CrosswordPanel crosswordPanel = (CrosswordPanel)topLevelTabbedPane.getSelectedComponent();
+				if (crosswordPanel != null) {
+					CrosswordPuzzle crossword = crosswordPanel.getCrossword();
+					crossword.redo();
+					enableDisableUndoRedo();
+					crosswordPanel.repaint(0);
+				}
+			}
+		});
+		redoItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_MASK));
+		
 		JMenu editMenu = new JMenu(Message.EDIT_MENU_HEADER.toString());
 		editMenu.add(undoItem);
 		editMenu.add(redoItem);
@@ -271,6 +300,24 @@ public class MainFrame extends JFrame {
 				}
 		}
 	}
+	
+	// return new JMenuItem for the specified Message
+	private JMenuItem newMenuItem(Message message) {
+		return new JMenuItem(message.toString());
+	}
+	
+	/**
+	 * Set undo/redo enabled/disabled based upon whether these operation can be performed on current CrosswordPuzzle.
+	 */
+	public void enableDisableUndoRedo() {
+		CrosswordPanel crosswordPanel = (CrosswordPanel)topLevelTabbedPane.getSelectedComponent();
+		if (crosswordPanel != null) {
+			CrosswordPuzzle crossword = crosswordPanel.getCrossword();
+			undoItem.setEnabled(crossword.isAbleToUndo());
+			redoItem.setEnabled(crossword.isAbleToRedo());
+		}
+	}
+	
 	private class NewActionListener implements ActionListener {
 		public void actionPerformed(ActionEvent evt) {
 			System.out.println("Clicked new!");
@@ -341,11 +388,7 @@ public class MainFrame extends JFrame {
 	
 	private class TopLevelTabbedPaneChangeListener implements ChangeListener {
 		public void stateChanged(ChangeEvent evt) {
-			JTabbedPane tabbedPane = (JTabbedPane) evt.getSource();
-			CrosswordPanel crosswordPanel = (CrosswordPanel)tabbedPane.getSelectedComponent();
-			if (crosswordPanel != null) {
-				
-			}
+			enableDisableUndoRedo();
 		}
 	}
 }

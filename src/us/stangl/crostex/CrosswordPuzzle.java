@@ -46,24 +46,12 @@ public class CrosswordPuzzle {
 	}
 
 	public void keyTyped(KeyEvent evt) {
-		char keyChar = evt.getKeyChar();
-		if (keyChar == '\u001a') {
-			// Control Z -- trigger undo
-			if (commandBuffer.haveCommandsToUndo())
-				commandBuffer.undo();
-		} else if (keyChar == '\u0019') {
-			// Control Y -- trigger redo
-			if (commandBuffer.haveCommandsToRedo())
-				commandBuffer.redo();
-		} else {
-			//grid.keyTyped(evt);
-			char c = evt.getKeyChar();
-			if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') {
-				c = Character.toUpperCase(c);
-				Cell currentCell = grid.getCurrentCell();
-				if (currentCell != null && !currentCell.isBlack()) {
-					commandBuffer.applyCommand(new EnterCharacterToCellCommand(this, c));
-				}
+		char c = evt.getKeyChar();
+		if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') {
+			c = Character.toUpperCase(c);
+			Cell currentCell = grid.getCurrentCell();
+			if (currentCell != null && !currentCell.isBlack()) {
+				commandBuffer.applyCommand(new EnterCharacterToCellCommand(this, c));
 			}
 		}
 	}
@@ -179,4 +167,19 @@ public class CrosswordPuzzle {
 		this.maintainingSymmetry = maintainingSymmetry;
 	}
 	
+	public boolean isAbleToUndo() {
+		return commandBuffer.haveCommandsToUndo();
+	}
+
+	public boolean isAbleToRedo() {
+		return commandBuffer.haveCommandsToRedo();
+	}
+	
+	public void undo() {
+		commandBuffer.undo();
+	}
+	
+	public void redo() {
+		commandBuffer.redo();
+	}
 }
