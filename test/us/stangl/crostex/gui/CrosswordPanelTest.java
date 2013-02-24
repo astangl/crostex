@@ -16,7 +16,7 @@ public class CrosswordPanelTest {
 	public void testCrosswordSave() throws ServiceException
 	{
 		Grid grid = new Grid(15, 15, "dummy", "dummy");
-		CrosswordPanel panel = new CrosswordPanel(grid);
+		CrosswordPanel panel = new CrosswordPanel(new MainFrame(), grid);
 		String tempDirectory = "/tmp";
 		String tempFilename = "CrosswordPanelTest.testCrosswordSave.deleteme";
 		panel.save(tempDirectory, tempFilename);

@@ -30,6 +30,9 @@ public class CrosswordPanel extends JPanel {
 
 	private static final Logger LOG = Logger.getLogger(CrosswordPanel.class.getName());
 
+	// parent (enclosing) MainFrame
+	private MainFrame parentFrame;
+	
 	// preferred size dimensions
 	private static final Dimension PREFERRED_SIZE = new Dimension(300, 300);
 	
@@ -40,7 +43,8 @@ public class CrosswordPanel extends JPanel {
 	private JPopupMenu cellPopupMenu = new JPopupMenu();
 	
 	
-	public CrosswordPanel(Grid grid) {
+	public CrosswordPanel(MainFrame parentFrame, Grid grid) {
+		this.parentFrame = parentFrame;
 		this.crossword = new CrosswordPuzzle(grid);
 		setBorder(BorderFactory.createLineBorder(Color.black));
 		

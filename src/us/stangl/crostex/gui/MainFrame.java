@@ -26,6 +26,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import us.stangl.crostex.Grid;
 import us.stangl.crostex.GridsDb;
@@ -54,15 +56,24 @@ public class MainFrame extends JFrame {
 	private GridsDb gridsDb;
 //	private Map<String, Grid> gridTemplates_ = new HashMap<String, Grid>();
 	
-	/** tabbed pane */
-	private JTabbedPane tabbedPane_;
+	// top-level tabbed pane
+	private JTabbedPane topLevelTabbedPane = new JTabbedPane();
 	
 	/** counter for numbering Untitled tabs */
 	private int untitledTabCounter = 1;
 	
-	/** File menu option to save grid as template */
+	// top level menu bar
+	private JMenuBar topLevelMenuBar = new JMenuBar();
+	
+	// File menu option to save grid as template
 	private JMenuItem saveAsTemplate = new JMenuItem(Message.FILE_MENU_OPTION_SAVE_GRID_AS_TEMPLATE.toString());
 
+	// Edit menu option to undo
+	private JMenuItem undoItem = new JMenuItem(Message.EDIT_MENU_OPTION_UNDO.toString());
+
+	// Edit menu option to redo
+	private JMenuItem redoItem = new JMenuItem(Message.EDIT_MENU_OPTION_REDO.toString());
+	
 	/** Dictionary */
 	private Dictionary<char[], Word> dict_ = new Ydict<Word>();
 	
@@ -146,9 +157,8 @@ public class MainFrame extends JFrame {
 		dict_.rebalance();
 		
 		
-		
-		tabbedPane_ = new JTabbedPane();
-		add(tabbedPane_);
+		topLevelTabbedPane.addChangeListener(new TopLevelTabbedPaneChangeListener());
+		add(topLevelTabbedPane);
 		
 //		add(new CrosswordPanel());
 		pack();
@@ -162,7 +172,6 @@ public class MainFrame extends JFrame {
 //		});
 		
 		// Create menus
-		JMenuBar menuBar = new JMenuBar();
 		JMenu fileMenu = new JMenu(Message.FILE_MENU_HEADER.toString());
 		
 		JMenuItem newItem = new JMenuItem(Message.FILE_MENU_OPTION_NEW.toString());
@@ -185,11 +194,25 @@ public class MainFrame extends JFrame {
 		saveAsTemplate.addActionListener(new SaveAsTemplateActionListener());
 		
 //		fileMenu.add(new NewAction());
-		menuBar.add(fileMenu);
-		getRootPane().setJMenuBar(menuBar);
+		topLevelMenuBar.add(fileMenu);
+		
+		JMenu editMenu = new JMenu(Message.EDIT_MENU_HEADER.toString());
+		editMenu.add(undoItem);
+		editMenu.add(redoItem);
+		editMenu.addSeparator();
+		topLevelMenuBar.add(editMenu);
+		getRootPane().setJMenuBar(topLevelMenuBar);
 	}
 	
-	/** normalize raw word from dictionary; return null if word is unacceptable */
+
+	/**
+	 * @return preferred size
+	 */
+	public Dimension getPreferredSize() {
+		return PREFERRED_SIZE;
+	}
+	
+	// normalize raw word from dictionary; return null if word is unacceptable
 	private String normalizeWord(String rawWord) {
 		int len = rawWord.length();
 		if (len < 3)
@@ -272,9 +295,9 @@ public class MainFrame extends JFrame {
 
 				String tabTitle = MessageFormat.format(Message.UNTITLED_TAB_TITLE.toString(), untitledTabCounter++);
 				Grid gridCopy = new Grid(chosenGrid);
-				CrosswordPanel crosswordPanel = new CrosswordPanel(gridCopy);
-				tabbedPane_.addTab(tabTitle, crosswordPanel);
-				tabbedPane_.setSelectedIndex(tabbedPane_.getTabCount() - 1);
+				CrosswordPanel crosswordPanel = new CrosswordPanel(MainFrame.this, gridCopy);
+				topLevelTabbedPane.addTab(tabTitle, crosswordPanel);
+				topLevelTabbedPane.setSelectedIndex(topLevelTabbedPane.getTabCount() - 1);
 //				crosswordPanel.setFocusable(true);
 //				crosswordPanel.requestFocusInWindow();
 			}
@@ -298,7 +321,7 @@ public class MainFrame extends JFrame {
 		public void actionPerformed(ActionEvent evt) {
 			System.out.println("in actionPerformed");
 			
-			CrosswordPanel selectedPanel = (CrosswordPanel)tabbedPane_.getSelectedComponent();
+			CrosswordPanel selectedPanel = (CrosswordPanel)topLevelTabbedPane.getSelectedComponent();
 			Grid gridCopy = new Grid(selectedPanel.getCrossword().getGrid());
 			SaveGridTemplateDialog dialog = new SaveGridTemplateDialog(gridsDb, gridCopy);
 			dialog.getName();
@@ -314,11 +337,14 @@ public class MainFrame extends JFrame {
 			}
 		}
 	}
-
-	/**
-	 * @return preferred size
-	 */
-	public Dimension getPreferredSize() {
-		return PREFERRED_SIZE;
+	
+	private class TopLevelTabbedPaneChangeListener implements ChangeListener {
+		public void stateChanged(ChangeEvent evt) {
+			JTabbedPane tabbedPane = (JTabbedPane) evt.getSource();
+			CrosswordPanel crosswordPanel = (CrosswordPanel)tabbedPane.getSelectedComponent();
+			if (crosswordPanel != null) {
+				
+			}
+		}
 	}
 }

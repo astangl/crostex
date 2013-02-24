@@ -10,6 +10,9 @@ import java.util.ResourceBundle;
  * value in Messages.properties (and any translated versions).
  */
 public enum Message {
+	EDIT_MENU_HEADER,				// header for Edit menu (e.g., Edit)
+	EDIT_MENU_OPTION_UNDO,			// Edit menu Undo option
+	EDIT_MENU_OPTION_REDO,			// Edit menu Redo option
 	FILE_MENU_HEADER,				// header for File menu (e.g., File)
 	FILE_MENU_OPTION_NEW,			// File menu New ... option
 	FILE_MENU_OPTION_EXIT,			// File menu Exit option
