@@ -6,8 +6,8 @@ package us.stangl.crostex;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 
 /**
  * File saver, for performing safe file save operations, trying to keep the original
@@ -49,8 +49,10 @@ public class FileSaver {
 	 */
 	public FileSaver(File targetFile) throws IOException {
 		this.targetFile = targetFile;
-		tempFile = new File(this.targetFile.getAbsolutePath() + ".tmp");
-		tempFile.createNewFile();
+		String tempFileName = this.targetFile.getAbsolutePath() + ".tmp";
+		tempFile = new File(tempFileName);
+		if (! tempFile.createNewFile())
+			throw new IOException("Error creating temp file " + tempFileName + " because a file by that name already exists.");
 		tempFile.deleteOnExit();
 	}
 	
@@ -72,12 +74,12 @@ public class FileSaver {
 	 * @return output writer
 	 * @throws IOException if unable to successfully complete operation due to inability to open temp file
 	 */
-	public FileWriter getFileWriter() throws IOException {
+	public OutputStreamWriter getFileWriter() throws IOException {
 		if (isReturnedStreamOrWriter) {
 			throw new IllegalStateException("Called getFileOutputStream or getFileWriter more than once");
 		}
 		isReturnedStreamOrWriter = true;
-		return new FileWriter(tempFile);
+		return new OutputStreamWriter(new FileOutputStream(tempFile), "UTF-8");
 	}
 	
 	/**

@@ -5,9 +5,10 @@ package us.stangl.crostex;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
@@ -98,7 +99,8 @@ public class Main {
 			File dictionaryFile = new File(dataDirectory, filename);
 			BufferedReader in = null;
 			try {
-				in = new BufferedReader(new FileReader(dictionaryFile));
+				in = new BufferedReader(new InputStreamReader(new FileInputStream(dictionaryFile), "UTF-8"));
+
 				List<Pair<char[], Word>> tempList = new ArrayList<Pair<char[], Word>>(100000);
 				while (true) {
 					String rawWord = in.readLine();

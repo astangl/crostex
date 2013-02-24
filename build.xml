@@ -1,30 +1,52 @@
 <project name="crossword" basedir=".">
-    <property name="src" location="."/>
-    <property name="build" location="build"/>
-    <property name="dist" location="dist"/>
+  <property name="src" location="."/>
+  <property name="build" location="build"/>
+  <property name="dist" location="dist"/>
+  <property environment="env"/>
 
-    <target name="init">
-        <!-- Create the timestamp -->
-        <tstamp/>
-        <!-- Create the build directory used by compile -->
-        <mkdir dir="${build}"/>
-    </target>
+  <!-- If you have FindBugs installed, but don't have FINDBUGS_HOME environment
+       variable defined, then set findbugs.home explicitly on next line to
+       point to directory where FindBugs is installed. -->
+  <property name="findbugs.home" value="${env.FINDBUGS_HOME}" />
 
-    <target name="compile" depends="init" description="compile the source">
-        <!-- Compile java source code into ${build} -->
-        <javac srcdir="${src}" destdir="${build}" excludes="test/**" includeantruntime="false"/>
-    </target>
+  <!-- Try to load FindBugs ant task; if JAR not found, ignore: it just means FindBugs cannot be run -->
+  <taskdef name="findbugs" onerror="ignore" classname="edu.umd.cs.findbugs.anttask.FindBugsTask"/>
 
-    <target name="jar" depends="compile" description="build jarfile">
-        <jar destfile="crossword.jar" >
-            <fileset dir="${build}"/>
-            <fileset dir="resources"/>
-            <manifest>
-                <attribute name="Main-Class" value="us.stangl.crostex.Main"/>
-                <attribute name="Built-By" value="{user.name}"/>
-            </manifest>
-        </jar>
-    </target>
+  <target name="init">
+    <!-- Create the timestamp -->
+    <tstamp/>
+    <!-- Create the build directory used by compile -->
+    <mkdir dir="${build}"/>
+  </target>
 
+  <target name="compile" depends="init" description="compile the source">
+    <!-- Compile java source code into ${build} -->
+    <!-- Set javacDebug to false if it's not already set -->
+    <property name="javacDebug" value="false"/>
+    <javac srcdir="${src}" destdir="${build}" excludes="test/**" includeantruntime="false" debug="${javacDebug}"/>
+    <!-- javac srcdir="${src}" destdir="${build}" excludes="test/**" includeantruntime="false" debug="true"/ -->
+  </target>
+
+  <target name="jar" depends="init,compile" description="build jarfile">
+    <jar destfile="crossword.jar" >
+      <fileset dir="${build}"/>
+      <fileset dir="resources"/>
+      <manifest>
+        <attribute name="Main-Class" value="us.stangl.crostex.Main"/>
+        <attribute name="Built-By" value="{user.name}"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="setJavacDebug" description="Set property to force javac to debug mode (e.g., needed for FindBugs)">
+    <property name="javacDebug" value="true"/>
+  </target>
+
+  <target name="findbugs" depends="init,setJavacDebug,compile" description="Statically analyze code with FindBugs">
+    <findbugs home="${findbugs.home}" output="html" outputFile="findbugs.html" stylesheet="fancy.xsl">
+      <sourcePath path="src" />
+      <class location="${build}" />
+    </findbugs>
+  </target>
 </project>
 

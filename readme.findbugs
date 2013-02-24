@@ -1,0 +1,7 @@
+To get findbugs ant task to work, install FindBugs on your system (from
+findbugs.sourceforge.net), copy $FINDBUGS_HOME/lib/findbugs-ant.jar into
+the lib subdirectory of your ant installation (or, e.g., ~/.ant/lib).
+Also, environment variable FINDBUGS_HOME needs to point to the directory
+where FindBugs is installed, or else edit the line in build.xml which
+sets findbugs.home property, to explicitly set it to your FindBugs dir.
+
