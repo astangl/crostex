@@ -204,7 +204,7 @@ public class MainFrame extends JFrame {
 		
 		undoItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				CrosswordPanel crosswordPanel = (CrosswordPanel)topLevelTabbedPane.getSelectedComponent();
+				CrosswordPanel crosswordPanel = getCrosswordPanel();
 				if (crosswordPanel != null) {
 					CrosswordPuzzle crossword = crosswordPanel.getCrossword();
 					crossword.undo();
@@ -217,7 +217,7 @@ public class MainFrame extends JFrame {
 		
 		redoItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				CrosswordPanel crosswordPanel = (CrosswordPanel)topLevelTabbedPane.getSelectedComponent();
+				CrosswordPanel crosswordPanel = getCrosswordPanel();
 				if (crosswordPanel != null) {
 					CrosswordPuzzle crossword = crosswordPanel.getCrossword();
 					crossword.redo();
@@ -230,7 +230,7 @@ public class MainFrame extends JFrame {
 		
 		setToBlackItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				CrosswordPanel crosswordPanel = (CrosswordPanel)topLevelTabbedPane.getSelectedComponent();
+				CrosswordPanel crosswordPanel = getCrosswordPanel();
 				if (crosswordPanel != null) {
 					CrosswordPuzzle crossword = crosswordPanel.getCrossword();
 					crossword.setCurrentCellBlack();
@@ -327,7 +327,7 @@ public class MainFrame extends JFrame {
 	 * Set undo/redo enabled/disabled based upon whether these operation can be performed on current CrosswordPuzzle.
 	 */
 	public void resetEditMenuState() {
-		CrosswordPanel crosswordPanel = (CrosswordPanel)topLevelTabbedPane.getSelectedComponent();
+		CrosswordPanel crosswordPanel = getCrosswordPanel();
 		if (crosswordPanel == null) {
 			undoItem.setEnabled(false);
 			redoItem.setEnabled(false);
@@ -337,6 +337,17 @@ public class MainFrame extends JFrame {
 			undoItem.setEnabled(crossword.isAbleToUndo());
 			redoItem.setEnabled(crossword.isAbleToRedo());
 		}
+	}
+
+	// return currently selected CrosswordPanel, if any, else null
+	private CrosswordPanel getCrosswordPanel() {
+		TopLevelTabPanel tabPanel = getTopLevelTabPanel();
+		return tabPanel == null ? null : tabPanel.getCrosswordPanel();
+	}
+	
+	// return currently selected top-level tab panel, if any, else null
+	private TopLevelTabPanel getTopLevelTabPanel() {
+		return (TopLevelTabPanel)topLevelTabbedPane.getSelectedComponent();
 	}
 	
 	private class NewActionListener implements ActionListener {
@@ -364,8 +375,10 @@ public class MainFrame extends JFrame {
 
 				String tabTitle = MessageFormat.format(Message.UNTITLED_TAB_TITLE.toString(), untitledTabCounter++);
 				Grid gridCopy = new Grid(chosenGrid);
-				CrosswordPanel crosswordPanel = new CrosswordPanel(MainFrame.this, gridCopy);
-				topLevelTabbedPane.addTab(tabTitle, crosswordPanel);
+				//CrosswordPanel crosswordPanel = new CrosswordPanel(MainFrame.this, gridCopy);
+				//topLevelTabbedPane.addTab(tabTitle, crosswordPanel);
+//				topLevelTabbedPane.addTab(tabTitle, new CrosswordPanel(MainFrame.this, gridCopy));
+				topLevelTabbedPane.addTab(tabTitle, new TopLevelTabPanel(MainFrame.this, gridCopy));
 				topLevelTabbedPane.setSelectedIndex(topLevelTabbedPane.getTabCount() - 1);
 //				crosswordPanel.setFocusable(true);
 //				crosswordPanel.requestFocusInWindow();
@@ -390,8 +403,8 @@ public class MainFrame extends JFrame {
 		public void actionPerformed(ActionEvent evt) {
 			System.out.println("in actionPerformed");
 			
-			CrosswordPanel selectedPanel = (CrosswordPanel)topLevelTabbedPane.getSelectedComponent();
-			Grid gridCopy = new Grid(selectedPanel.getCrossword().getGrid());
+			CrosswordPanel crosswordPanel = getCrosswordPanel();
+			Grid gridCopy = new Grid(crosswordPanel.getCrossword().getGrid());
 			SaveGridTemplateDialog dialog = new SaveGridTemplateDialog(gridsDb, gridCopy);
 			dialog.getName();
 			JTextField nameField = dialog.getNameField();

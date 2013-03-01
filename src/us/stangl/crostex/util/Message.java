@@ -26,6 +26,7 @@ public enum Message {
 	BUTTON_CANCEL,					// text for Cancel button
 	BUTTON_CUSTOM,					// text for Custom button
 	BUTTON_PICK_DATA_DIRECTORY,		// text for pick data directory button
+	CLUES_TAB_TITLE,				// title for clues tab
 	DEFAULT_GRID_NAME,				// default (empty) grid name
 	DEFAULT_GRID_DESCRIPTION,		// default (empty) grid description 
 	DIALOG_TITLE_NEW_CROSSWORD,		// title for New Crossword dialog box

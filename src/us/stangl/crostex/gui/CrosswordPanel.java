@@ -79,9 +79,6 @@ public class CrosswordPanel extends JPanel {
 		Graphics2D g2 = (Graphics2D)g;
 		super.paintComponent(g);
 		
-		// Draw text
-//		g.drawString("This is my custom panel", 10, 20);
-		
 		// Draw grid
 		crossword.render(g2);
 	}
