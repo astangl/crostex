@@ -3,8 +3,6 @@
  */
 package us.stangl.crostex.gui;
 
-import java.text.MessageFormat;
-
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -32,6 +30,7 @@ public class TopLevelTabPanel extends JPanel {
 		crosswordPanel = new CrosswordPanel(mainFrame, grid);
 		add(crosswordPanel);
 		add(tabbedPane);
+		tabbedPane.addTab(Message.STATS_TAB_TITLE.toString(), new StatsPanel(mainFrame, grid));
 		tabbedPane.addTab(Message.CLUES_TAB_TITLE.toString(), new SideTabPanel(mainFrame, grid));
 		tabbedPane.setSelectedIndex(0);
 	}

@@ -187,4 +187,8 @@ public class CrosswordPuzzle {
 	public void redo() {
 		commandBuffer.redo();
 	}
+	
+	private void notifyChangeListeners() {
+		
+	}
 }

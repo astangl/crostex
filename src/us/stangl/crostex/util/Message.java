@@ -49,6 +49,7 @@ public enum Message {
 	PANEL_GRID_PICKER_TITLE,		// title for Grid picker panel
 	PANEL_PREVIEW_TITLE,			// title for Preview panel
 	MAIN_FRAME_TITLE,				// title for main JFrame
+	STATS_TAB_TITLE,				// title for Stats tab
 	TEXT_CELLS_WIDE,				// text "cells wide"
 	TEXT_CELLS_HIGH,				// text "cells high"
 	TEXT_DESCRIPTION,				// text "description"
