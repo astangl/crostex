@@ -21,7 +21,6 @@ import us.stangl.crostex.dictionary.Dictionary;
 import us.stangl.crostex.dictionary.TST;
 import us.stangl.crostex.dictionary.Trie;
 import us.stangl.crostex.dictionary.TstNew;
-import us.stangl.crostex.dictionary.Xdict;
 import us.stangl.crostex.dictionary.Ydict;
 import us.stangl.crostex.util.Pair;
 
@@ -38,20 +37,19 @@ public class DictionariesTest {
 		// but it actually made tests run slower for some reason!
 		List<String> patterns = generatePatterns();
 		
-		populateAndTest(new Ydict(), patterns, "Ydict");
-		populateAndTest(new Xdict(), patterns, "Xdict");
-		populateAndTest(new Trie(), patterns, "Trie");
-		populateAndTest(new TST(), patterns, "TST");
-		populateAndTest(new TstNew(), patterns, "TstNew");
+		populateAndTest(new Ydict<Word>(), patterns, "Ydict");
+		populateAndTest(new Trie<Word>(), patterns, "Trie");
+		populateAndTest(new TST<Word>(), patterns, "TST");
+		populateAndTest(new TstNew<Word>(), patterns, "TstNew");
 	}
 	
-	private void populateAndTest(Dictionary dict, Collection<String> patterns, String dictName)
+	private void populateAndTest(Dictionary<char[], Word> dict, Collection<String> patterns, String dictName)
 	{
 		populateDict(dict);
 		timePatternMatches(dict, patterns, dictName);
 	}
 	
-	private void timePatternMatches(Dictionary dict, Collection<String> patterns, String dictName)
+	private void timePatternMatches(Dictionary<char[], Word> dict, Collection<String> patterns, String dictName)
 	{
 		long startTime = System.currentTimeMillis();
 		long totalMatches = 0;
@@ -62,7 +60,7 @@ public class DictionariesTest {
 		System.out.println("Took " + (endTime - startTime) + " ms. for " + dictName + " to return " + totalMatches);
 	}
 
-	private void populateDict(Dictionary dict)
+	private void populateDict(Dictionary<char[], Word> dict)
 	{
 		String dataDirectory = "/home/alex/crostex_data";
 		boolean dictRead;
@@ -95,7 +93,7 @@ public class DictionariesTest {
 		return words;
 	}
 
-	private long testDictReadSpeed(Dictionary dict) {
+	private long testDictReadSpeed(Dictionary<char[], Word> dict) {
 		
 		long seed = 12345678912l;
 		Random prng = new Random(seed);
@@ -150,7 +148,7 @@ public class DictionariesTest {
 //		return uppercaseWord;
 	}
 	
-	private boolean readDictionaryFile(Dictionary dict, String dataDirectory, String filename) {
+	private boolean readDictionaryFile(Dictionary<char[], Word> dict, String dataDirectory, String filename) {
 		File dictionaryFile = new File(dataDirectory, filename);
 		BufferedReader in = null;
 //		dict_.insert("ABCD".toCharArray(), new Word());
@@ -173,7 +171,7 @@ public class DictionariesTest {
 				}
 				String normalizedWord = normalizeWord(rawWord);
 				if (normalizedWord != null) {
-					tempList.add(new Pair(normalizedWord.toCharArray(), new Word()));
+					tempList.add(new Pair<char[], Word>(normalizedWord.toCharArray(), new Word()));
 //					dict_.insert(normalizedWord.toCharArray(), new Word());
 					
 //if (normalizedWord.length() == 3) {

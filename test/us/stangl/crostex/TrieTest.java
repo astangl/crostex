@@ -5,10 +5,11 @@ package us.stangl.crostex;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -16,7 +17,7 @@ import us.stangl.crostex.dictionary.Dictionary;
 import us.stangl.crostex.dictionary.TST;
 import us.stangl.crostex.dictionary.Trie;
 import us.stangl.crostex.dictionary.TstNew;
-import us.stangl.crostex.dictionary.Xdict;
+import us.stangl.crostex.dictionary.Ydict;
 import us.stangl.crostex.util.Pair;
 import us.stangl.crostex.util.ResettableIterator;
 
@@ -26,46 +27,48 @@ import us.stangl.crostex.util.ResettableIterator;
 public class TrieTest {
 	@Test
 	public void testTiny() {
-		testTinyImpl(new TST());
-		testTinyImpl(new Trie());
-		testTinyImpl(new Xdict());
-		testTinyImpl(new TstNew());
+		testTinyImpl(new TST<Word>());
+		testTinyImpl(new Trie<Word>());
+		testTinyImpl(new Ydict<Word>());
+		testTinyImpl(new TstNew<Word>());
 	}
 	
 	@Test
 	public void testBasicOperation() {
-		testBasicOperationImpl(new TST());
-		testBasicOperationImpl(new Trie());
-		testBasicOperationImpl(new Xdict());
-		testBasicOperationImpl(new TstNew());
+		testBasicOperationImpl(new TST<Word>());
+		testBasicOperationImpl(new Trie<Word>());
+		testBasicOperationImpl(new Ydict<Word>());
+		testBasicOperationImpl(new TstNew<Word>());
 	}
 	
 	@Test
 	public void testIterator() {
-//		testIteratorImpl(new Xdict());
-		testIteratorImpl(new TST());
-		testIteratorImpl(new Trie());
-		testIteratorImpl(new TstNew());
+		testIteratorImpl(new Ydict<Word>());
+		testIteratorImpl(new TST<Word>());
+		testIteratorImpl(new Trie<Word>());
+		testIteratorImpl(new TstNew<Word>());
 	}
 	
-	private void testTinyImpl(Dictionary dict) {
+	private void testTinyImpl(Dictionary<char[], Word> dict) {
 		dict.insert("NEIGHBORHOOD".toCharArray(), new Word());
-//		dict.insert("NUTTY".toCharArray(), new Word());
+		dict.insert("NUTTY".toCharArray(), new Word());
 		dict.insert("NUT".toCharArray(), new Word());
+		dict.rebalance();
 		System.out.println(dict.toString());
 		assertTrue(dict.isPatternInDictionary("N__".toCharArray()));
 	}
 
-	private void testBasicOperationImpl(Dictionary dict) {
-		assertNull(dict.lookup("ALE".toCharArray()));
-		assertNull(dict.lookup("DEF".toCharArray()));
-		assertNull(dict.lookup("ALEX".toCharArray()));
-		assertFalse(dict.isPatternInDictionary("ALE".toCharArray()));
-		assertFalse(dict.isPatternInDictionary("DEF".toCharArray()));
-		assertFalse(dict.isPatternInDictionary("ALEX".toCharArray()));
+	private void testBasicOperationImpl(Dictionary<char[], Word> dict) {
 		dict.insert("ALE".toCharArray(), new Word());
 		dict.insert("DEF".toCharArray(), new Word());
 		dict.insert("ALEX".toCharArray(), new Word());
+		dict.insert("ZOO".toCharArray(), new Word());
+		dict.insert("YAM".toCharArray(), new Word());
+		dict.insert("MAN".toCharArray(), new Word());
+		dict.insert("NEIGHBORHOOD".toCharArray(), new Word());
+		dict.insert("NUTTY".toCharArray(), new Word());
+		dict.insert("NUT".toCharArray(), new Word());
+		dict.rebalance();
 		assertNotNull(dict.lookup("ALE".toCharArray()));
 		assertNotNull(dict.lookup("DEF".toCharArray()));
 		assertNotNull(dict.lookup("ALEX".toCharArray()));
@@ -80,69 +83,50 @@ public class TrieTest {
 		assertTrue(dict.isPatternInDictionary("A___".toCharArray()));
 		assertTrue(dict.isPatternInDictionary("D__".toCharArray()));
 		assertTrue(dict.isPatternInDictionary("_E_".toCharArray()));
-		dict.insert("ZOO".toCharArray(), new Word());
 		assertTrue(dict.isPatternInDictionary("Z__".toCharArray()));
-		dict.insert("YAM".toCharArray(), new Word());
 		assertTrue(dict.isPatternInDictionary("Y__".toCharArray()));
-		dict.insert("MAN".toCharArray(), new Word());
 		assertTrue(dict.isPatternInDictionary("M__".toCharArray()));
-		dict.insert("NEIGHBORHOOD".toCharArray(), new Word());
-		dict.insert("NUTTY".toCharArray(), new Word());
-		dict.insert("NUT".toCharArray(), new Word());
 		System.out.println(dict.toString());
 		assertTrue(dict.isPatternInDictionary("N__".toCharArray()));
 	}
 	
-	private void testIteratorImpl(Dictionary dict) {
-		dict.insert("ALE".toCharArray(), new Word());
-		dict.insert("DEF".toCharArray(), new Word());
-		dict.insert("ALEX".toCharArray(), new Word());
-		dict.insert("BENT".toCharArray(), new Word());
-		dict.insert("BEN".toCharArray(), new Word());
-		dict.insert("PEZ".toCharArray(), new Word());
-		dict.insert("BAA".toCharArray(), new Word());
-		dict.insert("HEN".toCharArray(), new Word());
-		dict.insert("ABA".toCharArray(), new Word());
-		dict.insert("APER".toCharArray(), new Word());
-		dict.insert("APED".toCharArray(), new Word());
-		dict.insert("APEX".toCharArray(), new Word());
+	private void testIteratorImpl(Dictionary<char[], Word> dict) {
+		String[] testWords = new String[] {"ALE", "DEF", "ALEX", "BENT", "BEN", "PEZ", "BAA", "HEN", "ABA", "APER", "APED", "APEX"};
+		for (String testWord : testWords)
+			dict.insert(testWord.toCharArray(), new Word());
+		dict.rebalance();
 		
 		System.out.println("dict = " + dict.toString());
-		ResettableIterator<Pair<char[], Word>> it = dict.getIterator("_E_".toCharArray());
-		assertTrue(it.hasNext());
-//		System.out.println(new String(it.next().first_));
-		assertTrue(Arrays.equals("BEN".toCharArray(), it.next().first));
-		assertTrue(it.hasNext());
-		assertTrue(it.hasNext());
+		Set<String> foundWords = getWordsFromIterator(dict.getIterator("_E_".toCharArray()));
 		
-//		System.out.println(new String(it.next().first_));
-		assertTrue(Arrays.equals("DEF".toCharArray(), it.next().first));
-		assertTrue(it.hasNext());
-		assertTrue(Arrays.equals("HEN".toCharArray(), it.next().first));
-		assertTrue(it.hasNext());
-		assertTrue(Arrays.equals("PEZ".toCharArray(), it.next().first));
-		assertFalse(it.hasNext());
+		assertTrue(foundWords.size() == 4);
+		assertTrue(foundWords.contains("DEF"));
+		assertTrue(foundWords.contains("BEN"));
+		assertTrue(foundWords.contains("PEZ"));
+		assertTrue(foundWords.contains("HEN"));
+
+		assertTrue(getWordsFromIterator(dict.getIterator("__Y".toCharArray())).isEmpty());
 		
-		it = dict.getIterator("__Y".toCharArray());
-		assertFalse(it.hasNext());
-		
-		it = dict.getIterator("A_E_".toCharArray());
-		assertTrue(it.hasNext());
-		assertTrue(Arrays.equals("ALEX".toCharArray(), it.next().first));
-		assertTrue(it.hasNext());
-		assertTrue(it.hasNext());
-		//System.out.println(new String(it.next()));
-		assertTrue(Arrays.equals("APED".toCharArray(), it.next().first));
-		assertTrue(it.hasNext());
-//System.out.println(new String(it.next().first_));
-		assertTrue(Arrays.equals("APER".toCharArray(), it.next().first));
-		assertTrue(it.hasNext());
-		assertTrue(Arrays.equals("APEX".toCharArray(), it.next().first));
-//		System.out.println(new String(it.next().first_));
+		ResettableIterator<Pair<char[], Word>> it = dict.getIterator("A_E_".toCharArray());
+		foundWords = getWordsFromIterator(it);
+		assertTrue(foundWords.size() == 4);
+		assertTrue(foundWords.contains("ALEX"));
+		assertTrue(foundWords.contains("APED"));
+		assertTrue(foundWords.contains("APER"));
+		assertTrue(foundWords.contains("APEX"));
+		it.reset();
+		Set<String> foundWords2 = getWordsFromIterator(it);
+		assertTrue(foundWords2.equals(foundWords));
+	}
+
+	// return all words from the iterator, asserting that they each only appear once
+	private Set<String> getWordsFromIterator(Iterator<Pair<char[], Word>> it) {
+		Set<String> retval = new HashSet<String>();
 		while (it.hasNext()) {
-			System.out.println("Bonus words! " + new String(it.next().first));
+			String dictWord = String.valueOf(it.next().first);
+			assertFalse(retval.contains(dictWord));
+			retval.add(dictWord);
 		}
-		assertFalse(it.hasNext());
-		
+		return retval;
 	}
 }

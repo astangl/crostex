@@ -18,10 +18,8 @@ public class RomanNumeralGeneratorTest  {
 	 */
 	@Test
 	public void testHappyPath() {
-		RomanNumeralGenerator generator = new RomanNumeralGenerator();
-		
 		for (int i = 1; i < 4000; ++i) {
-			assertEquals(i, generator.getValueOfRomanNumeral(generator.getRomanNumeral(i)));
+			assertEquals(i, RomanNumeralGenerator.getValueOfRomanNumeral(RomanNumeralGenerator.getRomanNumeral(i)));
 		}
 	}
 	

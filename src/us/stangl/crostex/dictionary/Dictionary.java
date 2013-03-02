@@ -10,6 +10,8 @@ import us.stangl.crostex.util.ResettableIterator;
 
 /**
  * Public interface for a dictionary class.
+ * TODO consider reworking this to enforce that rebalance (maybe rename something like finalize) must
+ * be called first before performing lookups
  */
 public interface Dictionary<K, E> {
 	/** wildcard character */
@@ -61,6 +63,8 @@ public interface Dictionary<K, E> {
 	/**
 	 * Inform dictionary that all inserts have been completed, and to perform any desired optimizations,
 	 * such as rebalancing.
+	 * NOTE: With newer implementations, like Ydict, this *MUST* be called after all insertions are
+	 * complete, and before starting lookups
 	 */
 	void rebalance();
 }

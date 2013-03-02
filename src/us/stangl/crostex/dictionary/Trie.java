@@ -89,7 +89,7 @@ public class Trie<E> implements Dictionary<char[], E> {
 				if (c < 'A' || c > 'Z')
 					throw new IllegalArgumentException("Unrecognized character " + c + " at index " + keyIndex);
 				int childIndex = c - 'A';
-				TrieNode child = children[childIndex];
+				TrieNode<E> child = children[childIndex];
 				if (child != null)
 					child.remove(key, keyIndex + 1);
 			}
@@ -120,11 +120,11 @@ public class Trie<E> implements Dictionary<char[], E> {
 			if (c < 'A' || c > 'Z')
 				throw new IllegalArgumentException("Unrecognized character " + c + " at index " + keyIndex);
 			int childIndex = c - 'A';
-			TrieNode child = children[childIndex];
+			TrieNode<E> child = children[childIndex];
 			return child == null ? false : child.isPatternInTrie(key, keyIndex + 1);
 		}
 
-		public TrieNode getFirstChild() {
+		public TrieNode<E> getFirstChild() {
 			for (int i = 0; i < 26; ++i)
 				if (children[i] != null)
 					return children[i];
@@ -282,7 +282,7 @@ public class Trie<E> implements Dictionary<char[], E> {
 			if (atBottom) {
 				// We are at bottom depth and have wildcard, need to iterate thru possibilities
 				while (++childIndexes[depth] < 26) {
-					TrieNode node = children[childIndexes[depth]];
+					TrieNode<E> node = children[childIndexes[depth]];
 					if (node != null && node.isTerminal())
 						return true;
 				}
