@@ -90,6 +90,9 @@ public class Grid
 	// whether rotational symmetry is being maintained
 	private boolean maintainingSymmetry = true;
 	
+	// registered change listeners; these get notified whenever this grid changes
+	private List<GridChangeListener> changeListeners = new ArrayList<GridChangeListener>();
+	
 	/**
 	 * Constructor for Grid
 	 * @param width width of grid, in number of cells
@@ -253,6 +256,7 @@ public class Grid
 		for (int row = 0; row < height; ++row)
 			for (int col = 0; col < width; ++col)
 				cells[row][col].setNumber(isStartOfAcrossWord(row, col) || isStartOfDownWord(row, col) ? currNumber++ : 0);
+		notifyChangeListeners();
 	}
 
 	/**
@@ -343,10 +347,12 @@ public class Grid
 	
 	public void toggleCurrentCell() {
 		commandBuffer.applyCommand(new ToggleCurrentCellCommand(this));
+		notifyChangeListeners();
 	}
 	
 	public void setCurrentCellBlack() {
 		commandBuffer.applyCommand(new SetCurrentCellBlackCommand(this));
+		notifyChangeListeners();
 	}
 	
 	public int getHeight() {
@@ -442,6 +448,7 @@ public class Grid
 
 	public void setDescription(String description) {
 		this.description = description;
+		notifyChangeListeners();
 	}
 
 	public String getName() {
@@ -450,6 +457,7 @@ public class Grid
 
 	public void setName(String name) {
 		this.name = name;
+		notifyChangeListeners();
 	}
 	
 	public void save(String dataDirectory, String filename) throws ServiceException {
@@ -541,6 +549,7 @@ public class Grid
 			--currentColumn;
 		}
 		currentCell = getCell(currentRow, currentColumn);
+		notifyChangeListeners();
 	}
 	
 	private int getCellWidth()	{
@@ -557,6 +566,7 @@ public class Grid
 
 	public void setCurrentCell(Cell currentCell) {
 		this.currentCell = currentCell;
+		notifyChangeListeners();
 	}
 
 	public int getCurrentRow() {
@@ -565,6 +575,7 @@ public class Grid
 
 	public void setCurrentRow(int currentRow) {
 		this.currentRow = currentRow;
+		notifyChangeListeners();
 	}
 
 	public int getCurrentColumn() {
@@ -573,6 +584,7 @@ public class Grid
 
 	public void setCurrentColumn(int currentColumn) {
 		this.currentColumn = currentColumn;
+		notifyChangeListeners();
 	}
 
 	public boolean isMaintainingSymmetry() {
@@ -581,6 +593,7 @@ public class Grid
 
 	public void setMaintainingSymmetry(boolean maintainingSymmetry) {
 		this.maintainingSymmetry = maintainingSymmetry;
+		notifyChangeListeners();
 	}
 	
 	public boolean isAbleToUndo() {
@@ -593,15 +606,14 @@ public class Grid
 	
 	public void undo() {
 		commandBuffer.undo();
+		notifyChangeListeners();
 	}
 	
 	public void redo() {
 		commandBuffer.redo();
+		notifyChangeListeners();
 	}
 	
-	private void notifyChangeListeners() {
-		
-	}
 	/**
 	 * @return the currentDirection
 	 */
@@ -616,4 +628,20 @@ public class Grid
 		this.currentDirection = currentDirection;
 	}
 	
+	/**
+	 * Add change listener to collection of listeners, to be notified whenever
+	 * the grid changes state.
+	 * @param changeListener listener to add
+	 */
+	public void addChangeListener(GridChangeListener changeListener) {
+		changeListeners.add(changeListener);
+	}
+
+	// notify all the registered change listeners that this Grid has changed
+	private void notifyChangeListeners() {
+		for (GridChangeListener changeListener : changeListeners) {
+			changeListener.handleChange(this);
+		}
+	}
+
 }
