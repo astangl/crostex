@@ -3,15 +3,15 @@
  */
 package us.stangl.crostex.util;
 
-import us.stangl.crostex.CrosswordPuzzle;
+import us.stangl.crostex.Grid;
 
 /**
- * Object used to serialize a CrosswordPuzzle to/from Across Lite .PUZ file format.
+ * Object used to serialize a Grid to/from Across Lite .PUZ file format.
  * @author Alex Stangl
  */
 public class PuzSerializer {
 
-	public byte[] toPuz(CrosswordPuzzle crossword) {
+	public byte[] toPuz(Grid grid) {
 		
 		//TODO need to implement!
 		return null;

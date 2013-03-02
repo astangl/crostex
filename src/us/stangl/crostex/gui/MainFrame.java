@@ -33,7 +33,6 @@ import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import us.stangl.crostex.CrosswordPuzzle;
 import us.stangl.crostex.Grid;
 import us.stangl.crostex.GridsDb;
 import us.stangl.crostex.Main;
@@ -206,8 +205,8 @@ public class MainFrame extends JFrame {
 			public void actionPerformed(ActionEvent evt) {
 				CrosswordPanel crosswordPanel = getCrosswordPanel();
 				if (crosswordPanel != null) {
-					CrosswordPuzzle crossword = crosswordPanel.getCrossword();
-					crossword.undo();
+					Grid grid = crosswordPanel.getGrid();
+					grid.undo();
 					resetEditMenuState();
 					crosswordPanel.repaint(0);
 				}
@@ -219,8 +218,8 @@ public class MainFrame extends JFrame {
 			public void actionPerformed(ActionEvent evt) {
 				CrosswordPanel crosswordPanel = getCrosswordPanel();
 				if (crosswordPanel != null) {
-					CrosswordPuzzle crossword = crosswordPanel.getCrossword();
-					crossword.redo();
+					Grid grid = crosswordPanel.getGrid();
+					grid.redo();
 					resetEditMenuState();
 					crosswordPanel.repaint(0);
 				}
@@ -232,8 +231,8 @@ public class MainFrame extends JFrame {
 			public void actionPerformed(ActionEvent evt) {
 				CrosswordPanel crosswordPanel = getCrosswordPanel();
 				if (crosswordPanel != null) {
-					CrosswordPuzzle crossword = crosswordPanel.getCrossword();
-					crossword.setCurrentCellBlack();
+					Grid grid = crosswordPanel.getGrid();
+					grid.setCurrentCellBlack();
 					resetEditMenuState();
 					crosswordPanel.repaint(0);
 				}
@@ -333,9 +332,9 @@ public class MainFrame extends JFrame {
 			redoItem.setEnabled(false);
 			
 		} else {
-			CrosswordPuzzle crossword = crosswordPanel.getCrossword();
-			undoItem.setEnabled(crossword.isAbleToUndo());
-			redoItem.setEnabled(crossword.isAbleToRedo());
+			Grid grid = crosswordPanel.getGrid();
+			undoItem.setEnabled(grid.isAbleToUndo());
+			redoItem.setEnabled(grid.isAbleToRedo());
 		}
 	}
 
@@ -404,7 +403,7 @@ public class MainFrame extends JFrame {
 			System.out.println("in actionPerformed");
 			
 			CrosswordPanel crosswordPanel = getCrosswordPanel();
-			Grid gridCopy = new Grid(crosswordPanel.getCrossword().getGrid());
+			Grid gridCopy = new Grid(crosswordPanel.getGrid());
 			SaveGridTemplateDialog dialog = new SaveGridTemplateDialog(gridsDb, gridCopy);
 			dialog.getName();
 			JTextField nameField = dialog.getNameField();

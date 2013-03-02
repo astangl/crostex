@@ -20,7 +20,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
-import us.stangl.crostex.CrosswordPuzzle;
 import us.stangl.crostex.Grid;
 import us.stangl.crostex.ServiceException;
 import us.stangl.crostex.util.Message;
@@ -36,8 +35,8 @@ public class CrosswordPanel extends JPanel {
 	// preferred size dimensions
 	private static final Dimension PREFERRED_SIZE = new Dimension(300, 300);
 	
-	// associated crossword puzzle
-	private final CrosswordPuzzle crossword;
+	// associated grid
+	private final Grid grid;
 	
 	// popup menu for cells
 	private JPopupMenu cellPopupMenu = new JPopupMenu();
@@ -45,7 +44,7 @@ public class CrosswordPanel extends JPanel {
 	
 	public CrosswordPanel(MainFrame parentFrame, Grid grid) {
 		this.parentFrame = parentFrame;
-		this.crossword = new CrosswordPuzzle(grid);
+		this.grid = grid;
 		setBorder(BorderFactory.createLineBorder(Color.black));
 		
 		MouseEventListener mouseListener = new MouseEventListener();
@@ -57,7 +56,7 @@ public class CrosswordPanel extends JPanel {
 		KeyEventListener keyListener = new KeyEventListener();
 		this.addKeyListener(keyListener);
 		
-		this.crossword.renumberCells();
+		this.grid.renumberCells();
 		
 		JMenuItem toggleCellBlackWhiteItem = new JMenuItem(Message.CELL_POPUP_MENU_OPTION_TOGGLE_CELL_BLACK.toString());
 		cellPopupMenu.add(toggleCellBlackWhiteItem);
@@ -80,11 +79,11 @@ public class CrosswordPanel extends JPanel {
 		super.paintComponent(g);
 		
 		// Draw grid
-		crossword.render(g2);
+		grid.render(g2);
 	}
 	
 	public void save(String dataDirectory, String filename) throws ServiceException {
-		crossword.save(dataDirectory, filename);
+		grid.save(dataDirectory, filename);
 	}
 	
 	private class MouseEventListener extends MouseAdapter {
@@ -94,7 +93,7 @@ public class CrosswordPanel extends JPanel {
 		public void mouseClicked(MouseEvent evt) {
 			boolean rfiwReturn = requestFocusInWindow();
 			LOG.finest("requestFocusInWindow returned " + rfiwReturn);
-			crossword.mouseClicked(evt);
+			grid.mouseClicked(evt);
 			parentFrame.resetEditMenuState();
 			CrosswordPanel.this.repaint(0);
 			maybeShowPopup(evt);
@@ -119,7 +118,7 @@ public class CrosswordPanel extends JPanel {
 	private class KeyEventListener extends KeyAdapter {
 		@Override
 		public void keyTyped(KeyEvent evt) {
-			crossword.keyTyped(evt);
+			grid.keyTyped(evt);
 			parentFrame.resetEditMenuState();
 			CrosswordPanel.this.repaint(0);
 		}
@@ -127,15 +126,15 @@ public class CrosswordPanel extends JPanel {
 	
 	private class ToggleCellActionListener implements ActionListener {
 		public void actionPerformed(ActionEvent evt) {
-			crossword.toggleCurrentCell();
-			crossword.renumberCells();
+			grid.toggleCurrentCell();
+			grid.renumberCells();
 			parentFrame.resetEditMenuState();
 			CrosswordPanel.this.repaint(0);
 		}
 	}
 
-	public CrosswordPuzzle getCrossword() {
-		return crossword;
+	public Grid getGrid() {
+		return grid;
 	}
 	
 //	private Document getStateAsDocument() {

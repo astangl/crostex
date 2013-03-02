@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import us.stangl.crostex.Cell;
-import us.stangl.crostex.CrosswordPuzzle;
+import us.stangl.crostex.Grid;
 import us.stangl.crostex.util.Pair;
 
 /**
@@ -15,7 +15,7 @@ import us.stangl.crostex.util.Pair;
  * in the crossword puzzle.
  * @author Alex Stangl
  */
-public class ToggleCurrentCellCommand implements UndoableCommand<CrosswordPuzzle> {
+public class ToggleCurrentCellCommand implements UndoableCommand<Grid> {
 	// list of (row, column) coordinates of cells to toggle
 	private final List<Pair<Integer, Integer>> coordinates = new ArrayList<Pair<Integer, Integer>>(2);
 	
@@ -25,20 +25,20 @@ public class ToggleCurrentCellCommand implements UndoableCommand<CrosswordPuzzle
 	// list of values to unApply to each corresponding cell
 	private final List<Boolean> unApplyValues = new ArrayList<Boolean>(2);
 
-	public ToggleCurrentCellCommand(CrosswordPuzzle puzzle) {
-		int currentRow = puzzle.getCurrentRow();
-		int currentColumn = puzzle.getCurrentColumn();
+	public ToggleCurrentCellCommand(Grid grid) {
+		int currentRow = grid.getCurrentRow();
+		int currentColumn = grid.getCurrentColumn();
 		coordinates.add(new Pair<Integer, Integer>(Integer.valueOf(currentRow), Integer.valueOf(currentColumn)));
-		Cell currentCell = puzzle.getCell(currentRow, currentColumn);
+		Cell currentCell = grid.getCell(currentRow, currentColumn);
 		boolean currentlyBlack = currentCell.isBlack();
 		boolean nowBlack = ! currentlyBlack;
 		unApplyValues.add(Boolean.valueOf(currentlyBlack));
 		applyValues.add(Boolean.valueOf(nowBlack));
-		if (puzzle.isMaintainingSymmetry()) {
-			int otherRow = puzzle.getHeight() - 1 - currentRow;
-			int otherColumn = puzzle.getWidth() - 1 - currentColumn;
+		if (grid.isMaintainingSymmetry()) {
+			int otherRow = grid.getHeight() - 1 - currentRow;
+			int otherColumn = grid.getWidth() - 1 - currentColumn;
 			coordinates.add(new Pair<Integer, Integer>(Integer.valueOf(otherRow), Integer.valueOf(otherColumn)));
-			Cell otherCell = puzzle.getCell(otherRow, otherColumn);
+			Cell otherCell = grid.getCell(otherRow, otherColumn);
 			unApplyValues.add(Boolean.valueOf(otherCell.isBlack()));
 			applyValues.add(Boolean.valueOf(nowBlack));
 		}
@@ -48,8 +48,8 @@ public class ToggleCurrentCellCommand implements UndoableCommand<CrosswordPuzzle
 	 * Apply command to object.
 	 * (Can't call it do since that's a reserved keyword.)
 	 */
-	public void apply(CrosswordPuzzle puzzle) {
-		applySpecifiedValues(puzzle, applyValues);
+	public void apply(Grid grid) {
+		applySpecifiedValues(grid, applyValues);
 	}
 	
 	/**
@@ -57,16 +57,16 @@ public class ToggleCurrentCellCommand implements UndoableCommand<CrosswordPuzzle
 	 * Assumes object is in state just subsequent to command having been performed,
 	 * or has been undone back to that same state.
 	 */
-	public void unApply(CrosswordPuzzle puzzle) {
-		applySpecifiedValues(puzzle, unApplyValues);
+	public void unApply(Grid grid) {
+		applySpecifiedValues(grid, unApplyValues);
 	}
 	
 	// apply specified set of values to the specified puzzle
-	private void applySpecifiedValues(CrosswordPuzzle puzzle, List<Boolean> values) {
+	private void applySpecifiedValues(Grid grid, List<Boolean> values) {
 		for (int i = 0; i < coordinates.size(); ++i) {
 			Pair<Integer, Integer> rc = coordinates.get(i);
-			puzzle.getCell(rc.first, rc.second).setBlack(values.get(i));
+			grid.getCell(rc.first, rc.second).setBlack(values.get(i));
 		}
-		puzzle.renumberCells();
+		grid.renumberCells();
 	}
 }

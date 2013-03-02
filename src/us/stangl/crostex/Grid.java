@@ -12,12 +12,20 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import us.stangl.crostex.autofill.AutoFiller7;
+import us.stangl.crostex.command.CommandBuffer;
+import us.stangl.crostex.command.EnterCharacterToCellCommand;
+import us.stangl.crostex.command.SetCurrentCellBlackCommand;
+import us.stangl.crostex.command.ToggleCurrentCellCommand;
 import us.stangl.crostex.dictionary.Dictionary;
 
 /**
@@ -72,6 +80,16 @@ public class Grid
 	// current direction that cursor is moving, as letters are typed -- North, South, East, or West
 	private NsewDirection currentDirection = NsewDirection.NORTH;
 
+	private String title;
+	
+	private String author;
+	
+	// command buffer to hold mutating user commands, for undo/redo purposes
+	private CommandBuffer<Grid> commandBuffer = new CommandBuffer<Grid>(this);
+	
+	// whether rotational symmetry is being maintained
+	private boolean maintainingSymmetry = true;
+	
 	/**
 	 * Constructor for Grid
 	 * @param width width of grid, in number of cells
@@ -292,6 +310,7 @@ public class Grid
 	 * Handle key typed event.
 	 * @param evt key typed event from AWT
 	 */
+	/*
 	public void keyTyped(KeyEvent evt) {
 		char c = evt.getKeyChar();
 		if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') {
@@ -308,6 +327,26 @@ public class Grid
 		if (currentCell != null) {
 			currentCell.toggleBlack();
 		}
+	}
+	*/
+	
+	public void keyTyped(KeyEvent evt) {
+		char c = evt.getKeyChar();
+		if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') {
+			c = Character.toUpperCase(c);
+			Cell currentCell = getCurrentCell();
+			if (currentCell != null && !currentCell.isBlack()) {
+				commandBuffer.applyCommand(new EnterCharacterToCellCommand(this, c));
+			}
+		}
+	}
+	
+	public void toggleCurrentCell() {
+		commandBuffer.applyCommand(new ToggleCurrentCellCommand(this));
+	}
+	
+	public void setCurrentCellBlack() {
+		commandBuffer.applyCommand(new SetCurrentCellBlackCommand(this));
 	}
 	
 	public int getHeight() {
@@ -413,6 +452,65 @@ public class Grid
 		this.name = name;
 	}
 	
+	public void save(String dataDirectory, String filename) throws ServiceException {
+		Document doc = DOMSerializer.newDocument("puzzle");
+		Element rootElement = doc.getDocumentElement();
+		Element crosswordElement = doc.createElement("crossword");
+		crosswordElement.setAttribute("language", "en");
+		
+		Element metadataElement = doc.createElement("metadata");
+		/*
+		Element titleElement = doc.createElement("title");
+		titleElement.appendChild(doc.createTextNode(getTitle()));
+		metadataElement.appendChild(titleElement);
+		addOptionalSimpleElement(doc, metadataElement, "date", getDate());
+		addOptionalSimpleElement(doc, metadataElement, "creator", getCreator());
+		addOptionalSimpleElement(doc, metadataElement, "rights", getRights());
+		addOptionalSimpleElement(doc, metadataElement, "publisher", getPublisher());
+		addOptionalSimpleElement(doc, metadataElement, "identifier", getIdentifier());
+		addOptionalSimpleElement(doc, metadataElement, "description", getDescription());
+		*/
+		crosswordElement.appendChild(metadataElement);
+		
+		Element americanElement = doc.createElement("american");
+		Element gridElement = doc.createElement("grid");
+		gridElement.setAttribute("rows", "" + getHeight());
+		gridElement.setAttribute("columns", "" + getWidth());
+		for (int row = 0; row < getHeight(); ++row) {
+			for (int col = 0; col < getWidth(); ++col) {
+				Cell cell = getCell(row, col);
+				Element cellElement;
+				if (cell.isBlack()) {
+					cellElement = doc.createElement("blank");
+				} else {
+					cellElement = doc.createElement("letter");
+					cellElement.setAttribute("id", (row + 1) + "," + (col + 1));
+					cellElement.appendChild(doc.createTextNode(cell.getContents()));
+				}
+				gridElement.appendChild(cellElement);
+			}
+		}
+		americanElement.appendChild(gridElement);
+
+		Element cluesElement = doc.createElement("clues");
+		
+		americanElement.appendChild(cluesElement);
+		crosswordElement.appendChild(americanElement);
+		rootElement.appendChild(crosswordElement);
+		
+		//TODO assume DOM tree is complete here -- need to finish population of it
+		new DOMSerializer().serialize(doc, new File(dataDirectory, filename));
+	}
+	
+	/** add simple text element to parent if childValue not null, not blank */
+	private void addOptionalSimpleElement(Document doc, Element parent, String childName, String childValue) {
+		if (childValue != null && childValue.trim().length() > 0) {
+			Element childElement = doc.createElement(childName);
+			childElement.appendChild(doc.createTextNode(childValue));
+			parent.appendChild(childElement);
+		}
+	}
+
 	private Cell getCellForXY(int x, int y) {
 		if (x < 0 || x > getCellWidth() * width || y < 0 || y > getCellHeight() * height)
 			return null;
@@ -477,6 +575,33 @@ public class Grid
 		this.currentColumn = currentColumn;
 	}
 
+	public boolean isMaintainingSymmetry() {
+		return maintainingSymmetry;
+	}
+
+	public void setMaintainingSymmetry(boolean maintainingSymmetry) {
+		this.maintainingSymmetry = maintainingSymmetry;
+	}
+	
+	public boolean isAbleToUndo() {
+		return commandBuffer.haveCommandsToUndo();
+	}
+
+	public boolean isAbleToRedo() {
+		return commandBuffer.haveCommandsToRedo();
+	}
+	
+	public void undo() {
+		commandBuffer.undo();
+	}
+	
+	public void redo() {
+		commandBuffer.redo();
+	}
+	
+	private void notifyChangeListeners() {
+		
+	}
 	/**
 	 * @return the currentDirection
 	 */
