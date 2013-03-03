@@ -369,6 +369,14 @@ public class Grid
 		return width;
 	}
 	
+	public int getPixelHeight() {
+		return height * cellHeight + yoffset + 1;
+	}
+	
+	public int getPixelWidth() {
+		return width * cellWidth + xoffset + 1;
+	}
+	
 	/**
 	 * @return the total number of black cells
 	 */

@@ -32,9 +32,6 @@ public class CrosswordPanel extends JPanel {
 	// parent (enclosing) MainFrame
 	private MainFrame parentFrame;
 	
-	// preferred size dimensions
-	private static final Dimension PREFERRED_SIZE = new Dimension(500, 500);
-	
 	// associated grid
 	private final Grid grid;
 	
@@ -68,7 +65,7 @@ public class CrosswordPanel extends JPanel {
 	 * @return preferred size
 	 */
 	public Dimension getPreferredSize() {
-		return PREFERRED_SIZE;
+		return new Dimension(grid.getPixelWidth(), grid.getPixelHeight());
 	}
 	
 	/**

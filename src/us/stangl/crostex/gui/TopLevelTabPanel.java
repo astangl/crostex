@@ -5,6 +5,7 @@ package us.stangl.crostex.gui;
 
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
@@ -38,11 +39,16 @@ public class TopLevelTabPanel extends JPanel {
 
 	private final JSlider zoomSlider = new JSlider();
 	
+	private final JScrollPane scrollPane;
+	
 	public TopLevelTabPanel(MainFrame mainFrame, Grid grid) {
 
 		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 		crosswordPanel = new CrosswordPanel(mainFrame, grid);
-		JPanel leftPanel = GuiUtils.yBoxLayoutPanel(crosswordPanel, zoomSlider);
+		scrollPane = new JScrollPane(crosswordPanel);
+		//scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		//scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		JPanel leftPanel = GuiUtils.yBoxLayoutPanel(scrollPane, zoomSlider);
 		
 		// set range on zoomSlider
 		zoomSlider.setMinimum(ZOOM_MINIMUM);
@@ -54,9 +60,12 @@ public class TopLevelTabPanel extends JPanel {
 				int value = zoomSlider.getValue();
 				grid.setCellHeight(value);
 				grid.setCellWidth(value);
+				crosswordPanel.setSize(grid.getPixelWidth(), grid.getPixelHeight());
+				scrollPane.revalidate();
 				crosswordPanel.repaint(0);
 			}
 		});
+		
 		add(leftPanel);
 		add(tabbedPane);
 		tabbedPane.addTab(Message.STATS_TAB_TITLE.toString(), new StatsPanel(grid));
