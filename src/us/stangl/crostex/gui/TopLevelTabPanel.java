@@ -5,7 +5,10 @@ package us.stangl.crostex.gui;
 
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import us.stangl.crostex.Grid;
 import us.stangl.crostex.util.Message;
@@ -18,19 +21,45 @@ public class TopLevelTabPanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 	
+	// minimum zoom (grid cell width/height)
+	private static final int ZOOM_MINIMUM = 10;
+	
+	// maximum zoom (grid cell width/height)
+	private static final int ZOOM_MAXIMUM = 100;
+	
+	// default zoom factor (grid cell width/height)
+	private static final int DEFAULT_ZOOM_VALUE = 24;
+	
 	// panel holding crossword grid
 	private final CrosswordPanel crosswordPanel;
 
 	// tabbed pane holding other panes related to the grid
 	private final JTabbedPane tabbedPane = new JTabbedPane();
+
+	private final JSlider zoomSlider = new JSlider();
 	
 	public TopLevelTabPanel(MainFrame mainFrame, Grid grid) {
 
 		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 		crosswordPanel = new CrosswordPanel(mainFrame, grid);
-		add(crosswordPanel);
+		JPanel leftPanel = GuiUtils.yBoxLayoutPanel(crosswordPanel, zoomSlider);
+		
+		// set range on zoomSlider
+		zoomSlider.setMinimum(ZOOM_MINIMUM);
+		zoomSlider.setMaximum(ZOOM_MAXIMUM);
+		zoomSlider.setValue(DEFAULT_ZOOM_VALUE);
+		zoomSlider.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				Grid grid = crosswordPanel.getGrid();
+				int value = zoomSlider.getValue();
+				grid.setCellHeight(value);
+				grid.setCellWidth(value);
+				crosswordPanel.repaint(0);
+			}
+		});
+		add(leftPanel);
 		add(tabbedPane);
-		tabbedPane.addTab(Message.STATS_TAB_TITLE.toString(), new StatsPanel(mainFrame, grid));
+		tabbedPane.addTab(Message.STATS_TAB_TITLE.toString(), new StatsPanel(grid));
 		tabbedPane.addTab(Message.CLUES_TAB_TITLE.toString(), new SideTabPanel(mainFrame, grid));
 		tabbedPane.setSelectedIndex(0);
 	}

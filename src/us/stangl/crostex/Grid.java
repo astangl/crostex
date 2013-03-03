@@ -22,6 +22,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import us.stangl.crostex.autofill.AutoFiller7;
+import us.stangl.crostex.command.ClearCellCommand;
 import us.stangl.crostex.command.CommandBuffer;
 import us.stangl.crostex.command.EnterCharacterToCellCommand;
 import us.stangl.crostex.command.SetCurrentCellBlackCommand;
@@ -342,6 +343,11 @@ public class Grid
 			if (currentCell != null && !currentCell.isBlack()) {
 				commandBuffer.applyCommand(new EnterCharacterToCellCommand(this, c));
 			}
+		} else if (c == ' ') {
+			Cell currentCell = getCurrentCell();
+			if (currentCell != null && !currentCell.isBlack()) {
+				commandBuffer.applyCommand(new ClearCellCommand(this));
+			}
 		}
 	}
 	
@@ -560,6 +566,20 @@ public class Grid
 		return cellHeight;
 	}
 
+	/**
+	 * @param cellWidth the cellWidth to set
+	 */
+	public void setCellWidth(int cellWidth) {
+		this.cellWidth = cellWidth;
+	}
+
+	/**
+	 * @param cellHeight the cellHeight to set
+	 */
+	public void setCellHeight(int cellHeight) {
+		this.cellHeight = cellHeight;
+	}
+
 	public Cell getCurrentCell() {
 		return currentCell;
 	}
@@ -643,5 +663,4 @@ public class Grid
 			changeListener.handleChange(this);
 		}
 	}
-
 }

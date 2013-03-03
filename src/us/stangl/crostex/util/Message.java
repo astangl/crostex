@@ -45,6 +45,7 @@ public enum Message {
 	DIALOG_TITLE_UNABLE_TO_CREATE_DATA_DIRECTORY,	// title unable to create data directory
 	LABEL_DESCRIPTION,				// label Description
 	LABEL_NAME,						// label Name
+	LABEL_LETTER_FREQUENCY_CHART,	// label for letter frequency chart
 	PANEL_DIMENSIONS_TITLE,			// title for Dimensions panel
 	PANEL_GRID_PICKER_TITLE,		// title for Grid picker panel
 	PANEL_PREVIEW_TITLE,			// title for Preview panel

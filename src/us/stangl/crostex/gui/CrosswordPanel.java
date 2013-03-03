@@ -33,7 +33,7 @@ public class CrosswordPanel extends JPanel {
 	private MainFrame parentFrame;
 	
 	// preferred size dimensions
-	private static final Dimension PREFERRED_SIZE = new Dimension(300, 300);
+	private static final Dimension PREFERRED_SIZE = new Dimension(500, 500);
 	
 	// associated grid
 	private final Grid grid;
@@ -75,11 +75,10 @@ public class CrosswordPanel extends JPanel {
 	 * 
 	 */
 	public void paintComponent(Graphics g) {
-		Graphics2D g2 = (Graphics2D)g;
 		super.paintComponent(g);
 		
 		// Draw grid
-		grid.render(g2);
+		grid.render((Graphics2D)g);
 	}
 	
 	public void save(String dataDirectory, String filename) throws ServiceException {
