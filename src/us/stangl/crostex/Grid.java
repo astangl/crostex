@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -169,13 +170,22 @@ public class Grid
 	 * @param g graphics context
 	 */
 	public void render(Graphics2D g, int cellWidth, int cellHeight, boolean thumbnail) {
+		int dpi = Toolkit.getDefaultToolkit().getScreenResolution();
+		System.out.println("dpi = " + dpi);
 		Font font = g.getFont();
-		FontMetrics fontMetrics = g.getFontMetrics();
+		//FontMetrics fontMetrics = g.getFontMetrics();
+		//int ascent = fontMetrics.getAscent();
+		//int cellHeightResidual = cellHeight - ascent;
+		//int cellWidthResidual = cellWidth - fontMetrics.charWidth('X');
+		
+		font = font.deriveFont((float)(cellHeight * 72.0 / dpi));
+		//Font smallFont = font.deriveFont(8.0f);
+		float smallFontSize = (float)(cellHeight * 32.0 / dpi);
+		Font smallFont = font.deriveFont(smallFontSize);
+		FontMetrics fontMetrics = g.getFontMetrics(font);
 		int ascent = fontMetrics.getAscent();
 		int cellHeightResidual = cellHeight - ascent;
 		int cellWidthResidual = cellWidth - fontMetrics.charWidth('X');
-		
-		Font smallFont = font.deriveFont(8.0f);
 		LOG.finest("font size = " + font.getSize() + ", cellHeightResidual = " + cellHeightResidual
 				+ ", cellWidthResidual = " + cellWidthResidual);
 		g.setColor(Color.BLACK);
@@ -214,7 +224,7 @@ public class Grid
 								yoffset + row * cellHeight + ascent + cellHeightResidual / 2);
 						if (cell.getNumber() > 0) {
 							g.setFont(smallFont);
-							g.drawString(Integer.toString(cell.getNumber()), xoffset + col * cellWidth, yoffset + row * cellHeight + 8);
+							g.drawString(Integer.toString(cell.getNumber()), xoffset + col * cellWidth, yoffset + row * cellHeight + (int)(smallFontSize + 0.5));
 							g.setFont(font);
 						}
 					}
