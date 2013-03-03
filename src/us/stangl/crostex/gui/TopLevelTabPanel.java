@@ -7,6 +7,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -43,11 +44,10 @@ public class TopLevelTabPanel extends JPanel {
 	
 	public TopLevelTabPanel(MainFrame mainFrame, Grid grid) {
 
+		
 		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 		crosswordPanel = new CrosswordPanel(mainFrame, grid);
 		scrollPane = new JScrollPane(crosswordPanel);
-		//scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		//scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		JPanel leftPanel = GuiUtils.yBoxLayoutPanel(scrollPane, zoomSlider);
 		
 		// set range on zoomSlider
@@ -66,8 +66,8 @@ public class TopLevelTabPanel extends JPanel {
 			}
 		});
 		
-		add(leftPanel);
-		add(tabbedPane);
+		JSplitPane sp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, tabbedPane);
+		add(sp);
 		tabbedPane.addTab(Message.STATS_TAB_TITLE.toString(), new StatsPanel(grid));
 		tabbedPane.addTab(Message.CLUES_TAB_TITLE.toString(), new SideTabPanel(mainFrame, grid));
 		tabbedPane.setSelectedIndex(0);
