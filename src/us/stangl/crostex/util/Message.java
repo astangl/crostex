@@ -14,6 +14,7 @@ public enum Message {
 	EDIT_MENU_OPTION_UNDO,			// Edit menu Undo option
 	EDIT_MENU_OPTION_REDO,			// Edit menu Redo option
 	EDIT_MENU_OPTION_SET_TO_BLACK,	// Edit menu Set to Black option
+	EDIT_MENU_OPTION_PREFERENCES,	// Edit menu option Preferences
 	FILE_MENU_HEADER,				// header for File menu (e.g., File)
 	FILE_MENU_OPTION_NEW,			// File menu New ... option
 	FILE_MENU_OPTION_EXIT,			// File menu Exit option

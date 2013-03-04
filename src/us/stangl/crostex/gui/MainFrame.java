@@ -162,7 +162,11 @@ public class MainFrame extends JFrame {
 		dict.rebalance();
 		
 		
-		topLevelTabbedPane.addChangeListener(new TopLevelTabbedPaneChangeListener());
+		topLevelTabbedPane.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent evt) {
+				resetEditMenuState();
+			}
+		});
 		add(topLevelTabbedPane);
 		
 //		add(new CrosswordPanel());
@@ -188,7 +192,52 @@ public class MainFrame extends JFrame {
 		fileMenu.add(exitItem);
 		
 		newItem.setActionCommand("Create new crossword tableau");
-		newItem.addActionListener(new NewActionListener());
+		newItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				NewCrosswordDialog dialog = new NewCrosswordDialog(gridsDb);
+				int height = dialog.getGridHeight();
+				int width = dialog.getGridWidth();
+				if (height != -1 && width != -1) {
+					new PickGridDialog(height, width);
+				}
+				
+				LOG.finest("Back from NewCrosswordDialog! width = " + dialog.getGridWidth() + ", height = " + dialog.getGridHeight());
+				
+				Grid chosenGrid = dialog.getSelectedGridTemplate();
+				if (chosenGrid != null) {
+//					chosenGrid = new Grid(5, 5, "dummy", "dummy");
+					// Temporarily do auto-fill here
+//					trie_.insert("AAA".toCharArray(), new Word());
+//					long startTime = System.currentTimeMillis();
+//					boolean autofillReturn = chosenGrid.autoFill(dict_);
+//					long endTime = System.currentTimeMillis();
+//					System.out.println("autofill returns " + autofillReturn + ", elapsed time " + (endTime - startTime) + " ms.");
+
+					String tabTitle = MessageFormat.format(Message.UNTITLED_TAB_TITLE.toString(), untitledTabCounter++);
+					Grid gridCopy = new Grid(chosenGrid);
+					//CrosswordPanel crosswordPanel = new CrosswordPanel(MainFrame.this, gridCopy);
+					//topLevelTabbedPane.addTab(tabTitle, crosswordPanel);
+//					topLevelTabbedPane.addTab(tabTitle, new CrosswordPanel(MainFrame.this, gridCopy));
+					topLevelTabbedPane.addTab(tabTitle, new TopLevelTabPanel(MainFrame.this, gridCopy));
+					topLevelTabbedPane.setSelectedIndex(topLevelTabbedPane.getTabCount() - 1);
+//					crosswordPanel.setFocusable(true);
+//					crosswordPanel.requestFocusInWindow();
+				}
+				saveAsTemplate.setEnabled(true);
+//				tabbedPane_.addTab(title, component);
+				
+//				// create new non-modal dialog box
+//				JPanel buttonsPanel = new JPanel();
+//				buttonsPanel.add(new JButton(Message.BUTTON_OK.toString()));
+//				buttonsPanel.add(new JButton(Message.BUTTON_CANCEL.toString()));
+//				
+//				JDialog dialog = new JDialog((Frame)null, Message.DIALOG_TITLE_NEW_CROSSWORD.toString(), false);
+//				dialog.getContentPane().add(new NewCrosswordPanel(), BorderLayout.CENTER);
+//				dialog.getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
+//				dialog.pack();
+//				dialog.setVisible(true);
+			}
+		});
 		
 		exitItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
@@ -196,9 +245,24 @@ public class MainFrame extends JFrame {
 			}
 		});
 
-		saveAsTemplate.addActionListener(new SaveAsTemplateActionListener());
+		saveAsTemplate.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				CrosswordPanel crosswordPanel = getCrosswordPanel();
+				Grid gridCopy = new Grid(crosswordPanel.getGrid());
+				SaveGridTemplateDialog dialog = new SaveGridTemplateDialog(gridsDb, gridCopy);
+				JTextField nameField = dialog.getNameField();
+				JTextField descriptionField = dialog.getDescriptionField();
+				if (nameField != null && descriptionField != null) {
+					String name = nameField.getText();
+					String description = descriptionField.getText();
+					LOG.fine("done with SaveGridTemplateDialog, name = " + dialog.getNameField().getText() + ", description = " +dialog.getDescriptionField().getText());
+//					for (Grid grid : gridsDb_.getGrids()) {
+//						if (grid.getName() == name)
+//					}
+				}
+			}
+		});
 		
-//		fileMenu.add(new NewAction());
 		topLevelMenuBar.add(fileMenu);
 		
 		undoItem.addActionListener(new ActionListener() {
@@ -239,12 +303,20 @@ public class MainFrame extends JFrame {
 			}
 		});
 		setToBlackItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, 0));
-		
+
+		JMenuItem preferencesItem = newMenuItem(Message.EDIT_MENU_OPTION_PREFERENCES);
+		preferencesItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+			}
+		});
+
 		JMenu editMenu = new JMenu(Message.EDIT_MENU_HEADER.toString());
 		editMenu.add(undoItem);
 		editMenu.add(redoItem);
 		editMenu.addSeparator();
 		editMenu.add(setToBlackItem);
+		editMenu.addSeparator();
+		editMenu.add(preferencesItem);
 		topLevelMenuBar.add(editMenu);
 		getRootPane().setJMenuBar(topLevelMenuBar);
 	}
@@ -347,81 +419,5 @@ public class MainFrame extends JFrame {
 	// return currently selected top-level tab panel, if any, else null
 	private TopLevelTabPanel getTopLevelTabPanel() {
 		return (TopLevelTabPanel)topLevelTabbedPane.getSelectedComponent();
-	}
-	
-	private class NewActionListener implements ActionListener {
-		public void actionPerformed(ActionEvent evt) {
-			System.out.println("Clicked new!");
-			
-			NewCrosswordDialog dialog = new NewCrosswordDialog(gridsDb);
-			int height = dialog.getGridHeight();
-			int width = dialog.getGridWidth();
-			if (height != -1 && width != -1) {
-				new PickGridDialog(height, width);
-			}
-			
-			LOG.finest("Back from NewCrosswordDialog! width = " + dialog.getGridWidth() + ", height = " + dialog.getGridHeight());
-			
-			Grid chosenGrid = dialog.getSelectedGridTemplate();
-			if (chosenGrid != null) {
-//				chosenGrid = new Grid(5, 5, "dummy", "dummy");
-				// Temporarily do auto-fill here
-//				trie_.insert("AAA".toCharArray(), new Word());
-//				long startTime = System.currentTimeMillis();
-//				boolean autofillReturn = chosenGrid.autoFill(dict_);
-//				long endTime = System.currentTimeMillis();
-//				System.out.println("autofill returns " + autofillReturn + ", elapsed time " + (endTime - startTime) + " ms.");
-
-				String tabTitle = MessageFormat.format(Message.UNTITLED_TAB_TITLE.toString(), untitledTabCounter++);
-				Grid gridCopy = new Grid(chosenGrid);
-				//CrosswordPanel crosswordPanel = new CrosswordPanel(MainFrame.this, gridCopy);
-				//topLevelTabbedPane.addTab(tabTitle, crosswordPanel);
-//				topLevelTabbedPane.addTab(tabTitle, new CrosswordPanel(MainFrame.this, gridCopy));
-				topLevelTabbedPane.addTab(tabTitle, new TopLevelTabPanel(MainFrame.this, gridCopy));
-				topLevelTabbedPane.setSelectedIndex(topLevelTabbedPane.getTabCount() - 1);
-//				crosswordPanel.setFocusable(true);
-//				crosswordPanel.requestFocusInWindow();
-			}
-			saveAsTemplate.setEnabled(true);
-//			tabbedPane_.addTab(title, component);
-			
-//			// create new non-modal dialog box
-//			JPanel buttonsPanel = new JPanel();
-//			buttonsPanel.add(new JButton(Message.BUTTON_OK.toString()));
-//			buttonsPanel.add(new JButton(Message.BUTTON_CANCEL.toString()));
-//			
-//			JDialog dialog = new JDialog((Frame)null, Message.DIALOG_TITLE_NEW_CROSSWORD.toString(), false);
-//			dialog.getContentPane().add(new NewCrosswordPanel(), BorderLayout.CENTER);
-//			dialog.getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
-//			dialog.pack();
-//			dialog.setVisible(true);
-		}
-	}
-	
-	private class SaveAsTemplateActionListener implements ActionListener {
-		public void actionPerformed(ActionEvent evt) {
-			System.out.println("in actionPerformed");
-			
-			CrosswordPanel crosswordPanel = getCrosswordPanel();
-			Grid gridCopy = new Grid(crosswordPanel.getGrid());
-			SaveGridTemplateDialog dialog = new SaveGridTemplateDialog(gridsDb, gridCopy);
-			dialog.getName();
-			JTextField nameField = dialog.getNameField();
-			JTextField descriptionField = dialog.getDescriptionField();
-			if (nameField != null && descriptionField != null) {
-				String name = nameField.getText();
-				String description = descriptionField.getText();
-				System.out.println("done with SaveGridTemplateDialog, name = " + dialog.getNameField().getText() + ", description = " +dialog.getDescriptionField().getText());
-//				for (Grid grid : gridsDb_.getGrids()) {
-//					if (grid.getName() == name)
-//				}
-			}
-		}
-	}
-	
-	private class TopLevelTabbedPaneChangeListener implements ChangeListener {
-		public void stateChanged(ChangeEvent evt) {
-			resetEditMenuState();
-		}
 	}
 }

@@ -95,6 +95,9 @@ public class Grid
 	// registered change listeners; these get notified whenever this grid changes
 	private List<GridChangeListener> changeListeners = new ArrayList<GridChangeListener>();
 	
+	// whether word numbers are being displayed in grid
+	private boolean displayingWordNumbers = true;
+	
 	/**
 	 * Constructor for Grid
 	 * @param width width of grid, in number of cells
@@ -171,15 +174,9 @@ public class Grid
 	 */
 	public void render(Graphics2D g, int cellWidth, int cellHeight, boolean thumbnail) {
 		int dpi = Toolkit.getDefaultToolkit().getScreenResolution();
-		System.out.println("dpi = " + dpi);
-		Font font = g.getFont();
-		//FontMetrics fontMetrics = g.getFontMetrics();
-		//int ascent = fontMetrics.getAscent();
-		//int cellHeightResidual = cellHeight - ascent;
-		//int cellWidthResidual = cellWidth - fontMetrics.charWidth('X');
+		Font originalFont = g.getFont();
 		
-		font = font.deriveFont((float)(cellHeight * 72.0 / dpi));
-		//Font smallFont = font.deriveFont(8.0f);
+		Font font = originalFont.deriveFont((float)(cellHeight * 72.0 / dpi));
 		float smallFontSize = (float)(cellHeight * 32.0 / dpi);
 		Font smallFont = font.deriveFont(smallFontSize);
 		FontMetrics fontMetrics = g.getFontMetrics(font);
@@ -189,6 +186,7 @@ public class Grid
 		LOG.finest("font size = " + font.getSize() + ", cellHeightResidual = " + cellHeightResidual
 				+ ", cellWidthResidual = " + cellWidthResidual);
 		g.setColor(Color.BLACK);
+		g.setFont(font);
 		for (int row = 0; row < height; ++row) {
 			for (int col = 0; col < width; ++col) {
 				Cell cell = getCell(row, col);
@@ -222,9 +220,9 @@ public class Grid
 						}
 						g.drawString(cell.getContents(), xoffset + col * cellWidth + cellWidthResidual / 2,
 								yoffset + row * cellHeight + ascent + cellHeightResidual / 2);
-						if (cell.getNumber() > 0) {
+						if (displayingWordNumbers && cell.getNumber() > 0) {
 							g.setFont(smallFont);
-							g.drawString(Integer.toString(cell.getNumber()), xoffset + col * cellWidth, yoffset + row * cellHeight + (int)(smallFontSize + 0.5));
+							g.drawString(Integer.toString(cell.getNumber()), xoffset + col * cellWidth, yoffset + row * cellHeight + (int)smallFontSize);
 							g.setFont(font);
 						}
 					}
@@ -233,6 +231,7 @@ public class Grid
 				
 			}
 		}
+		g.setFont(originalFont);
 //		g.fillRect(0, 0, 30, 30);
 	}
 
