@@ -44,9 +44,20 @@ public enum Message {
 	DIALOG_TITLE_SET_DATA_DIRECTORY,// title for Set Data Directory dialog box
 	DIALOG_TITLE_CONFIRM_DATA_DIRECTORY_CREATE,	// title for confirm data directory create dialog box
 	DIALOG_TITLE_UNABLE_TO_CREATE_DATA_DIRECTORY,	// title unable to create data directory
+	LABEL_AUTHOR,					// label Author
+	LABEL_COPYRIGHT,				// label Copyright
 	LABEL_DESCRIPTION,				// label Description
-	LABEL_NAME,						// label Name
+	LABEL_ENFORCE_SYMMETRY,			// label Enforce Symmetry
 	LABEL_LETTER_FREQUENCY_CHART,	// label for letter frequency chart
+	LABEL_NAME,						// label Name
+	LABEL_SHOW_NUMBERS,				// label Show Numbers
+	LABEL_TITLE,					// label Title
+	MESSAGE_SINGLE_POLYOMINO_CONSTRAINT_MET,		// message Single Polyomino constraint met
+	MESSAGE_SINGLE_POLYOMINO_CONSTRAINT_VIOLATED,	// message Single Polyomino constraint violated
+	MESSAGE_MIN_3_LETTER_WORD_CONSTRAINT_MET,		// message Minimum 3-letter word constraint met
+	MESSAGE_MIN_3_LETTER_WORD_CONSTRAINT_VIOLATED,	// message Minimum 3-letter word constraint violated
+	MESSAGE_SYMMETRIC_GRID_CONSTRAINT_MET,			// message Symmetric grid constraint met
+	MESSAGE_SYMMETRIC_GRID_CONSTRAINT_VIOLATED,		// message Symmetric grid constraint violated
 	PANEL_DIMENSIONS_TITLE,			// title for Dimensions panel
 	PANEL_GRID_PICKER_TITLE,		// title for Grid picker panel
 	PANEL_PREVIEW_TITLE,			// title for Preview panel

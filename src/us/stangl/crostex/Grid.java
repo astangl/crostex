@@ -82,9 +82,14 @@ public class Grid
 	// current direction that cursor is moving, as letters are typed -- North, South, East, or West
 	private NsewDirection currentDirection = NsewDirection.NORTH;
 
+	// title of crossword
 	private String title;
 	
+	// author of crossword
 	private String author;
+	
+	// copyright notice associated with crossword
+	private String copyright;
 	
 	// command buffer to hold mutating user commands, for undo/redo purposes
 	private CommandBuffer<Grid> commandBuffer = new CommandBuffer<Grid>(this);
@@ -92,8 +97,11 @@ public class Grid
 	// whether rotational symmetry is being maintained
 	private boolean maintainingSymmetry = true;
 	
-	// registered change listeners; these get notified whenever this grid changes
+	// registered grid change listeners; these get notified whenever this grid changes
 	private List<GridChangeListener> changeListeners = new ArrayList<GridChangeListener>();
+	
+	// registered title change listeners; these get notified whenever this grid's title changes
+	private List<GridChangeListener> titleChangeListeners = new ArrayList<GridChangeListener>();
 	
 	// whether word numbers are being displayed in grid
 	private boolean displayingWordNumbers = true;
@@ -324,26 +332,6 @@ public class Grid
 	 * Handle key typed event.
 	 * @param evt key typed event from AWT
 	 */
-	/*
-	public void keyTyped(KeyEvent evt) {
-		char c = evt.getKeyChar();
-		if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') {
-			c = Character.toUpperCase(c);
-			if (currentCell != null && !currentCell.isBlack()) {
-				currentCell.setContents(String.valueOf(c));
-				advanceCursor();
-				renumberCells();
-			}
-		}
-	}
-	
-	public void toggleCurrentCell() {
-		if (currentCell != null) {
-			currentCell.toggleBlack();
-		}
-	}
-	*/
-	
 	public void keyTyped(KeyEvent evt) {
 		char c = evt.getKeyChar();
 		if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') {
@@ -674,10 +662,78 @@ public class Grid
 		changeListeners.add(changeListener);
 	}
 
+	/**
+	 * Add title change listener to collection of listeners, to be notified whenever
+	 * the grid's title changes.
+	 * @param titleChangeListener title listener to add
+	 */
+	public void addTitleChangeListener(GridChangeListener titleChangeListener) {
+		titleChangeListeners.add(titleChangeListener);
+	}
+
 	// notify all the registered change listeners that this Grid has changed
 	private void notifyChangeListeners() {
 		for (GridChangeListener changeListener : changeListeners) {
 			changeListener.handleChange(this);
 		}
+	}
+
+	/**
+	 * @return the title
+	 */
+	public String getTitle() {
+		return title;
+	}
+
+	/**
+	 * Set new title for grid, and notify any title change listeners that title has changed.
+	 * @param title the title to set
+	 */
+	public void setTitle(String title) {
+		this.title = title;
+		for (GridChangeListener listener : titleChangeListeners)
+			listener.handleChange(this);
+	}
+
+	/**
+	 * @return the author
+	 */
+	public String getAuthor() {
+		return author;
+	}
+
+	/**
+	 * @param author the author to set
+	 */
+	public void setAuthor(String author) {
+		this.author = author;
+	}
+
+	/**
+	 * @return the copyright
+	 */
+	public String getCopyright() {
+		return copyright;
+	}
+
+	/**
+	 * @param copyright the copyright to set
+	 */
+	public void setCopyright(String copyright) {
+		this.copyright = copyright;
+	}
+
+	/**
+	 * @return the displayingWordNumbers
+	 */
+	public boolean isDisplayingWordNumbers() {
+		return displayingWordNumbers;
+	}
+
+	/**
+	 * @param displayingWordNumbers the displayingWordNumbers to set
+	 */
+	public void setDisplayingWordNumbers(boolean displayingWordNumbers) {
+		this.displayingWordNumbers = displayingWordNumbers;
 	}
 }

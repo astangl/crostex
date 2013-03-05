@@ -34,6 +34,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import us.stangl.crostex.Grid;
+import us.stangl.crostex.GridChangeListener;
 import us.stangl.crostex.GridsDb;
 import us.stangl.crostex.Main;
 import us.stangl.crostex.RomanNumeralGenerator;
@@ -213,12 +214,18 @@ public class MainFrame extends JFrame {
 //					long endTime = System.currentTimeMillis();
 //					System.out.println("autofill returns " + autofillReturn + ", elapsed time " + (endTime - startTime) + " ms.");
 
-					String tabTitle = MessageFormat.format(Message.UNTITLED_TAB_TITLE.toString(), untitledTabCounter++);
+					String title = MessageFormat.format(Message.UNTITLED_TAB_TITLE.toString(), untitledTabCounter++);
 					Grid gridCopy = new Grid(chosenGrid);
+					gridCopy.setTitle(title);
+					gridCopy.addTitleChangeListener(new GridChangeListener() {
+						public void handleChange(Grid grid) {
+							topLevelTabbedPane.setTitleAt(topLevelTabbedPane.getSelectedIndex(), grid.getTitle());
+						}
+					});
 					//CrosswordPanel crosswordPanel = new CrosswordPanel(MainFrame.this, gridCopy);
 					//topLevelTabbedPane.addTab(tabTitle, crosswordPanel);
 //					topLevelTabbedPane.addTab(tabTitle, new CrosswordPanel(MainFrame.this, gridCopy));
-					topLevelTabbedPane.addTab(tabTitle, new TopLevelTabPanel(MainFrame.this, gridCopy));
+					topLevelTabbedPane.addTab(title, new TopLevelTabPanel(MainFrame.this, gridCopy));
 					topLevelTabbedPane.setSelectedIndex(topLevelTabbedPane.getTabCount() - 1);
 //					crosswordPanel.setFocusable(true);
 //					crosswordPanel.requestFocusInWindow();

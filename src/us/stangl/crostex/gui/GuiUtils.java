@@ -5,10 +5,14 @@ package us.stangl.crostex.gui;
 
 import java.awt.Component;
 import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
 import java.awt.LayoutManager;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 /**
  * Miscellaneous GUI-related static utility methods.
@@ -59,5 +63,75 @@ public class GuiUtils {
 		for (Component component : components)
 			retval.add(component);
 		return retval;
+	}
+	
+	/**
+	 * Return a GridBagConstraints with anchor in NORTHWEST corner and specified gridx, gridy
+	 * @param gridx gridx to place into GridBagConstraints
+	 * @param gridy gridy to place into GridBagConstraints
+	 * @return GridBagConstraints with anchor in NORTHWEST corner and specified gridx, gridy
+	 */
+	public static GridBagConstraints northWestAnchorConstraints(int gridx, int gridy) {
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.anchor = GridBagConstraints.NORTHWEST;
+		gbc.gridx = gridx;
+		gbc.gridy = gridy;
+		return gbc;
+	}
+	
+	/**
+	 * Return a GridBagConstraints with gridwidth REMAINDER, weightx = 1.0, and specified gridx, gridy
+	 * @param gridx gridx to place into GridBagConstraints
+	 * @param gridy gridy to place into GridBagConstraints
+	 * @return GridBagConstraints with gridwidth REMAINDER, weightx = 1.0, and specified gridx, gridy
+	 */
+	public static GridBagConstraints gridwidthRemainderConstraints(int gridx, int gridy) {
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.weightx = 1.0;
+		gbc.gridx = gridx;
+		gbc.gridy = gridy;
+		return gbc;
+	}
+	
+	/**
+	 * Return a GridBagConstraints with gridwidth REMAINDER, weightx = 1.0, anchor NORTHWEST, and specified gridx, gridy
+	 * @param gridx gridx to place into GridBagConstraints
+	 * @param gridy gridy to place into GridBagConstraints
+	 * @return GridBagConstraints with gridwidth REMAINDER, weightx = 1.0, anchor NORTHWEST, and specified gridx, gridy
+	 */
+	public static GridBagConstraints gridwidthRemainderNorthWestConstraints(int gridx, int gridy) {
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.anchor = GridBagConstraints.NORTHWEST;
+		gbc.weightx = 1.0;
+		gbc.gridx = gridx;
+		gbc.gridy = gridy;
+		return gbc;
+	}
+	
+	/**
+	 * Return a GridBagConstraints with specified gridx, gridy
+	 * @param gridx gridx to place into GridBagConstraints
+	 * @param gridy gridy to place into GridBagConstraints
+	 * @return GridBagConstraints with specified gridx, gridy
+	 */
+	public static GridBagConstraints newConstraints(int gridx, int gridy) {
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = gridx;
+		gbc.gridy = gridy;
+		return gbc;
+	}
+	
+	/**
+	 * Add Focus listener to text field to commit field whenever it loses focus.
+	 * @param field field to commit when losing focus
+	 */
+	public static void addListenerToCommitOnFocusLost(final JTextField field) {
+		field.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent evt) {
+				field.postActionEvent();
+			}
+		});
 	}
 }

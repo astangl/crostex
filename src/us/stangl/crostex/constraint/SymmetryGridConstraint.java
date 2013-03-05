@@ -8,7 +8,7 @@ import us.stangl.crostex.Grid;
 /**
  * Grid constraint that enforces 180 degree rotational symmetry.
  */
-public class SymmetryGridConstraint  implements GridConstraint {
+public class SymmetryGridConstraint implements GridConstraint {
 	/**
 	 * @return whether grid black pattern is identical when rotated 180 degrees
 	 */
