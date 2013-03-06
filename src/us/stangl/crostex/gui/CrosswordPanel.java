@@ -15,10 +15,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.logging.Logger;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.KeyStroke;
 
 import us.stangl.crostex.Grid;
 import us.stangl.crostex.ServiceException;
@@ -28,6 +31,12 @@ public class CrosswordPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 
 	private static final Logger LOG = Logger.getLogger(CrosswordPanel.class.getName());
+	
+	// action map entries for cursor left/right/up/down
+	private static final String ACTION_MAP_CURSOR_LEFT = "CURSOR_LEFT";
+	private static final String ACTION_MAP_CURSOR_RIGHT = "CURSOR_RIGHT";
+	private static final String ACTION_MAP_CURSOR_UP = "CURSOR_UP";
+	private static final String ACTION_MAP_CURSOR_DOWN = "CURSOR_DOWN";
 
 	// parent (enclosing) MainFrame
 	private MainFrame parentFrame;
@@ -52,13 +61,50 @@ public class CrosswordPanel extends JPanel {
 		
 		KeyEventListener keyListener = new KeyEventListener();
 		this.addKeyListener(keyListener);
-		
+		addKeystrokeAction(KeyEvent.VK_LEFT, ACTION_MAP_CURSOR_LEFT, new AbstractAction() {
+			public void actionPerformed(ActionEvent evt) {
+				CrosswordPanel.this.grid.cursorLeft();
+				CrosswordPanel.this.repaint(0);
+			}
+		});
+		addKeystrokeAction(KeyEvent.VK_RIGHT, ACTION_MAP_CURSOR_RIGHT, new AbstractAction() {
+			public void actionPerformed(ActionEvent evt) {
+				CrosswordPanel.this.grid.cursorRight();
+				CrosswordPanel.this.repaint(0);
+			}
+		});
+		addKeystrokeAction(KeyEvent.VK_UP, ACTION_MAP_CURSOR_UP, new AbstractAction() {
+			public void actionPerformed(ActionEvent evt) {
+				CrosswordPanel.this.grid.cursorUp();
+				CrosswordPanel.this.repaint(0);
+			}
+		});
+		addKeystrokeAction(KeyEvent.VK_DOWN, ACTION_MAP_CURSOR_DOWN, new AbstractAction() {
+			public void actionPerformed(ActionEvent evt) {
+				CrosswordPanel.this.grid.cursorDown();
+				CrosswordPanel.this.repaint(0);
+			}
+		});
+		/*
+		this.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), ACTION_MAP_CURSOR_LEFT);
+		this.getActionMap().put(ACTION_MAP_CURSOR_LEFT, new AbstractAction() {
+			public void actionPerformed(ActionEvent evt) {
+				System.out.println("Cursor Left");
+				//grid.cursorLeft();
+			}
+		});
+		*/
 		this.grid.renumberCells();
 		
 		JMenuItem toggleCellBlackWhiteItem = new JMenuItem(Message.CELL_POPUP_MENU_OPTION_TOGGLE_CELL_BLACK.toString());
 		cellPopupMenu.add(toggleCellBlackWhiteItem);
 		toggleCellBlackWhiteItem.setActionCommand("Toggle cell between black/white");
 		toggleCellBlackWhiteItem.addActionListener(new ToggleCellActionListener());
+	}
+	
+	private void addKeystrokeAction(int keyCode, String actionMapKey, Action action) {
+		this.getInputMap().put(KeyStroke.getKeyStroke(keyCode, 0), actionMapKey);
+		this.getActionMap().put(actionMapKey, action);
 	}
 	
 	/**

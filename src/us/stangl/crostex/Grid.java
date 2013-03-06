@@ -367,6 +367,8 @@ public class Grid
 			if (currentCell != null && !currentCell.isBlack()) {
 				commandBuffer.applyCommand(new ClearCellCommand(this));
 			}
+		} else {
+			System.out.println("c = " + c);
 		}
 	}
 	
@@ -583,6 +585,40 @@ public class Grid
 		notifyChangeListeners();
 	}
 	
+	/**
+	 * Move cursor left, if possible.
+	 */
+	public void cursorLeft() {
+		cursorMove(NsewDirection.WEST);
+	}
+	
+	/**
+	 * Move cursor right, if possible.
+	 */
+	public void cursorRight() {
+		cursorMove(NsewDirection.EAST);
+	}
+	
+	/**
+	 * Move cursor up, if possible.
+	 */
+	public void cursorUp() {
+		cursorMove(NsewDirection.NORTH);
+	}
+	
+	/**
+	 * Move cursor down, if possible.
+	 */
+	public void cursorDown() {
+		cursorMove(NsewDirection.SOUTH);
+	}
+	
+	private void cursorMove(NsewDirection direction) {
+		RowColumnPair rowCol = getNextCursorPositionInDirection(direction);
+		currentRow = rowCol.row;
+		currentColumn = rowCol.column;
+	}
+	
 	private int getCellWidth()	{
 		return cellWidth;
 	}
@@ -793,6 +829,8 @@ public class Grid
 		int column = currentColumn;
 		
 		if (currentDirection == AcrossDownDirection.ACROSS) {
+			return getNextCursorPositionInDirection(NsewDirection.EAST);
+			/*
 			while (true) {
 				// If we can't wrap and we try to wrap, then just return current position
 				if (! wrappingCursor && column == width - 1)
@@ -810,7 +848,10 @@ public class Grid
 				if (isGoodCandidateForNextCursor(row, column))
 					return new RowColumnPair(row, column);
 			}
+			*/
 		} else if (currentDirection == AcrossDownDirection.DOWN) {
+			return getNextCursorPositionInDirection(NsewDirection.SOUTH);
+			/*
 			while (true) {
 				// If we can't wrap and we try to wrap, then just return current position
 				if (! wrappingCursor && row == height - 1)
@@ -821,6 +862,88 @@ public class Grid
 					++column;
 					if (column >= width)
 						column = 0;
+				}
+				
+				// If we've wrapped all the way back to current cell, or else
+				// found a good next one, either way return it
+				if (isGoodCandidateForNextCursor(row, column))
+					return new RowColumnPair(row, column);
+			}
+			*/
+		} else {
+			return new RowColumnPair(row, column);
+		}
+	}
+	
+	private RowColumnPair getNextCursorPositionInDirection(NsewDirection direction) {
+		int row = currentRow;
+		int column = currentColumn;
+		
+		if (direction == NsewDirection.NORTH) {
+			while (true) {
+				// If we can't wrap and we try to wrap, then just return current position
+				if (! wrappingCursor && row == 0)
+					return new RowColumnPair(currentRow, currentColumn);
+				--row;
+				if (row < 0) {
+					row = height - 1;
+					--column;
+					if (column < 0)
+						column = width - 1;
+				}
+				
+				// If we've wrapped all the way back to current cell, or else
+				// found a good next one, either way return it
+				if (isGoodCandidateForNextCursor(row, column))
+					return new RowColumnPair(row, column);
+			}
+		} else if (direction == NsewDirection.SOUTH) {
+			while (true) {
+				// If we can't wrap and we try to wrap, then just return current position
+				if (! wrappingCursor && row == height - 1)
+					return new RowColumnPair(currentRow, currentColumn);
+				++row;
+				if (row >= height) {
+					row = 0;
+					++column;
+					if (column >= width)
+						column = 0;
+				}
+				
+				// If we've wrapped all the way back to current cell, or else
+				// found a good next one, either way return it
+				if (isGoodCandidateForNextCursor(row, column))
+					return new RowColumnPair(row, column);
+			}
+		} else if (direction == NsewDirection.EAST) {
+			while (true) {
+				// If we can't wrap and we try to wrap, then just return current position
+				if (! wrappingCursor && column == width - 1)
+					return new RowColumnPair(currentRow, currentColumn);
+				++column;
+				if (column >= width) {
+					column = 0;
+					++row;
+					if (row >= height)
+						row = 0;
+				}
+				
+				// If we've wrapped all the way back to current cell, or else
+				// found a good next one, either way return it
+				if (isGoodCandidateForNextCursor(row, column))
+					return new RowColumnPair(row, column);
+			}
+		} else if (direction == NsewDirection.WEST) {
+			while (true) {
+				// If we can't wrap and we try to wrap, then just return current position
+				if (! wrappingCursor && column == 0)
+					return new RowColumnPair(currentRow, currentColumn);
+				--column;
+				if (column < 0) {
+					column = width - 1;
+					--row;
+					if (row < 0)
+						row = height - 1;
 				}
 				
 				// If we've wrapped all the way back to current cell, or else
