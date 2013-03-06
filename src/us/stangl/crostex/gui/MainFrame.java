@@ -21,6 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
+import javax.swing.Box;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -182,8 +183,10 @@ public class MainFrame extends JFrame {
 //		});
 		
 		// Create menus
+		// Edit Menu, E - Mnemonic
 		JMenu fileMenu = new JMenu(Message.FILE_MENU_HEADER.toString());
-		
+		fileMenu.setMnemonic(KeyEvent.VK_F);
+
 		JMenuItem newItem = new JMenuItem(Message.FILE_MENU_OPTION_NEW.toString());
 		saveAsTemplate.setEnabled(false);
 		JMenuItem exitItem = new JMenuItem(Message.FILE_MENU_OPTION_EXIT.toString());
@@ -318,6 +321,7 @@ public class MainFrame extends JFrame {
 		});
 
 		JMenu editMenu = new JMenu(Message.EDIT_MENU_HEADER.toString());
+		editMenu.setMnemonic(KeyEvent.VK_E);
 		editMenu.add(undoItem);
 		editMenu.add(redoItem);
 		editMenu.addSeparator();
@@ -325,6 +329,15 @@ public class MainFrame extends JFrame {
 		editMenu.addSeparator();
 		editMenu.add(preferencesItem);
 		topLevelMenuBar.add(editMenu);
+		
+		// put help menu on right side of menubar
+		topLevelMenuBar.add(Box.createHorizontalGlue());
+
+		// Help Menu, H - Mnemonic
+		JMenu helpMenu = new JMenu(Message.HELP_MENU_HEADER.toString());
+		helpMenu.setMnemonic(KeyEvent.VK_H);
+		topLevelMenuBar.add(helpMenu);
+
 		getRootPane().setJMenuBar(topLevelMenuBar);
 	}
 	
