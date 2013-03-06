@@ -20,6 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import us.stangl.crostex.CursorSkipBehavior;
 import us.stangl.crostex.Grid;
 import us.stangl.crostex.GridChangeListener;
 import us.stangl.crostex.GridWord;
@@ -36,6 +37,9 @@ import us.stangl.crostex.util.Message;
 public final class StatsPanel extends JPanel implements GridChangeListener {
 
 	private static final long serialVersionUID = 1L;
+	
+	// array of CursorSkipBehavior values that correspond to the indexes for the ComboBox
+	private static final CursorSkipBehavior[] CURSOR_SKIP_VALUES = CursorSkipBehavior.values();
 	
 	// text field length (for title/author/copyright/...)
 	private static final int TEXT_FIELD_LENGTH = 40;
@@ -71,7 +75,7 @@ public final class StatsPanel extends JPanel implements GridChangeListener {
 	
 	private final JCheckBox showNumbersField;
 	
-	//private final JComboBox cursorSkippingBehaviorField;
+	private final JComboBox cursorSkippingBehaviorField = new JComboBox();
 	
 	private final JCheckBox wraparoundCursorField;
 	
@@ -154,6 +158,17 @@ public final class StatsPanel extends JPanel implements GridChangeListener {
 				StatsPanel.this.grid.setWrappingCursor(wraparoundCursorField.isSelected());
 			}
 		});
+		
+		cursorSkippingBehaviorField.addItem(Message.COMBO_BOX_OPTION_SKIP_NONE.toString());
+		cursorSkippingBehaviorField.addItem(Message.COMBO_BOX_OPTION_SKIP_BLACK.toString());
+		cursorSkippingBehaviorField.addItem(Message.COMBO_BOX_OPTION_SKIP_BLACK_AND_FILLED.toString());
+		cursorSkippingBehaviorField.setSelectedIndex(getSkipBehaviorComboBoxIndex());
+		cursorSkippingBehaviorField.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				grid.setCursorSkipBehavior(CURSOR_SKIP_VALUES[cursorSkippingBehaviorField.getSelectedIndex()]);
+			}
+		});
+		
 		singlePolyominoConstraintViolatedLabel.setForeground(Color.RED);
 		min3LetterWordConstraintViolatedLabel.setForeground(Color.RED);
 		symmetricGridConstraintViolatedLabel.setForeground(Color.RED);
@@ -170,10 +185,28 @@ public final class StatsPanel extends JPanel implements GridChangeListener {
 		topPanel.add(enforceSymmetryField, GuiUtils.gridwidthRemainderNorthWestConstraints(2, 6));
 		topPanel.add(showNumbersField, GuiUtils.gridwidthRemainderNorthWestConstraints(2, 7));
 		topPanel.add(wraparoundCursorField, GuiUtils.gridwidthRemainderNorthWestConstraints(2, 8));
+		topPanel.add(cursorSkippingBehaviorField, GuiUtils.gridwidthRemainderNorthWestConstraints(2, 9));
 		
 		add(topPanel);
 		add(GuiUtils.newJPanel(new FlowLayout(FlowLayout.LEADING), frequencyChartLabel, letterFrequencyChart));
 		setFieldsForGrid();
+	}
+	
+	// return appropriate cursor skip behavior combo box index for grid's cursor skip behavior
+	private int getSkipBehaviorComboBoxIndex() {
+		CursorSkipBehavior cursorSkipBehavior = grid.getCursorSkipBehavior();
+		for (int i = 0; i < CURSOR_SKIP_VALUES.length; ++i)
+			if (CURSOR_SKIP_VALUES[i] == cursorSkipBehavior)
+				return i;
+		throw new RuntimeException("Unhandled cursorSkipBehavior " + cursorSkipBehavior);
+		/*
+		switch (cursorSkipBehavior) {
+		case SKIP_NOTHING:	return 0;
+		case SKIP_BLACK_CELLS:	return 1;
+		case SKIP_BLACK_AND_FILLED_CELLS:	return 2;
+		default: throw new RuntimeException("Unhandled cursorSkipBehavior " + cursorSkipBehavior);
+		}
+		*/
 	}
 	
 	/* (non-Javadoc)

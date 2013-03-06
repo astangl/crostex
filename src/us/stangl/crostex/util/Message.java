@@ -10,6 +10,9 @@ import java.util.ResourceBundle;
  * value in Messages.properties (and any translated versions).
  */
 public enum Message {
+	COMBO_BOX_OPTION_SKIP_NONE,		// combo box Skip None option
+	COMBO_BOX_OPTION_SKIP_BLACK,	// combo box Skip Black option
+	COMBO_BOX_OPTION_SKIP_BLACK_AND_FILLED,		// combo box Skip Black and Filled option
 	EDIT_MENU_HEADER,				// header for Edit menu (e.g., Edit)
 	EDIT_MENU_OPTION_UNDO,			// Edit menu Undo option
 	EDIT_MENU_OPTION_REDO,			// Edit menu Redo option
