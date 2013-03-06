@@ -8,6 +8,7 @@ import us.stangl.crostex.Cell;
 import us.stangl.crostex.Grid;
 import us.stangl.crostex.NsewDirection;
 import us.stangl.crostex.util.Pair;
+import us.stangl.crostex.util.RowColumnPair;
 
 /**
  * Undoable command to clear current cell in the grid, and advance cursor.
@@ -26,11 +27,8 @@ public class ClearCellCommand implements UndoableCommand<Grid> {
 	// original currentColumn
 	private final int oldCurrentColumn;
 	
-	// new value of currentRow
-	private final int newCurrentRow;
-	
-	// new value of currentColumn
-	private final int newCurrentColumn;
+	// new value of (row, column) coordinates
+	private final RowColumnPair newCoordinates;
 	
 	public ClearCellCommand(Grid grid) {
 		oldCurrentRow = grid.getCurrentRow();
@@ -38,25 +36,17 @@ public class ClearCellCommand implements UndoableCommand<Grid> {
 		coordinates = new Pair<Integer, Integer>(Integer.valueOf(oldCurrentRow), Integer.valueOf(oldCurrentColumn));
 		Cell cell = grid.getCell(oldCurrentRow, oldCurrentColumn);
 		oldContents = cell.getContents();
-		AcrossDownDirection currentDirection = grid.getCurrentDirection();
-		int newCurrentRow = oldCurrentRow;
-		int newCurrentColumn = oldCurrentColumn;
-		if (currentDirection == AcrossDownDirection.DOWN && oldCurrentRow < grid.getHeight() - 1) {
-			++newCurrentRow;
-		} else if (currentDirection == AcrossDownDirection.ACROSS && oldCurrentColumn < grid.getWidth() - 1) {
-			++newCurrentColumn;
-		}
-		this.newCurrentRow = newCurrentRow;
-		this.newCurrentColumn = newCurrentColumn;
+		this.newCoordinates = grid.getNextCursorPosition();
 	}
+
 	/**
 	 * Apply command to object.
 	 * (Can't call it do since that's a reserved keyword.)
 	 */
 	public void apply(Grid grid) {
 		grid.getCell(coordinates.first, coordinates.second).setContents("");
-		grid.setCurrentRow(newCurrentRow);
-		grid.setCurrentColumn(newCurrentColumn);
+		grid.setCurrentRow(newCoordinates.row);
+		grid.setCurrentColumn(newCoordinates.column);
 		grid.renumberCells();
 	}
 	

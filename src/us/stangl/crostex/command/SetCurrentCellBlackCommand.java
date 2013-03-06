@@ -10,6 +10,7 @@ import us.stangl.crostex.AcrossDownDirection;
 import us.stangl.crostex.Cell;
 import us.stangl.crostex.Grid;
 import us.stangl.crostex.util.Pair;
+import us.stangl.crostex.util.RowColumnPair;
 
 /**
  * Undoable command to set to black current cell and possibly its symmetric twin
@@ -32,11 +33,8 @@ public class SetCurrentCellBlackCommand  implements UndoableCommand<Grid> {
 	// original currentColumn
 	private final int oldCurrentColumn;
 	
-	// new value of currentRow
-	private final int newCurrentRow;
-	
-	// new value of currentColumn
-	private final int newCurrentColumn;
+	// new value of (row, column) coordinates
+	private final RowColumnPair newCoordinates;
 	
 	public SetCurrentCellBlackCommand(Grid grid) {
 		oldCurrentRow = grid.getCurrentRow();
@@ -54,16 +52,7 @@ public class SetCurrentCellBlackCommand  implements UndoableCommand<Grid> {
 			unApplyValues.add(Boolean.valueOf(otherCell.isBlack()));
 			applyValues.add(Boolean.TRUE);
 		}
-		AcrossDownDirection currentDirection = grid.getCurrentDirection();
-		int newCurrentRow = oldCurrentRow;
-		int newCurrentColumn = oldCurrentColumn;
-		if (currentDirection == AcrossDownDirection.DOWN && oldCurrentRow < grid.getHeight() - 1) {
-			++newCurrentRow;
-		} else if (currentDirection == AcrossDownDirection.ACROSS && oldCurrentColumn < grid.getWidth() - 1) {
-			++newCurrentColumn;
-		}
-		this.newCurrentRow = newCurrentRow;
-		this.newCurrentColumn = newCurrentColumn;
+		this.newCoordinates = grid.getNextCursorPosition();
 	}
 	
 	/**
@@ -71,8 +60,8 @@ public class SetCurrentCellBlackCommand  implements UndoableCommand<Grid> {
 	 * (Can't call it do since that's a reserved keyword.)
 	 */
 	public void apply(Grid grid) {
-		grid.setCurrentRow(newCurrentRow);
-		grid.setCurrentColumn(newCurrentColumn);
+		grid.setCurrentRow(newCoordinates.row);
+		grid.setCurrentColumn(newCoordinates.column);
 		applySpecifiedValues(grid, applyValues);
 	}
 	

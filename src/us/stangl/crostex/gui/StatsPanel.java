@@ -14,6 +14,7 @@ import java.awt.event.ItemListener;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
@@ -69,6 +70,10 @@ public final class StatsPanel extends JPanel implements GridChangeListener {
 	private final JCheckBox enforceSymmetryField;
 	
 	private final JCheckBox showNumbersField;
+	
+	//private final JComboBox cursorSkippingBehaviorField;
+	
+	private final JCheckBox wraparoundCursorField;
 	
 	private final JLabel singlePolyominoConstraintMetLabel = newLabel(Message.MESSAGE_SINGLE_POLYOMINO_CONSTRAINT_MET);
 	private final JLabel singlePolyominoConstraintViolatedLabel = newLabel(Message.MESSAGE_SINGLE_POLYOMINO_CONSTRAINT_VIOLATED);
@@ -143,6 +148,12 @@ public final class StatsPanel extends JPanel implements GridChangeListener {
 			}
 		});
 
+		wraparoundCursorField = new JCheckBox(Message.LABEL_WRAPAROUND_CURSOR.toString(), grid.isWrappingCursor());
+		wraparoundCursorField.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent evt) {
+				StatsPanel.this.grid.setWrappingCursor(wraparoundCursorField.isSelected());
+			}
+		});
 		singlePolyominoConstraintViolatedLabel.setForeground(Color.RED);
 		min3LetterWordConstraintViolatedLabel.setForeground(Color.RED);
 		symmetricGridConstraintViolatedLabel.setForeground(Color.RED);
@@ -158,6 +169,7 @@ public final class StatsPanel extends JPanel implements GridChangeListener {
 		topPanel.add(GuiUtils.newJPanel(new FlowLayout(FlowLayout.LEADING, 0, 0), symmetricGridConstraintMetLabel, symmetricGridConstraintViolatedLabel), GuiUtils.gridwidthRemainderNorthWestConstraints(0, 5));
 		topPanel.add(enforceSymmetryField, GuiUtils.gridwidthRemainderNorthWestConstraints(2, 6));
 		topPanel.add(showNumbersField, GuiUtils.gridwidthRemainderNorthWestConstraints(2, 7));
+		topPanel.add(wraparoundCursorField, GuiUtils.gridwidthRemainderNorthWestConstraints(2, 8));
 		
 		add(topPanel);
 		add(GuiUtils.newJPanel(new FlowLayout(FlowLayout.LEADING), frequencyChartLabel, letterFrequencyChart));

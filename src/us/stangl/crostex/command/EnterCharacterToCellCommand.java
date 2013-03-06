@@ -3,10 +3,10 @@
  */
 package us.stangl.crostex.command;
 
-import us.stangl.crostex.AcrossDownDirection;
 import us.stangl.crostex.Cell;
 import us.stangl.crostex.Grid;
 import us.stangl.crostex.util.Pair;
+import us.stangl.crostex.util.RowColumnPair;
 
 /**
  * Undoable command to enter a specified character into the current cell in the grid, and advance cursor.
@@ -28,11 +28,8 @@ public class EnterCharacterToCellCommand implements UndoableCommand<Grid> {
 	// original currentColumn
 	private final int oldCurrentColumn;
 	
-	// new value of currentRow
-	private final int newCurrentRow;
-	
-	// new value of currentColumn
-	private final int newCurrentColumn;
+	// new value of (row, column) coordinates
+	private final RowColumnPair newCoordinates;
 	
 	public EnterCharacterToCellCommand(Grid grid, char c) {
 		oldCurrentRow = grid.getCurrentRow();
@@ -41,16 +38,7 @@ public class EnterCharacterToCellCommand implements UndoableCommand<Grid> {
 		Cell cell = grid.getCell(oldCurrentRow, oldCurrentColumn);
 		oldContents = cell.getContents();
 		newContents = String.valueOf(c);
-		AcrossDownDirection currentDirection = grid.getCurrentDirection();
-		int newCurrentRow = oldCurrentRow;
-		int newCurrentColumn = oldCurrentColumn;
-		if (currentDirection == AcrossDownDirection.DOWN && oldCurrentRow < grid.getHeight() - 1) {
-			++newCurrentRow;
-		} else if (currentDirection == AcrossDownDirection.ACROSS && oldCurrentColumn < grid.getWidth() - 1) {
-			++newCurrentColumn;
-		}
-		this.newCurrentRow = newCurrentRow;
-		this.newCurrentColumn = newCurrentColumn;
+		this.newCoordinates = grid.getNextCursorPosition();
 	}
 	/**
 	 * Apply command to object.
@@ -58,8 +46,8 @@ public class EnterCharacterToCellCommand implements UndoableCommand<Grid> {
 	 */
 	public void apply(Grid grid) {
 		grid.getCell(coordinates.first, coordinates.second).setContents(newContents);
-		grid.setCurrentRow(newCurrentRow);
-		grid.setCurrentColumn(newCurrentColumn);
+		grid.setCurrentRow(newCoordinates.row);
+		grid.setCurrentColumn(newCoordinates.column);
 		grid.renumberCells();
 	}
 	

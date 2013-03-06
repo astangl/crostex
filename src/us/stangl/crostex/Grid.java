@@ -29,6 +29,7 @@ import us.stangl.crostex.command.EnterCharacterToCellCommand;
 import us.stangl.crostex.command.SetCurrentCellBlackCommand;
 import us.stangl.crostex.command.ToggleCurrentCellCommand;
 import us.stangl.crostex.dictionary.Dictionary;
+import us.stangl.crostex.util.RowColumnPair;
 
 /**
  * Crossword grid.
@@ -111,6 +112,12 @@ public class Grid
 	// previous mouse button that was pressed (1 == left mouse button)
 	private int prevMouseButton = -1;
 	
+	// whether cursor is wrapping from one side to the other
+	private boolean wrappingCursor = true;
+	
+	// cursor skipping behavior
+	private CursorSkipBehavior cursorSkipBehavior = CursorSkipBehavior.SKIP_BLACK_CELLS;
+	
 	/**
 	 * Constructor for Grid
 	 * @param width width of grid, in number of cells
@@ -134,6 +141,9 @@ public class Grid
 	
 	/**
 	 * Copy constructor, copies another Grid
+	 * NOTE: Currently just treats gridToCopy as a template, not copying its full state.
+	 * currentCell is set according to currentRow/currentColumn, and commandBuffer is left empty
+	 * and listeners are not currently copied
 	 * @param gridToCopy source grid to copy to this
 	 */
 	public Grid(Grid gridToCopy) {
@@ -143,9 +153,21 @@ public class Grid
 				getCell(row, col).copyFrom(gridToCopy.getCell(row, col));
 			}
 		}
-		this.cellHeight = gridToCopy.cellHeight;
 		this.cellWidth = gridToCopy.cellWidth;
-		this.currentCell = gridToCopy.currentCell;
+		this.cellHeight = gridToCopy.cellHeight;
+		this.xoffset = gridToCopy.xoffset;
+		this.yoffset = gridToCopy.yoffset;
+		this.currentRow = gridToCopy.currentRow;
+		this.currentColumn = gridToCopy.currentColumn;
+		this.currentCell = currentRow == -1 || currentColumn == -1 ? null : getCell(currentRow, currentColumn);
+		this.currentDirection = gridToCopy.currentDirection;
+		this.title = gridToCopy.title;
+		this.author = gridToCopy.author;
+		this.copyright = gridToCopy.copyright;
+		this.maintainingSymmetry = gridToCopy.maintainingSymmetry;
+		this.displayingWordNumbers = gridToCopy.displayingWordNumbers;
+		this.wrappingCursor = gridToCopy.wrappingCursor;
+		this.cursorSkipBehavior = gridToCopy.cursorSkipBehavior;
 	}
 
 	/**
@@ -759,5 +781,95 @@ public class Grid
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * @return next cursor position as a (row, column) pair,
+	 * taking into current cursor direction and wrap/skip behavior
+	 * returns current position if it is not possible to automatically move to another cell 
+	 */
+	public RowColumnPair getNextCursorPosition() {
+		int row = currentRow;
+		int column = currentColumn;
+		
+		if (currentDirection == AcrossDownDirection.ACROSS) {
+			while (true) {
+				// If we can't wrap and we try to wrap, then just return current position
+				if (! wrappingCursor && column == width - 1)
+					return new RowColumnPair(currentRow, currentColumn);
+				++column;
+				if (column >= width) {
+					column = 0;
+					++row;
+					if (row >= height)
+						row = 0;
+				}
+				
+				// If we've wrapped all the way back to current cell, or else
+				// found a good next one, either way return it
+				if (isGoodCandidateForNextCursor(row, column))
+					return new RowColumnPair(row, column);
+			}
+		} else if (currentDirection == AcrossDownDirection.DOWN) {
+			while (true) {
+				// If we can't wrap and we try to wrap, then just return current position
+				if (! wrappingCursor && row == height - 1)
+					return new RowColumnPair(currentRow, currentColumn);
+				++row;
+				if (row >= height) {
+					row = 0;
+					++column;
+					if (column >= width)
+						column = 0;
+				}
+				
+				// If we've wrapped all the way back to current cell, or else
+				// found a good next one, either way return it
+				if (isGoodCandidateForNextCursor(row, column))
+					return new RowColumnPair(row, column);
+			}
+		} else {
+			return new RowColumnPair(row, column);
+		}
+	}
+	
+	// return whether specified (row, column) is a good candidate for the next cursor,
+	// based upon whether it's wrapped all the way around back to current position or
+	// else satisfies the cursor skip behavior
+	private boolean isGoodCandidateForNextCursor(int row, int column) {
+		Cell cell = getCell(row, column);
+		return row == currentRow && column == currentColumn
+			|| cursorSkipBehavior == CursorSkipBehavior.SKIP_NOTHING
+			|| cursorSkipBehavior == CursorSkipBehavior.SKIP_BLACK_CELLS && !cell.isBlack()
+			|| cursorSkipBehavior == CursorSkipBehavior.SKIP_BLACK_AND_FILLED_CELLS && !cell.isBlack() && cell.isEmpty();
+	}
+
+	/**
+	 * @return whether the cursor is wrapping from one side of the grid to the other
+	 */
+	public boolean isWrappingCursor() {
+		return wrappingCursor;
+	}
+
+	/**
+	 * @param wrappingCursor the new value of the wrappingCursor flag, governing whether
+	 * the cursor wraps from one side of the grid to the other
+	 */
+	public void setWrappingCursor(boolean wrappingCursor) {
+		this.wrappingCursor = wrappingCursor;
+	}
+
+	/**
+	 * @return the cursorSkipBehavior
+	 */
+	public CursorSkipBehavior getCursorSkipBehavior() {
+		return cursorSkipBehavior;
+	}
+
+	/**
+	 * @param cursorSkipBehavior the cursorSkipBehavior to set
+	 */
+	public void setCursorSkipBehavior(CursorSkipBehavior cursorSkipBehavior) {
+		this.cursorSkipBehavior = cursorSkipBehavior;
 	}
 }

@@ -52,6 +52,7 @@ public enum Message {
 	LABEL_NAME,						// label Name
 	LABEL_SHOW_NUMBERS,				// label Show Numbers
 	LABEL_TITLE,					// label Title
+	LABEL_WRAPAROUND_CURSOR,		// label Wraparound Cursor
 	MESSAGE_SINGLE_POLYOMINO_CONSTRAINT_MET,		// message Single Polyomino constraint met
 	MESSAGE_SINGLE_POLYOMINO_CONSTRAINT_VIOLATED,	// message Single Polyomino constraint violated
 	MESSAGE_MIN_3_LETTER_WORD_CONSTRAINT_MET,		// message Minimum 3-letter word constraint met
