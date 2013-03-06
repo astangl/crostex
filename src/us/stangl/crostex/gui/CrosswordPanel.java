@@ -106,6 +106,7 @@ public class CrosswordPanel extends JPanel {
 		// show popup menu, if appropriate mouse trigger was performed
 		private void maybeShowPopup(MouseEvent evt) {
 			if (evt.isPopupTrigger()) {
+				grid.mouseClicked(evt);
 				cellPopupMenu.show(CrosswordPanel.this, evt.getX(), evt.getY());
 			}
 		}

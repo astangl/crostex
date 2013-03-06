@@ -39,7 +39,9 @@ public class Grid
 	// logger
 	private static final Logger LOG = Logger.getLogger(Grid.class.getName());
 
-	private static final Color LIGHT_YELLOW = new Color(238, 238, 192);
+	private static final Color LIGHT_YELLOW = new Color(255, 255, 170);		// new Color(238, 238, 192);
+	
+	private static final Color LIGHT_GREEN = new Color(170, 255, 170);
 	
 	private static final Color VERY_LIGHT_GRAY = new Color(238, 238, 238);
 
@@ -79,8 +81,8 @@ public class Grid
 	// column (x position) of currently selected cell, if any, else -1
 	private int currentColumn = -1;
 	
-	// current direction that cursor is moving, as letters are typed -- North, South, East, or West
-	private NsewDirection currentDirection = NsewDirection.NORTH;
+	// current direction that cursor is moving, as letters are typed -- Across or Down
+	private AcrossDownDirection currentDirection = AcrossDownDirection.ACROSS;
 
 	// title of crossword
 	private String title;
@@ -105,6 +107,9 @@ public class Grid
 	
 	// whether word numbers are being displayed in grid
 	private boolean displayingWordNumbers = true;
+
+	// previous mouse button that was pressed (1 == left mouse button)
+	private int prevMouseButton = -1;
 	
 	/**
 	 * Constructor for Grid
@@ -203,28 +208,14 @@ public class Grid
 				} else {
 					if (! thumbnail) {
 						// Color currently selected cell light yellow, and color next cell to visit with a triangle indicator
-						if (currentCell == cell) {
+						if (currentRow == row && currentColumn == col) {
+							g.setColor(LIGHT_GREEN);
+							g.fillRect(xoffset + col * cellWidth, yoffset + row * cellHeight, cellWidth, cellHeight);
+							g.setColor(Color.BLACK);
+						} else if (adjoinsCurrentCell(row, col)) {
 							g.setColor(LIGHT_YELLOW);
 							g.fillRect(xoffset + col * cellWidth, yoffset + row * cellHeight, cellWidth, cellHeight);
 							g.setColor(Color.BLACK);
-						} else if (currentDirection == NsewDirection.NORTH && row < height-1 && getCell(row+1, col) == currentCell) {
-							g.setColor(LIGHT_YELLOW);
-							int x[] = new int[3];
-							int y[] = new int[3];
-							x[0] = xoffset + col * cellWidth;
-							x[2] = xoffset + (col + 1) * cellWidth - 1;
-							x[1] = (x[0] + x[2]) / 2;
-							y[0] = yoffset + (row + 1) * cellHeight - 1;
-							y[1] = y[0] - cellHeight / 2;
-							y[2] = y[0];
-							g.fillPolygon(x, y, 3);
-							g.setColor(Color.BLACK);
-						} else if (currentDirection == NsewDirection.SOUTH && row > 0 && getCell(row-1, col) == currentCell) {
-							
-						} else if (currentDirection == NsewDirection.EAST && col > 0 && getCell(row, col-1) == currentCell) {
-							
-						} else if (currentDirection == NsewDirection.WEST && col < width-1 && getCell(row, col+1) == currentCell) {
-							
 						}
 						g.drawString(cell.getContents(), xoffset + col * cellWidth + cellWidthResidual / 2,
 								yoffset + row * cellHeight + ascent + cellHeightResidual / 2);
@@ -240,7 +231,6 @@ public class Grid
 			}
 		}
 		g.setFont(originalFont);
-//		g.fillRect(0, 0, 30, 30);
 	}
 
 	/**
@@ -316,16 +306,26 @@ public class Grid
 		LOG.finest("mouse clicked at " + evt.getX() + ", " + evt.getY());
 		int row = getRowForMouseYPosition(evt.getY());
 		int column = getColumnForMouseXPosition(evt.getX());
+		int currButton = evt.getButton();
+		// If user clicks left button in same cell in succession, toggle direction
+		if (currButton == 1 && prevMouseButton == 1 && row == currentRow && column == currentColumn) {
+			if (currentDirection == AcrossDownDirection.ACROSS)
+				currentDirection = AcrossDownDirection.DOWN;
+			else if (currentDirection == AcrossDownDirection.DOWN)
+				currentDirection = AcrossDownDirection.ACROSS;
+		}
 		if (row != -1 && column != -1) {
 			currentCell = getCell(row, column);
 			currentRow = row;
 			currentColumn = column;
-			//Cell cell = getCellForXY(evt.getX(), evt.getY());
-//			if (cell != null) {
-//				currentCell = cell;
-//				renumberCells();
-//			}
 		}
+		
+		prevMouseButton = currButton;
+		/*
+		if (row != 1 && column != 1) {
+			prevCell = currentCell;
+		}
+		*/
 	}
 
 	/**
@@ -493,8 +493,8 @@ public class Grid
 		
 		Element americanElement = doc.createElement("american");
 		Element gridElement = doc.createElement("grid");
-		gridElement.setAttribute("rows", "" + getHeight());
-		gridElement.setAttribute("columns", "" + getWidth());
+		gridElement.setAttribute("rows", Integer.toString(getHeight()));
+		gridElement.setAttribute("columns", Integer.toString(getWidth()));
 		for (int row = 0; row < getHeight(); ++row) {
 			for (int col = 0; col < getWidth(); ++col) {
 				Cell cell = getCell(row, col);
@@ -550,14 +550,12 @@ public class Grid
 	
 	// move cursor one position in the currently-selected direction, if possible
 	private void advanceCursor() {
-		if (currentDirection == NsewDirection.NORTH && currentRow > 0) {
-			--currentRow;
-		} else if (currentDirection == NsewDirection.SOUTH && currentRow < height - 1) {
+		if (currentDirection == AcrossDownDirection.DOWN && currentRow < height - 1) {
 			++currentRow;
-		} else if (currentDirection == NsewDirection.EAST && currentColumn < width - 1) {
+		} else if (currentDirection == AcrossDownDirection.ACROSS && currentColumn < width - 1) {
 			++currentColumn;
-		} else if (currentDirection == NsewDirection.WEST && currentColumn > 0) {
-			--currentColumn;
+		} else {
+			throw new RuntimeException("Unhandled currentDirection " + currentDirection);
 		}
 		currentCell = getCell(currentRow, currentColumn);
 		notifyChangeListeners();
@@ -642,14 +640,14 @@ public class Grid
 	/**
 	 * @return the currentDirection
 	 */
-	public NsewDirection getCurrentDirection() {
+	public AcrossDownDirection getCurrentDirection() {
 		return currentDirection;
 	}
 
 	/**
 	 * @param currentDirection the currentDirection to set
 	 */
-	public void setCurrentDirection(NsewDirection currentDirection) {
+	public void setCurrentDirection(AcrossDownDirection currentDirection) {
 		this.currentDirection = currentDirection;
 	}
 	
@@ -735,5 +733,31 @@ public class Grid
 	 */
 	public void setDisplayingWordNumbers(boolean displayingWordNumbers) {
 		this.displayingWordNumbers = displayingWordNumbers;
+	}
+	
+	// return whether the specified (row, col) adjoins the current cell (part of same word, no intervening black squares)
+	private boolean adjoinsCurrentCell(int row, int col) {
+		if (row == -1 || col == -1 || currentRow == -1 || currentColumn == -1)
+			return false;
+		if (row == currentRow && col == currentColumn)
+			return true;				// trivial case
+		if (currentDirection == AcrossDownDirection.ACROSS && row == currentRow) {
+			int min = Math.min(col,  currentColumn);
+			int max = Math.max(col,  currentColumn);
+			for (int i = min; i <= max; ++i) {
+				if (getCell(row, i).isBlack())
+					return false;
+			}
+			return true;
+		} else if (currentDirection == AcrossDownDirection.DOWN && col == currentColumn) {
+			int min = Math.min(row,  currentRow);
+			int max = Math.max(row,  currentRow);
+			for (int i = min; i <= max; ++i) {
+				if (getCell(i, col).isBlack())
+					return false;
+			}
+			return true;
+		}
+		return false;
 	}
 }

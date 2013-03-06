@@ -3,6 +3,7 @@
  */
 package us.stangl.crostex.command;
 
+import us.stangl.crostex.AcrossDownDirection;
 import us.stangl.crostex.Cell;
 import us.stangl.crostex.Grid;
 import us.stangl.crostex.NsewDirection;
@@ -37,17 +38,13 @@ public class ClearCellCommand implements UndoableCommand<Grid> {
 		coordinates = new Pair<Integer, Integer>(Integer.valueOf(oldCurrentRow), Integer.valueOf(oldCurrentColumn));
 		Cell cell = grid.getCell(oldCurrentRow, oldCurrentColumn);
 		oldContents = cell.getContents();
-		NsewDirection currentDirection = grid.getCurrentDirection();
+		AcrossDownDirection currentDirection = grid.getCurrentDirection();
 		int newCurrentRow = oldCurrentRow;
 		int newCurrentColumn = oldCurrentColumn;
-		if (currentDirection == NsewDirection.NORTH && oldCurrentRow > 0) {
-			--newCurrentRow;
-		} else if (currentDirection == NsewDirection.SOUTH && oldCurrentRow < grid.getHeight() - 1) {
+		if (currentDirection == AcrossDownDirection.DOWN && oldCurrentRow < grid.getHeight() - 1) {
 			++newCurrentRow;
-		} else if (currentDirection == NsewDirection.EAST && oldCurrentColumn < grid.getWidth() - 1) {
+		} else if (currentDirection == AcrossDownDirection.ACROSS && oldCurrentColumn < grid.getWidth() - 1) {
 			++newCurrentColumn;
-		} else if (currentDirection == NsewDirection.WEST && oldCurrentColumn > 0) {
-			--newCurrentColumn;
 		}
 		this.newCurrentRow = newCurrentRow;
 		this.newCurrentColumn = newCurrentColumn;
