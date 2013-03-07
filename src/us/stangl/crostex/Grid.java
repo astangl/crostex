@@ -40,12 +40,10 @@ public class Grid
 	// logger
 	private static final Logger LOG = Logger.getLogger(Grid.class.getName());
 
-	private static final Color LIGHT_YELLOW = new Color(255, 255, 170);		// new Color(238, 238, 192);
+	private static final Color LIGHT_YELLOW = new Color(255, 255, 170);
 	
 	private static final Color LIGHT_GREEN = new Color(170, 255, 170);
 	
-	private static final Color VERY_LIGHT_GRAY = new Color(238, 238, 238);
-
 	// cell width
 	private int cellWidth = 24;
 	
@@ -367,8 +365,6 @@ public class Grid
 			if (currentCell != null && !currentCell.isBlack()) {
 				commandBuffer.applyCommand(new ClearCellCommand(this));
 			}
-		} else {
-			System.out.println("c = " + c);
 		}
 	}
 	
@@ -825,54 +821,11 @@ public class Grid
 	 * returns current position if it is not possible to automatically move to another cell 
 	 */
 	public RowColumnPair getNextCursorPosition() {
-		int row = currentRow;
-		int column = currentColumn;
-		
-		if (currentDirection == AcrossDownDirection.ACROSS) {
+		if (currentDirection == AcrossDownDirection.ACROSS)
 			return getNextCursorPositionInDirection(NsewDirection.EAST);
-			/*
-			while (true) {
-				// If we can't wrap and we try to wrap, then just return current position
-				if (! wrappingCursor && column == width - 1)
-					return new RowColumnPair(currentRow, currentColumn);
-				++column;
-				if (column >= width) {
-					column = 0;
-					++row;
-					if (row >= height)
-						row = 0;
-				}
-				
-				// If we've wrapped all the way back to current cell, or else
-				// found a good next one, either way return it
-				if (isGoodCandidateForNextCursor(row, column))
-					return new RowColumnPair(row, column);
-			}
-			*/
-		} else if (currentDirection == AcrossDownDirection.DOWN) {
+		if (currentDirection == AcrossDownDirection.DOWN)
 			return getNextCursorPositionInDirection(NsewDirection.SOUTH);
-			/*
-			while (true) {
-				// If we can't wrap and we try to wrap, then just return current position
-				if (! wrappingCursor && row == height - 1)
-					return new RowColumnPair(currentRow, currentColumn);
-				++row;
-				if (row >= height) {
-					row = 0;
-					++column;
-					if (column >= width)
-						column = 0;
-				}
-				
-				// If we've wrapped all the way back to current cell, or else
-				// found a good next one, either way return it
-				if (isGoodCandidateForNextCursor(row, column))
-					return new RowColumnPair(row, column);
-			}
-			*/
-		} else {
-			return new RowColumnPair(row, column);
-		}
+		return new RowColumnPair(currentRow, currentColumn);
 	}
 	
 	private RowColumnPair getNextCursorPositionInDirection(NsewDirection direction) {

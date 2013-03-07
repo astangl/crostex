@@ -199,14 +199,6 @@ public final class StatsPanel extends JPanel implements GridChangeListener {
 			if (CURSOR_SKIP_VALUES[i] == cursorSkipBehavior)
 				return i;
 		throw new RuntimeException("Unhandled cursorSkipBehavior " + cursorSkipBehavior);
-		/*
-		switch (cursorSkipBehavior) {
-		case SKIP_NOTHING:	return 0;
-		case SKIP_BLACK_CELLS:	return 1;
-		case SKIP_BLACK_AND_FILLED_CELLS:	return 2;
-		default: throw new RuntimeException("Unhandled cursorSkipBehavior " + cursorSkipBehavior);
-		}
-		*/
 	}
 	
 	/* (non-Javadoc)

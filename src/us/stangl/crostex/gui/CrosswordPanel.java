@@ -62,38 +62,38 @@ public class CrosswordPanel extends JPanel {
 		KeyEventListener keyListener = new KeyEventListener();
 		this.addKeyListener(keyListener);
 		addKeystrokeAction(KeyEvent.VK_LEFT, ACTION_MAP_CURSOR_LEFT, new AbstractAction() {
+			private static final long serialVersionUID = 1L;
+
 			public void actionPerformed(ActionEvent evt) {
 				CrosswordPanel.this.grid.cursorLeft();
 				CrosswordPanel.this.repaint(0);
 			}
 		});
 		addKeystrokeAction(KeyEvent.VK_RIGHT, ACTION_MAP_CURSOR_RIGHT, new AbstractAction() {
+			private static final long serialVersionUID = 1L;
+
 			public void actionPerformed(ActionEvent evt) {
 				CrosswordPanel.this.grid.cursorRight();
 				CrosswordPanel.this.repaint(0);
 			}
 		});
 		addKeystrokeAction(KeyEvent.VK_UP, ACTION_MAP_CURSOR_UP, new AbstractAction() {
+			private static final long serialVersionUID = 1L;
+
 			public void actionPerformed(ActionEvent evt) {
 				CrosswordPanel.this.grid.cursorUp();
 				CrosswordPanel.this.repaint(0);
 			}
 		});
 		addKeystrokeAction(KeyEvent.VK_DOWN, ACTION_MAP_CURSOR_DOWN, new AbstractAction() {
+			private static final long serialVersionUID = 1L;
+
 			public void actionPerformed(ActionEvent evt) {
 				CrosswordPanel.this.grid.cursorDown();
 				CrosswordPanel.this.repaint(0);
 			}
 		});
-		/*
-		this.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), ACTION_MAP_CURSOR_LEFT);
-		this.getActionMap().put(ACTION_MAP_CURSOR_LEFT, new AbstractAction() {
-			public void actionPerformed(ActionEvent evt) {
-				System.out.println("Cursor Left");
-				//grid.cursorLeft();
-			}
-		});
-		*/
+
 		this.grid.renumberCells();
 		
 		JMenuItem toggleCellBlackWhiteItem = new JMenuItem(Message.CELL_POPUP_MENU_OPTION_TOGGLE_CELL_BLACK.toString());
@@ -179,14 +179,4 @@ public class CrosswordPanel extends JPanel {
 	public Grid getGrid() {
 		return grid;
 	}
-	
-//	private Document getStateAsDocument() {
-//		//TODO need to implement this!
-//		return new Document();
-//	}
-	/*
-XML syntax:
-<crosswordpuzzle>
-
-	 */
 }
