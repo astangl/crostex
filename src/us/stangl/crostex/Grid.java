@@ -116,6 +116,12 @@ public class Grid
 	// cursor skipping behavior
 	private CursorSkipBehavior cursorSkipBehavior = CursorSkipBehavior.SKIP_BLACK_CELLS;
 	
+	// across clues
+	private List<Clue> acrossClues = new ArrayList<Clue>();
+	
+	// down clues
+	private List<Clue> downClues = new ArrayList<Clue>();
+	
 	/**
 	 * Constructor for Grid
 	 * @param width width of grid, in number of cells
@@ -247,7 +253,6 @@ public class Grid
 					}
 				}
 				g.drawRect(xoffset + col * cellWidth, yoffset + row * cellHeight, cellWidth, cellHeight);
-				
 			}
 		}
 		g.setFont(originalFont);
@@ -289,24 +294,32 @@ public class Grid
 
 	/**
 	 * Return whether the specified (row, col) starts an across word.
-	 * It starts an across word if it is not black AND (leftmost on the line, or has a black to its left) AND non-black to the right.
+	 * It starts an across word if it is not black AND (leftmost on the
+	 * line, or has a black to its left) AND non-black to the right.
 	 * @param row 0-based row coordinate
 	 * @param col 0-based column coordinate
 	 * @return whether the specified (row, col) starts an across word
 	 */
 	public boolean isStartOfAcrossWord(int row, int col) {
-		return ! cells[row][col].isBlack() && ((col == 0 || cells[row][col - 1].isBlack()) && (col < width - 1 && ! cells[row][col + 1].isBlack()));
+		return ! cells[row][col].isBlack()
+				&& (col == 0 || cells[row][col - 1].isBlack())
+				&& col < width - 1
+				&& ! cells[row][col + 1].isBlack();
 	}
 
 	/**
 	 * Return whether the specified (row, col) starts a down word.
-	 * It starts an down word if it is not black AND (it is topmost in its column, or has a black above it) AND and non-black below it.
+	 * It starts an down word if it is not black AND (it is topmost in
+	 * its column, or has a black above it) AND and non-black below it.
 	 * @param row 0-based row coordinate
 	 * @param col 0-based column coordinate
 	 * @return whether the specified (row, col) starts a down word
 	 */
 	public boolean isStartOfDownWord(int row, int col) {
-		return ! cells[row][col].isBlack() && ((row == 0 || cells[row - 1][col].isBlack()) && (row < height - 1 && ! cells[row + 1][col].isBlack()));
+		return ! cells[row][col].isBlack()
+				&& (row == 0 || cells[row - 1][col].isBlack())
+				&& row < height - 1
+				&& ! cells[row + 1][col].isBlack();
 	}
 
 	/**
@@ -341,11 +354,6 @@ public class Grid
 		}
 		
 		prevMouseButton = currButton;
-		/*
-		if (row != 1 && column != 1) {
-			prevCell = currentCell;
-		}
-		*/
 	}
 
 	/**
@@ -431,13 +439,16 @@ public class Grid
 			for (int col = 0; col < width; ++col) {
 				if (isStartOfAcrossWord(row, col)) {
 					counter++;
+					RowColumnPair startOfWord = new RowColumnPair(row, col);
 					int colEnd = col;
 					while (colEnd < width && ! getCell(row, colEnd).isBlack())
 						colEnd++;
+					RowColumnPair endOfWord = new RowColumnPair(row, colEnd);
 					Cell[] cells = new Cell[colEnd - col];
 					for (int i = 0; i < cells.length; ++i)
 						cells[i] = getCell(row, col + i);
-					retval.add(new GridWord(cells, AcrossDownDirection.ACROSS, counter));
+					retval.add(new GridWord(cells, AcrossDownDirection.ACROSS,
+							counter, startOfWord, endOfWord));
 				}
 				else if (isStartOfDownWord(row, col))
 					counter++;
@@ -455,13 +466,16 @@ public class Grid
 			for (int col = 0; col < width; ++col) {
 				if (isStartOfDownWord(row, col)) {
 					counter++;
+					RowColumnPair startOfWord = new RowColumnPair(row, col);
 					int rowEnd = row;
 					while (rowEnd < height && ! getCell(rowEnd, col).isBlack())
 						rowEnd++;
+					RowColumnPair endOfWord = new RowColumnPair(rowEnd, col);
 					Cell[] cells = new Cell[rowEnd - row];
 					for (int i =0; i < cells.length; ++i)
 						cells[i] = getCell(row + i, col);
-					retval.add(new GridWord(cells, AcrossDownDirection.DOWN, counter));
+					retval.add(new GridWord(cells, AcrossDownDirection.DOWN,
+							counter, startOfWord, endOfWord));
 				}
 				else if (isStartOfAcrossWord(row, col))
 					counter++;
@@ -788,6 +802,96 @@ public class Grid
 	public void setDisplayingWordNumbers(boolean displayingWordNumbers) {
 		this.displayingWordNumbers = displayingWordNumbers;
 	}
+
+	/**
+	 * Validate Across clues, making sure they still match the letters in the grid, discarding
+	 * and creating new ones as necessary, and returning the resultant list.
+	 * @return validated across clues
+	 */
+	public List<Clue> validateAndGetAcrossClues() {
+		return validateClues(getAcrossWords(), acrossClues, AcrossDownDirection.ACROSS);
+	}
+
+	/**
+	 * Validate Down clues, making sure they still match the letters in the grid, discarding
+	 * and creating new ones as necessary, and returning the resultant list.
+	 * @return validated across clues
+	 */
+	public List<Clue> validateAndGetDownClues() {
+		return validateClues(getDownWords(), downClues, AcrossDownDirection.DOWN);
+	}
+
+	// Validate clues to make sure they are still applicable, replacing/creating new ones as necessary
+	// Simplifying assumptions for now:
+	// 1. Not retaining discarded clues for now.  (This will probably come later, maybe in the form of tracking clues by grid position rather than word #.)
+	// 2. Not implementing any sort of references between clues for now. (This will come later.)
+	private List<Clue>  validateClues(List<GridWord> gridWords, List<Clue> currClues, AcrossDownDirection direction) {
+		List<Clue> retval = new ArrayList<Clue>(gridWords.size());
+
+		int i = 0, j = 0;
+		for (; i < currClues.size() && j < gridWords.size(); ) {
+
+			Clue clue = currClues.get(i);
+			GridWord gridWord = gridWords.get(j);
+			RowColumnPair clueStart = clue.getStartOfWord();
+			RowColumnPair clueEnd = clue.getEndOfWord();
+			RowColumnPair gridWordStart = gridWord.getStartOfWord();
+			RowColumnPair gridWordEnd = gridWord.getEndOfWord();
+			int startCompare = clueStart.compareTo(gridWordStart);
+			if (startCompare < 0) {
+				// we are already past this clue, so discard it (for now)
+				++i;
+				continue;
+			}
+			if (startCompare > 0) {
+				// clue is past this point. Make a new clue for this point
+				clue = new Clue();
+				clue.setAcrossDown(direction);
+				clue.setClueText("");
+				clue.setStartOfWord(gridWordStart);
+				clue.setEndOfWord(gridWordEnd);
+				clue.setGridWord(gridWord.getContents());
+				clue.setWordNumber(gridWord.getNumber());
+				clue.setWordComplete(gridWord.isComplete());
+				retval.add(clue);
+				++j;
+			} else if (clueEnd.equals(gridWordEnd) && clue.getGridWord().equals(gridWord.getContents())){
+				// clue matches grid space
+				clue.setWordNumber(gridWord.getNumber());
+				retval.add(clue);
+				++i;
+				++j;
+			} else {
+				// discard this old clue and create a new one
+				clue = new Clue();
+				clue.setAcrossDown(direction);
+				clue.setClueText("");
+				clue.setStartOfWord(gridWordStart);
+				clue.setEndOfWord(gridWordEnd);
+				clue.setGridWord(gridWord.getContents());
+				clue.setWordNumber(gridWord.getNumber());
+				clue.setWordComplete(gridWord.isComplete());
+				retval.add(clue);
+				++i;
+				++j;
+			}
+		}
+		// process any remaining gridWords that did not get handled
+		for (; j < gridWords.size(); ++j) {
+			GridWord gridWord = gridWords.get(j);
+			Clue clue = new Clue();
+			clue.setAcrossDown(direction);
+			clue.setClueText("");
+			clue.setStartOfWord(gridWord.getStartOfWord());
+			clue.setEndOfWord(gridWord.getEndOfWord());
+			clue.setGridWord(gridWord.getContents());
+			clue.setWordNumber(gridWord.getNumber());
+			clue.setWordComplete(gridWord.isComplete());
+			retval.add(clue);
+		}
+		
+		return retval;
+	}
 	
 	// return whether the specified (row, col) adjoins the current cell (part of same word, no intervening black squares)
 	private boolean adjoinsCurrentCell(int row, int col) {
@@ -917,7 +1021,8 @@ public class Grid
 		return row == currentRow && column == currentColumn
 			|| cursorSkipBehavior == CursorSkipBehavior.SKIP_NOTHING
 			|| cursorSkipBehavior == CursorSkipBehavior.SKIP_BLACK_CELLS && !cell.isBlack()
-			|| cursorSkipBehavior == CursorSkipBehavior.SKIP_BLACK_AND_FILLED_CELLS && !cell.isBlack() && cell.isEmpty();
+			|| cursorSkipBehavior == CursorSkipBehavior.SKIP_BLACK_AND_FILLED_CELLS
+				&& !cell.isBlack() && cell.isEmpty();
 	}
 
 	/**

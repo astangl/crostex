@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import us.stangl.crostex.util.Pair;
+import us.stangl.crostex.util.RowColumnPair;
 
 /**
  * Word in a Grid.
@@ -24,13 +25,23 @@ public class GridWord {
 	// Cells comprising word
 	private final Cell[] cells;
 	
+	// Start of the word in the grid
+	private final RowColumnPair startOfWord;
+	
+	// End of the word in the grid
+	private final RowColumnPair endOfWord;
+
 	// scratchpad to use for building pattern
 	private char[] patternScratchpad_ = new char[0];
 	
-	public GridWord(Cell[] cells, AcrossDownDirection direction, int number) {
+	public GridWord(Cell[] cells, AcrossDownDirection direction, int number,
+			RowColumnPair startOfWord, RowColumnPair endOfWord)
+	{
 		this.number = number;
 		this.direction = direction;
 		this.cells = cells;
+		this.startOfWord = startOfWord;
+		this.endOfWord = endOfWord;
 	}
 	
 	public boolean isEligibleForAutofill() {
@@ -280,5 +291,17 @@ public class GridWord {
 		patternScratchpad_ = newScratch;
 	}
 
+	/**
+	 * @return the start of the word in the grid
+	 */
+	public RowColumnPair getStartOfWord() {
+		return startOfWord;
+	}
 
+	/**
+	 * @return the end of the word in the grid
+	 */
+	public RowColumnPair getEndOfWord() {
+		return endOfWord;
+	}
 }

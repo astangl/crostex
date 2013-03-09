@@ -3,6 +3,8 @@
  */
 package us.stangl.crostex;
 
+import us.stangl.crostex.util.RowColumnPair;
+
 /**
  * Object representing a single clue for a crossword puzzle.
  * @author Alex Stangl
@@ -11,15 +13,24 @@ public class Clue {
 
 	// corresponding word in the grid
 	private String gridWord;
-	
-	// number of the word in the grid
-	private int wordNumber;
+
+	// flag indicating whether word in grid is complete
+	private boolean wordComplete;
 	
 	// whether this is an across or down clue
 	private AcrossDownDirection acrossDown;
 	
 	// text of the clue
 	private String clueText;
+	
+	// number of the word in the grid
+	private int wordNumber;
+	
+	// Start of the corresponding word in the grid (should stay fixed even if wordNumber changes)
+	private RowColumnPair startOfWord;
+	
+	// End of the corresponding word in the grid (should stay fixed even if wordNumber changes)
+	private RowColumnPair endOfWord;
 
 	/**
 	 * @return the gridWord
@@ -75,6 +86,48 @@ public class Clue {
 	 */
 	public void setClueText(String clueText) {
 		this.clueText = clueText;
+	}
+
+	/**
+	 * @return the wordComplete
+	 */
+	public boolean isWordComplete() {
+		return wordComplete;
+	}
+
+	/**
+	 * @param wordComplete the wordComplete to set
+	 */
+	public void setWordComplete(boolean wordComplete) {
+		this.wordComplete = wordComplete;
+	}
+
+	/**
+	 * @return the startOfWord
+	 */
+	public RowColumnPair getStartOfWord() {
+		return startOfWord;
+	}
+
+	/**
+	 * @param startOfWord the startOfWord to set
+	 */
+	public void setStartOfWord(RowColumnPair startOfWord) {
+		this.startOfWord = startOfWord;
+	}
+
+	/**
+	 * @return the endOfWord
+	 */
+	public RowColumnPair getEndOfWord() {
+		return endOfWord;
+	}
+
+	/**
+	 * @param endOfWord the endOfWord to set
+	 */
+	public void setEndOfWord(RowColumnPair endOfWord) {
+		this.endOfWord = endOfWord;
 	}
 	
 }

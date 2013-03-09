@@ -27,6 +27,10 @@ import us.stangl.crostex.Grid;
 import us.stangl.crostex.ServiceException;
 import us.stangl.crostex.util.Message;
 
+/**
+ * JPanel that holds the crossword grid.
+ * @author Alex Stangl
+ */
 public class CrosswordPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 
@@ -115,7 +119,8 @@ public class CrosswordPanel extends JPanel {
 	}
 	
 	/**
-	 * 
+	 * Paint this crossword panel in the specified graphics context.
+	 * @param g graphics context to paint panel in
 	 */
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
@@ -126,6 +131,10 @@ public class CrosswordPanel extends JPanel {
 	
 	public void save(String dataDirectory, String filename) throws ServiceException {
 		grid.save(dataDirectory, filename);
+	}
+	
+	public Grid getGrid() {
+		return grid;
 	}
 	
 	private class MouseEventListener extends MouseAdapter {
@@ -174,9 +183,5 @@ public class CrosswordPanel extends JPanel {
 			parentFrame.resetEditMenuState();
 			CrosswordPanel.this.repaint(0);
 		}
-	}
-
-	public Grid getGrid() {
-		return grid;
 	}
 }
