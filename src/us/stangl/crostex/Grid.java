@@ -809,7 +809,8 @@ public class Grid
 	 * @return validated across clues
 	 */
 	public List<Clue> validateAndGetAcrossClues() {
-		return validateClues(getAcrossWords(), acrossClues, AcrossDownDirection.ACROSS);
+		acrossClues = validateClues(getAcrossWords(), acrossClues, AcrossDownDirection.ACROSS);
+		return acrossClues;
 	}
 
 	/**
@@ -818,7 +819,8 @@ public class Grid
 	 * @return validated across clues
 	 */
 	public List<Clue> validateAndGetDownClues() {
-		return validateClues(getDownWords(), downClues, AcrossDownDirection.DOWN);
+		downClues = validateClues(getDownWords(), downClues, AcrossDownDirection.DOWN);
+		return downClues;
 	}
 
 	// Validate clues to make sure they are still applicable, replacing/creating new ones as necessary
@@ -850,12 +852,12 @@ public class Grid
 				clue.setClueText("");
 				clue.setStartOfWord(gridWordStart);
 				clue.setEndOfWord(gridWordEnd);
-				clue.setGridWord(gridWord.getContents());
+				clue.setGridWord(new String(gridWord.getPattern()));
 				clue.setWordNumber(gridWord.getNumber());
 				clue.setWordComplete(gridWord.isComplete());
 				retval.add(clue);
 				++j;
-			} else if (clueEnd.equals(gridWordEnd) && clue.getGridWord().equals(gridWord.getContents())){
+			} else if (clueEnd.equals(gridWordEnd) && clue.getGridWord().equals(new String(gridWord.getPattern()))){
 				// clue matches grid space
 				clue.setWordNumber(gridWord.getNumber());
 				retval.add(clue);
@@ -868,7 +870,7 @@ public class Grid
 				clue.setClueText("");
 				clue.setStartOfWord(gridWordStart);
 				clue.setEndOfWord(gridWordEnd);
-				clue.setGridWord(gridWord.getContents());
+				clue.setGridWord(new String(gridWord.getPattern()));
 				clue.setWordNumber(gridWord.getNumber());
 				clue.setWordComplete(gridWord.isComplete());
 				retval.add(clue);
@@ -884,7 +886,7 @@ public class Grid
 			clue.setClueText("");
 			clue.setStartOfWord(gridWord.getStartOfWord());
 			clue.setEndOfWord(gridWord.getEndOfWord());
-			clue.setGridWord(gridWord.getContents());
+			clue.setGridWord(new String(gridWord.getPattern()));
 			clue.setWordNumber(gridWord.getNumber());
 			clue.setWordComplete(gridWord.isComplete());
 			retval.add(clue);

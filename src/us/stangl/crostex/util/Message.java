@@ -48,9 +48,11 @@ public enum Message {
 	DIALOG_TITLE_CONFIRM_DATA_DIRECTORY_CREATE,	// title for confirm data directory create dialog box
 	DIALOG_TITLE_UNABLE_TO_CREATE_DATA_DIRECTORY,	// title unable to create data directory
 	HELP_MENU_HEADER,				// header for Help menu
+	LABEL_ACROSS,					// label Across
 	LABEL_AUTHOR,					// label Author
 	LABEL_COPYRIGHT,				// label Copyright
 	LABEL_DESCRIPTION,				// label Description
+	LABEL_DOWN,						// label Down
 	LABEL_ENFORCE_SYMMETRY,			// label Enforce Symmetry
 	LABEL_LETTER_FREQUENCY_CHART,	// label for letter frequency chart
 	LABEL_NAME,						// label Name

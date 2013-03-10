@@ -5,6 +5,7 @@ package us.stangl.crostex.gui;
 
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -112,9 +113,9 @@ public final class StatsPanel extends JPanel implements GridChangeListener {
 		
 		GridBagLayout gbl = new GridBagLayout();
 		JPanel topPanel = new JPanel();
-		Border border = BorderFactory.createLineBorder(Color.RED);
+		//Border border = BorderFactory.createLineBorder(Color.RED);
 		topPanel.setLayout(gbl);
-		topPanel.setBorder(border);
+		//topPanel.setBorder(border);
 		titleField = new JTextField(this.grid.getTitle(), TEXT_FIELD_LENGTH);
 		titleField.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
@@ -176,20 +177,29 @@ public final class StatsPanel extends JPanel implements GridChangeListener {
 		singlePolyominoConstraintViolatedLabel.setForeground(Color.RED);
 		min3LetterWordConstraintViolatedLabel.setForeground(Color.RED);
 		symmetricGridConstraintViolatedLabel.setForeground(Color.RED);
-		topPanel.add(newLabel(Message.LABEL_TITLE), GuiUtils.northWestAnchorConstraints(0, 0));
+		topPanel.add(newLabel(Message.LABEL_TITLE), new GBC(0, 0).anchor(GBC.NORTHWEST));
 		topPanel.add(Box.createHorizontalStrut(10));
-		topPanel.add(titleField, GuiUtils.gridwidthRemainderNorthWestConstraints(2, 0));
-		topPanel.add(newLabel(Message.LABEL_AUTHOR), GuiUtils.northWestAnchorConstraints(0, 1));
-		topPanel.add(authorField, GuiUtils.gridwidthRemainderNorthWestConstraints(2, 1));
-		topPanel.add(newLabel(Message.LABEL_COPYRIGHT), GuiUtils.newConstraints(0, 2));
-		topPanel.add(copyrightField, GuiUtils.gridwidthRemainderNorthWestConstraints(2, 2));
-		topPanel.add(GuiUtils.newJPanel(new FlowLayout(FlowLayout.LEFT, 0, 0), singlePolyominoConstraintMetLabel, singlePolyominoConstraintViolatedLabel), GuiUtils.gridwidthRemainderNorthWestConstraints(0, 3));
-		topPanel.add(GuiUtils.newJPanel(new FlowLayout(FlowLayout.LEADING, 0, 0), min3LetterWordConstraintMetLabel, min3LetterWordConstraintViolatedLabel), GuiUtils.gridwidthRemainderNorthWestConstraints(0, 4));
-		topPanel.add(GuiUtils.newJPanel(new FlowLayout(FlowLayout.LEADING, 0, 0), symmetricGridConstraintMetLabel, symmetricGridConstraintViolatedLabel), GuiUtils.gridwidthRemainderNorthWestConstraints(0, 5));
-		topPanel.add(enforceSymmetryField, GuiUtils.gridwidthRemainderNorthWestConstraints(2, 6));
-		topPanel.add(showNumbersField, GuiUtils.gridwidthRemainderNorthWestConstraints(2, 7));
-		topPanel.add(wraparoundCursorField, GuiUtils.gridwidthRemainderNorthWestConstraints(2, 8));
-		topPanel.add(cursorSkippingBehaviorField, GuiUtils.gridwidthRemainderNorthWestConstraints(2, 9));
+		topPanel.add(titleField, new GBC(2, 0).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
+		topPanel.add(newLabel(Message.LABEL_AUTHOR), new GBC(0, 1).anchor(GBC.NORTHWEST));
+		topPanel.add(authorField, new GBC(2, 1).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
+		topPanel.add(newLabel(Message.LABEL_COPYRIGHT), new GBC(0, 2));
+		topPanel.add(copyrightField, new GBC(2, 2).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
+		topPanel.add(GuiUtils.newJPanel(new FlowLayout(FlowLayout.LEFT, 0, 0),
+				singlePolyominoConstraintMetLabel, singlePolyominoConstraintViolatedLabel),
+				new GBC(0, 3).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
+		topPanel.add(GuiUtils.newJPanel(new FlowLayout(FlowLayout.LEADING, 0, 0),
+				min3LetterWordConstraintMetLabel, min3LetterWordConstraintViolatedLabel),
+				new GBC(0, 4).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
+		topPanel.add(GuiUtils.newJPanel(new FlowLayout(FlowLayout.LEADING, 0, 0),
+				symmetricGridConstraintMetLabel, symmetricGridConstraintViolatedLabel),
+				new GBC(0, 5).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
+		topPanel.add(enforceSymmetryField, new GBC(2, 6).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
+		topPanel.add(showNumbersField, new GBC(2, 7).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
+		topPanel.add(wraparoundCursorField, new GBC(2, 8).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
+		topPanel.add(cursorSkippingBehaviorField, new GBC(2, 9).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
+
+		// add extra row w/ weighty=1.0 to fill remaining vertical space, to force layout to NW corner
+		topPanel.add(new JLabel(), new GBC(2, 10).weighty(1.0));
 		
 		add(topPanel);
 		add(GuiUtils.newJPanel(new FlowLayout(FlowLayout.LEADING), frequencyChartLabel, letterFrequencyChart));

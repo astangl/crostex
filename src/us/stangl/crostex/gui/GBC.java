@@ -14,6 +14,14 @@ import java.awt.GridBagConstraints;
 public class GBC extends GridBagConstraints {
 	private static final long serialVersionUID = 1L;
 
+	public GBC() {
+	}
+	
+	public GBC(int gridx, int gridy) {
+		this.gridx = gridx;
+		this.gridy = gridy;
+	}
+	
 	public GBC gridx(int value) {
 		this.gridx = value;
 		return this;
