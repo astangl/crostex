@@ -4,9 +4,12 @@
 package us.stangl.crostex.gui;
 
 import java.awt.GridBagLayout;
+import java.util.List;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import us.stangl.crostex.Clue;
 import us.stangl.crostex.Grid;
 import us.stangl.crostex.GridChangeListener;
 
@@ -27,6 +30,13 @@ public class CluesPanel extends JPanel implements GridChangeListener {
 		GridBagLayout gbl = new GridBagLayout();
 		JPanel topPanel = new JPanel();
 		topPanel.setLayout(gbl);
+		
+		topPanel.add(new JLabel("Across"), GuiUtils.northWestAnchorConstraints(0, 0));
+		List<Clue> acrossClues = grid.validateAndGetAcrossClues();
+		//topPanel.add();
+		topPanel.add(new JLabel("Down"), GuiUtils.northWestAnchorConstraints(0, 1));
+		List<Clue> downClues = grid.validateAndGetDownClues();
+		add(topPanel);
 	}
 	
 	/* (non-Javadoc)

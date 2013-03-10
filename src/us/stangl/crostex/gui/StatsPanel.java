@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
@@ -19,6 +20,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.border.Border;
 
 import us.stangl.crostex.CursorSkipBehavior;
 import us.stangl.crostex.Grid;
@@ -110,7 +112,9 @@ public final class StatsPanel extends JPanel implements GridChangeListener {
 		
 		GridBagLayout gbl = new GridBagLayout();
 		JPanel topPanel = new JPanel();
+		Border border = BorderFactory.createLineBorder(Color.RED);
 		topPanel.setLayout(gbl);
+		topPanel.setBorder(border);
 		titleField = new JTextField(this.grid.getTitle(), TEXT_FIELD_LENGTH);
 		titleField.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
