@@ -5,7 +5,6 @@ package us.stangl.crostex.command;
 
 import us.stangl.crostex.Cell;
 import us.stangl.crostex.Grid;
-import us.stangl.crostex.util.Pair;
 import us.stangl.crostex.util.RowColumnPair;
 
 /**
@@ -14,7 +13,7 @@ import us.stangl.crostex.util.RowColumnPair;
  */
 public class EnterCharacterToCellCommand implements UndoableCommand<Grid> {
 	// row, column coordinates of cell to manipulate
-	private Pair<Integer, Integer> coordinates;
+	private final RowColumnPair coordinates;
 	
 	// original value of cell
 	private final String oldContents;
@@ -22,22 +21,20 @@ public class EnterCharacterToCellCommand implements UndoableCommand<Grid> {
 	// new value of cell
 	private final String newContents;
 	
-	// original currentRow
-	private final int oldCurrentRow;
-	
-	// original currentColumn
-	private final int oldCurrentColumn;
-	
 	// new value of (row, column) coordinates
 	private final RowColumnPair newCoordinates;
 	
+	// whether cell change causes renumbering to occur (i.e., changing a black cell)
+	private final boolean renumberRequired = false;
+	
 	public EnterCharacterToCellCommand(Grid grid, char c) {
-		oldCurrentRow = grid.getCurrentRow();
-		oldCurrentColumn = grid.getCurrentColumn();
-		coordinates = new Pair<Integer, Integer>(Integer.valueOf(oldCurrentRow), Integer.valueOf(oldCurrentColumn));
+		int oldCurrentRow = grid.getCurrentRow();
+		int oldCurrentColumn = grid.getCurrentColumn();
+		coordinates = new RowColumnPair(oldCurrentRow, oldCurrentColumn);
 		Cell cell = grid.getCell(oldCurrentRow, oldCurrentColumn);
 		oldContents = cell.getContents();
 		newContents = String.valueOf(c);
+		// renumberRequired = cell.isBlack();
 		this.newCoordinates = grid.getNextCursorPosition();
 	}
 	/**
@@ -45,10 +42,17 @@ public class EnterCharacterToCellCommand implements UndoableCommand<Grid> {
 	 * (Can't call it do since that's a reserved keyword.)
 	 */
 	public void apply(Grid grid) {
-		grid.getCell(coordinates.first, coordinates.second).setContents(newContents);
+		int row = coordinates.row;
+		int column = coordinates.column;
+		Cell cell = grid.getCell(row, column);
+		cell.setContents(newContents);
 		grid.setCurrentRow(newCoordinates.row);
 		grid.setCurrentColumn(newCoordinates.column);
-		grid.renumberCells();
+		if (renumberRequired)
+			grid.renumberCells();
+		
+		grid.notifyGridChangeListeners();
+		grid.notifyCellChangeListeners(cell, row, column);
 	}
 	
 	/**
@@ -57,9 +61,16 @@ public class EnterCharacterToCellCommand implements UndoableCommand<Grid> {
 	 * or has been undone back to that same state.
 	 */
 	public void unApply(Grid grid) {
-		grid.getCell(coordinates.first, coordinates.second).setContents(oldContents);
-		grid.setCurrentRow(oldCurrentRow);
-		grid.setCurrentColumn(oldCurrentColumn);
-		grid.renumberCells();
+		int row = coordinates.row;
+		int column = coordinates.column;
+		Cell cell = grid.getCell(row, column);
+		cell.setContents(oldContents);
+		grid.setCurrentRow(row);
+		grid.setCurrentColumn(column);
+		if (renumberRequired)
+			grid.renumberCells();
+		
+		grid.notifyGridChangeListeners();
+		grid.notifyCellChangeListeners(cell, row, column);
 	}
 }

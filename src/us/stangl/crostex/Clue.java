@@ -31,6 +31,9 @@ public class Clue {
 	
 	// End of the corresponding word in the grid (should stay fixed even if wordNumber changes)
 	private RowColumnPair endOfWord;
+	
+	// cells comprising the corresponding word in the grid
+	private Cell[] cells;
 
 	/**
 	 * @return the gridWord
@@ -128,6 +131,20 @@ public class Clue {
 	 */
 	public void setEndOfWord(RowColumnPair endOfWord) {
 		this.endOfWord = endOfWord;
+	}
+
+	/**
+	 * @return the cells comprising the corresponding word in the grid
+	 */
+	public Cell[] getCells() {
+		return cells;
+	}
+
+	/**
+	 * @param cells the cells comprising the corresponding word in the grid to set
+	 */
+	public void setCells(Cell[] cells) {
+		this.cells = cells;
 	}
 	
 }

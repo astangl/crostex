@@ -3,11 +3,8 @@
  */
 package us.stangl.crostex.command;
 
-import us.stangl.crostex.AcrossDownDirection;
 import us.stangl.crostex.Cell;
 import us.stangl.crostex.Grid;
-import us.stangl.crostex.NsewDirection;
-import us.stangl.crostex.util.Pair;
 import us.stangl.crostex.util.RowColumnPair;
 
 /**
@@ -16,26 +13,24 @@ import us.stangl.crostex.util.RowColumnPair;
  */
 public class ClearCellCommand implements UndoableCommand<Grid> {
 	// row, column coordinates of cell to manipulate
-	private Pair<Integer, Integer> coordinates;
+	private final RowColumnPair coordinates;
 	
 	// original value of cell
 	private final String oldContents;
 	
-	// original currentRow
-	private final int oldCurrentRow;
-	
-	// original currentColumn
-	private final int oldCurrentColumn;
-	
 	// new value of (row, column) coordinates
 	private final RowColumnPair newCoordinates;
 	
+	// whether clearing cell causes renumbering to occur (i.e., clearing a black cell)
+	private final boolean renumberRequired = false;
+	
 	public ClearCellCommand(Grid grid) {
-		oldCurrentRow = grid.getCurrentRow();
-		oldCurrentColumn = grid.getCurrentColumn();
-		coordinates = new Pair<Integer, Integer>(Integer.valueOf(oldCurrentRow), Integer.valueOf(oldCurrentColumn));
+		int oldCurrentRow = grid.getCurrentRow();
+		int oldCurrentColumn = grid.getCurrentColumn();
+		coordinates = new RowColumnPair(oldCurrentRow, oldCurrentColumn);
 		Cell cell = grid.getCell(oldCurrentRow, oldCurrentColumn);
 		oldContents = cell.getContents();
+		// renumberRequired = cell.isBlack();
 		this.newCoordinates = grid.getNextCursorPosition();
 	}
 
@@ -44,10 +39,17 @@ public class ClearCellCommand implements UndoableCommand<Grid> {
 	 * (Can't call it do since that's a reserved keyword.)
 	 */
 	public void apply(Grid grid) {
-		grid.getCell(coordinates.first, coordinates.second).setContents("");
+		int row = coordinates.row;
+		int column = coordinates.column;
+		Cell cell = grid.getCell(row, column);
+		cell.setContents("");
 		grid.setCurrentRow(newCoordinates.row);
 		grid.setCurrentColumn(newCoordinates.column);
-		grid.renumberCells();
+		if (renumberRequired)
+			grid.renumberCells();
+		
+		grid.notifyGridChangeListeners();
+		grid.notifyCellChangeListeners(cell, row, column);
 	}
 	
 	/**
@@ -56,9 +58,16 @@ public class ClearCellCommand implements UndoableCommand<Grid> {
 	 * or has been undone back to that same state.
 	 */
 	public void unApply(Grid grid) {
-		grid.getCell(coordinates.first, coordinates.second).setContents(oldContents);
-		grid.setCurrentRow(oldCurrentRow);
-		grid.setCurrentColumn(oldCurrentColumn);
-		grid.renumberCells();
+		int row = coordinates.row;
+		int column = coordinates.column;
+		Cell cell = grid.getCell(row, column);
+		cell.setContents(oldContents);
+		grid.setCurrentRow(row);
+		grid.setCurrentColumn(column);
+		if (renumberRequired)
+			grid.renumberCells();
+
+		grid.notifyGridChangeListeners();
+		grid.notifyCellChangeListeners(cell, row, column);
 	}
 }

@@ -46,4 +46,14 @@ public class RowColumnPair implements Comparable<RowColumnPair> {
 			return 1;
 		return 0;
 	}
+	
+	@Override
+	public String toString() {
+		return new StringBuilder("(row = ")
+			.append(Integer.toString(row))
+			.append(", column = ")
+			.append(Integer.toString(column))
+			.append(")")
+			.toString();
+	}
 }

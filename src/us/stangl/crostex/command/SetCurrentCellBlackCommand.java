@@ -6,10 +6,8 @@ package us.stangl.crostex.command;
 import java.util.ArrayList;
 import java.util.List;
 
-import us.stangl.crostex.AcrossDownDirection;
 import us.stangl.crostex.Cell;
 import us.stangl.crostex.Grid;
-import us.stangl.crostex.util.Pair;
 import us.stangl.crostex.util.RowColumnPair;
 
 /**
@@ -19,7 +17,7 @@ import us.stangl.crostex.util.RowColumnPair;
  */
 public class SetCurrentCellBlackCommand  implements UndoableCommand<Grid> {
 	// list of (row, column) coordinates of cells to set to black
-	private final List<Pair<Integer, Integer>> coordinates = new ArrayList<Pair<Integer, Integer>>(2);
+	private final List<RowColumnPair> coordinates = new ArrayList<RowColumnPair>(2);
 	
 	// list of values to apply to each corresponding cell
 	private final List<Boolean> applyValues = new ArrayList<Boolean>(2);
@@ -39,7 +37,7 @@ public class SetCurrentCellBlackCommand  implements UndoableCommand<Grid> {
 	public SetCurrentCellBlackCommand(Grid grid) {
 		oldCurrentRow = grid.getCurrentRow();
 		oldCurrentColumn = grid.getCurrentColumn();
-		coordinates.add(new Pair<Integer, Integer>(Integer.valueOf(oldCurrentRow), Integer.valueOf(oldCurrentColumn)));
+		coordinates.add(new RowColumnPair(oldCurrentRow, oldCurrentColumn));
 		Cell currentCell = grid.getCell(oldCurrentRow, oldCurrentColumn);
 		boolean currentlyBlack = currentCell.isBlack();
 		unApplyValues.add(Boolean.valueOf(currentlyBlack));
@@ -47,7 +45,7 @@ public class SetCurrentCellBlackCommand  implements UndoableCommand<Grid> {
 		if (grid.isMaintainingSymmetry()) {
 			int otherRow = grid.getHeight() - 1 - oldCurrentRow;
 			int otherColumn = grid.getWidth() - 1 - oldCurrentColumn;
-			coordinates.add(new Pair<Integer, Integer>(Integer.valueOf(otherRow), Integer.valueOf(otherColumn)));
+			coordinates.add(new RowColumnPair(otherRow, otherColumn));
 			Cell otherCell = grid.getCell(otherRow, otherColumn);
 			unApplyValues.add(Boolean.valueOf(otherCell.isBlack()));
 			applyValues.add(Boolean.TRUE);
@@ -79,9 +77,17 @@ public class SetCurrentCellBlackCommand  implements UndoableCommand<Grid> {
 	// apply specified set of values to the specified puzzle
 	private void applySpecifiedValues(Grid grid, List<Boolean> values) {
 		for (int i = 0; i < coordinates.size(); ++i) {
-			Pair<Integer, Integer> rc = coordinates.get(i);
-			grid.getCell(rc.first, rc.second).setBlack(values.get(i));
+			RowColumnPair rc = coordinates.get(i);
+			grid.getCell(rc.row, rc.column).setBlack(values.get(i));
 		}
 		grid.renumberCells();
+		for (int i = 0; i < coordinates.size(); ++i) {
+			RowColumnPair rc = coordinates.get(i);
+			int row = rc.row;
+			int column = rc.column;
+			Cell cell = grid.getCell(row, column);
+			grid.notifyCellChangeListeners(cell, row, column);
+		}
+		grid.notifyGridChangeListeners();
 	}
 }

@@ -8,7 +8,7 @@ import java.util.List;
 
 import us.stangl.crostex.Cell;
 import us.stangl.crostex.Grid;
-import us.stangl.crostex.util.Pair;
+import us.stangl.crostex.util.RowColumnPair;
 
 /**
  * Undoable command to toggle current cell and possibly its symmetric twin
@@ -17,7 +17,7 @@ import us.stangl.crostex.util.Pair;
  */
 public class ToggleCurrentCellCommand implements UndoableCommand<Grid> {
 	// list of (row, column) coordinates of cells to toggle
-	private final List<Pair<Integer, Integer>> coordinates = new ArrayList<Pair<Integer, Integer>>(2);
+	private final List<RowColumnPair> coordinates = new ArrayList<RowColumnPair>(2);
 	
 	// list of values to apply to each corresponding cell
 	private final List<Boolean> applyValues = new ArrayList<Boolean>(2);
@@ -28,7 +28,7 @@ public class ToggleCurrentCellCommand implements UndoableCommand<Grid> {
 	public ToggleCurrentCellCommand(Grid grid) {
 		int currentRow = grid.getCurrentRow();
 		int currentColumn = grid.getCurrentColumn();
-		coordinates.add(new Pair<Integer, Integer>(Integer.valueOf(currentRow), Integer.valueOf(currentColumn)));
+		coordinates.add(new RowColumnPair(currentRow, currentColumn));
 		Cell currentCell = grid.getCell(currentRow, currentColumn);
 		boolean currentlyBlack = currentCell.isBlack();
 		boolean nowBlack = ! currentlyBlack;
@@ -37,7 +37,7 @@ public class ToggleCurrentCellCommand implements UndoableCommand<Grid> {
 		if (grid.isMaintainingSymmetry()) {
 			int otherRow = grid.getHeight() - 1 - currentRow;
 			int otherColumn = grid.getWidth() - 1 - currentColumn;
-			coordinates.add(new Pair<Integer, Integer>(Integer.valueOf(otherRow), Integer.valueOf(otherColumn)));
+			coordinates.add(new RowColumnPair(otherRow, otherColumn));
 			Cell otherCell = grid.getCell(otherRow, otherColumn);
 			unApplyValues.add(Boolean.valueOf(otherCell.isBlack()));
 			applyValues.add(Boolean.valueOf(nowBlack));
@@ -64,9 +64,17 @@ public class ToggleCurrentCellCommand implements UndoableCommand<Grid> {
 	// apply specified set of values to the specified puzzle
 	private void applySpecifiedValues(Grid grid, List<Boolean> values) {
 		for (int i = 0; i < coordinates.size(); ++i) {
-			Pair<Integer, Integer> rc = coordinates.get(i);
-			grid.getCell(rc.first, rc.second).setBlack(values.get(i));
+			RowColumnPair rc = coordinates.get(i);
+			grid.getCell(rc.row, rc.column).setBlack(values.get(i));
 		}
 		grid.renumberCells();
+		for (int i = 0; i < coordinates.size(); ++i) {
+			RowColumnPair rc = coordinates.get(i);
+			int row = rc.row;
+			int column = rc.column;
+			Cell cell = grid.getCell(row, column);
+			grid.notifyCellChangeListeners(cell, row, column);
+		}
+		grid.notifyGridChangeListeners();
 	}
 }

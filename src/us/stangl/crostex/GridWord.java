@@ -44,6 +44,9 @@ public class GridWord {
 		this.endOfWord = endOfWord;
 	}
 	
+	/**
+	 * @return whether this word is eligible for auto-fill (has any cells eligible for auto-fill)
+	 */
 	public boolean isEligibleForAutofill() {
 		for (Cell cell : cells) {
 			if (cell.isEligibleForAutofill())
@@ -52,6 +55,9 @@ public class GridWord {
 		return false;
 	}
 
+	/**
+	 * @return number of cells in the word eligible for auto-fill
+	 */
 	public int getNumberCellsRequiringAutofill() {
 		int retval = 0;
 		for (Cell cell : cells)
@@ -68,6 +74,10 @@ public class GridWord {
 		return null;
 	}
 	
+	/**
+	 * @param cell cell to test for membership
+	 * @return whether word contains the specified cell
+	 */
 	public boolean contains(Cell cell) {
 		for (Cell myCell : cells) {
 			if (cell == myCell)
@@ -274,7 +284,7 @@ public class GridWord {
 	}
 
 	/**
-	 * @return the cells
+	 * @return the cells comprising this GridWord
 	 */
 	public Cell[] getCells() {
 		return cells;

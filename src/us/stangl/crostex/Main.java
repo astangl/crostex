@@ -46,7 +46,7 @@ public class Main {
 	
 	private static class Profiler {
 		/** Dictionary */
-		private Dictionary dict_ = new Ydict();
+		private Dictionary<char[], Word> dict_ = new Ydict<Word>();
 		
 		public void profileTest() {
 			Preferences p = Preferences.userNodeForPackage(Main.class);
@@ -110,7 +110,7 @@ public class Main {
 					}
 					String normalizedWord = normalizeWord(rawWord);
 					if (normalizedWord != null) {
-						tempList.add(new Pair(normalizedWord.toCharArray(), new Word()));
+						tempList.add(new Pair<char[], Word>(normalizedWord.toCharArray(), new Word()));
 					}
 				}
 			} catch (FileNotFoundException e) {

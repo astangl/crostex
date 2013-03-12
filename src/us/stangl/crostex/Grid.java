@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javax.swing.SwingUtilities;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -29,6 +31,7 @@ import us.stangl.crostex.command.EnterCharacterToCellCommand;
 import us.stangl.crostex.command.SetCurrentCellBlackCommand;
 import us.stangl.crostex.command.ToggleCurrentCellCommand;
 import us.stangl.crostex.dictionary.Dictionary;
+import us.stangl.crostex.gui.MainFrame;
 import us.stangl.crostex.util.RowColumnPair;
 
 /**
@@ -99,10 +102,13 @@ public class Grid
 	private boolean maintainingSymmetry = true;
 	
 	// registered grid change listeners; these get notified whenever this grid changes
-	private List<GridChangeListener> changeListeners = new ArrayList<GridChangeListener>();
+	private List<GridChangeListener> gridChangeListeners = new ArrayList<GridChangeListener>();
 	
 	// registered title change listeners; these get notified whenever this grid's title changes
 	private List<GridChangeListener> titleChangeListeners = new ArrayList<GridChangeListener>();
+	
+	// registered cell change listeners; these get notified whenever a cell in this grid changes
+	private List<CellChangeListener> cellChangeListeners = new ArrayList<CellChangeListener>();
 	
 	// whether word numbers are being displayed in grid
 	private boolean displayingWordNumbers = true;
@@ -289,7 +295,7 @@ public class Grid
 		for (int row = 0; row < height; ++row)
 			for (int col = 0; col < width; ++col)
 				cells[row][col].setNumber(isStartOfAcrossWord(row, col) || isStartOfDownWord(row, col) ? currNumber++ : 0);
-		notifyChangeListeners();
+		notifyGridChangeListeners();
 	}
 
 	/**
@@ -378,12 +384,13 @@ public class Grid
 	
 	public void toggleCurrentCell() {
 		commandBuffer.applyCommand(new ToggleCurrentCellCommand(this));
-		notifyChangeListeners();
+		//notifyCellChangeListeners
+		//notifyGridChangeListeners();
 	}
 	
 	public void setCurrentCellBlack() {
 		commandBuffer.applyCommand(new SetCurrentCellBlackCommand(this));
-		notifyChangeListeners();
+		//notifyGridChangeListeners();
 	}
 	
 	public int getHeight() {
@@ -443,6 +450,7 @@ public class Grid
 					int colEnd = col;
 					while (colEnd < width && ! getCell(row, colEnd).isBlack())
 						colEnd++;
+					--colEnd;
 					RowColumnPair endOfWord = new RowColumnPair(row, colEnd);
 					Cell[] cells = new Cell[colEnd - col];
 					for (int i = 0; i < cells.length; ++i)
@@ -470,6 +478,7 @@ public class Grid
 					int rowEnd = row;
 					while (rowEnd < height && ! getCell(rowEnd, col).isBlack())
 						rowEnd++;
+					--rowEnd;
 					RowColumnPair endOfWord = new RowColumnPair(rowEnd, col);
 					Cell[] cells = new Cell[rowEnd - row];
 					for (int i =0; i < cells.length; ++i)
@@ -493,7 +502,7 @@ public class Grid
 
 	public void setDescription(String description) {
 		this.description = description;
-		notifyChangeListeners();
+		notifyGridChangeListeners();
 	}
 
 	public String getName() {
@@ -502,7 +511,7 @@ public class Grid
 
 	public void setName(String name) {
 		this.name = name;
-		notifyChangeListeners();
+		notifyGridChangeListeners();
 	}
 	
 	public void save(String dataDirectory, String filename) throws ServiceException {
@@ -592,7 +601,7 @@ public class Grid
 			throw new RuntimeException("Unhandled currentDirection " + currentDirection);
 		}
 		currentCell = getCell(currentRow, currentColumn);
-		notifyChangeListeners();
+		notifyGridChangeListeners();
 	}
 	
 	/**
@@ -657,7 +666,7 @@ public class Grid
 
 	public void setCurrentCell(Cell currentCell) {
 		this.currentCell = currentCell;
-		notifyChangeListeners();
+		notifyGridChangeListeners();
 	}
 
 	public int getCurrentRow() {
@@ -666,7 +675,7 @@ public class Grid
 
 	public void setCurrentRow(int currentRow) {
 		this.currentRow = currentRow;
-		notifyChangeListeners();
+		notifyGridChangeListeners();
 	}
 
 	public int getCurrentColumn() {
@@ -675,7 +684,7 @@ public class Grid
 
 	public void setCurrentColumn(int currentColumn) {
 		this.currentColumn = currentColumn;
-		notifyChangeListeners();
+		notifyGridChangeListeners();
 	}
 
 	public boolean isMaintainingSymmetry() {
@@ -684,7 +693,7 @@ public class Grid
 
 	public void setMaintainingSymmetry(boolean maintainingSymmetry) {
 		this.maintainingSymmetry = maintainingSymmetry;
-		notifyChangeListeners();
+		notifyGridChangeListeners();
 	}
 	
 	public boolean isAbleToUndo() {
@@ -697,12 +706,12 @@ public class Grid
 	
 	public void undo() {
 		commandBuffer.undo();
-		notifyChangeListeners();
+		//notifyGridChangeListeners();
 	}
 	
 	public void redo() {
 		commandBuffer.redo();
-		notifyChangeListeners();
+		//notifyGridChangeListeners();
 	}
 	
 	/**
@@ -724,8 +733,17 @@ public class Grid
 	 * the grid changes state.
 	 * @param changeListener listener to add
 	 */
-	public void addChangeListener(GridChangeListener changeListener) {
-		changeListeners.add(changeListener);
+	public void addGridChangeListener(GridChangeListener listener) {
+		gridChangeListeners.add(listener);
+	}
+
+	/**
+	 * Add change listener to collection of listeners, to be notified whenever
+	 * a grid cell changes state.
+	 * @param changeListener listener to add
+	 */
+	public void addCellChangeListener(CellChangeListener listener) {
+		cellChangeListeners.add(listener);
 	}
 
 	/**
@@ -737,10 +755,31 @@ public class Grid
 		titleChangeListeners.add(titleChangeListener);
 	}
 
-	// notify all the registered change listeners that this Grid has changed
-	private void notifyChangeListeners() {
-		for (GridChangeListener changeListener : changeListeners) {
+	/**
+	 * Notify all the registered change listeners that this Grid has changed.
+	 */
+	public void notifyGridChangeListeners() {
+		for (final GridChangeListener changeListener : gridChangeListeners) {
+			/*
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					changeListener.handleChange(Grid.this);
+				}
+			});
+			*/
 			changeListener.handleChange(this);
+		}
+	}
+	
+	/**
+	 * Notify all registered cell change listeners that the specified cell in this grid has changed.
+	 * @param cell cell that has changed
+	 * @param row row of cell
+	 * @param column column of cell
+	 */
+	public void notifyCellChangeListeners(Cell cell, int row, int column) {
+		for (final CellChangeListener listener : cellChangeListeners) {
+			listener.handleChange(this, cell, row, column);
 		}
 	}
 
@@ -855,6 +894,7 @@ public class Grid
 				clue.setGridWord(new String(gridWord.getPattern()));
 				clue.setWordNumber(gridWord.getNumber());
 				clue.setWordComplete(gridWord.isComplete());
+				clue.setCells(gridWord.getCells());
 				retval.add(clue);
 				++j;
 			} else if (clueEnd.equals(gridWordEnd) && clue.getGridWord().equals(new String(gridWord.getPattern()))){
@@ -873,6 +913,7 @@ public class Grid
 				clue.setGridWord(new String(gridWord.getPattern()));
 				clue.setWordNumber(gridWord.getNumber());
 				clue.setWordComplete(gridWord.isComplete());
+				clue.setCells(gridWord.getCells());
 				retval.add(clue);
 				++i;
 				++j;
@@ -889,6 +930,7 @@ public class Grid
 			clue.setGridWord(new String(gridWord.getPattern()));
 			clue.setWordNumber(gridWord.getNumber());
 			clue.setWordComplete(gridWord.isComplete());
+			clue.setCells(gridWord.getCells());
 			retval.add(clue);
 		}
 		

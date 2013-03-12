@@ -98,7 +98,7 @@ public final class StatsPanel extends JPanel implements GridChangeListener {
 	
 		this.crosswordPanel = crosswordPanel;
 		grid = this.crosswordPanel.getGrid();
-		grid.addChangeListener(this);
+		grid.addGridChangeListener(this);
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		frequencyChartLabel.setLabelFor(letterFrequencyChart);
 		frequencyChartLabel.setAlignmentY(TOP_ALIGNMENT);
