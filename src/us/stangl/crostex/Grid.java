@@ -87,13 +87,16 @@ public class Grid
 	private AcrossDownDirection currentDirection = AcrossDownDirection.ACROSS;
 
 	// title of crossword
-	private String title;
+	private String title = "";
 	
 	// author of crossword
-	private String author;
+	private String author = "";
 	
 	// copyright notice associated with crossword
-	private String copyright;
+	private String copyright = "";
+	
+	// notes associated with crossword
+	private String notes = "";
 	
 	// command buffer to hold mutating user commands, for undo/redo purposes
 	private CommandBuffer<Grid> commandBuffer = new CommandBuffer<Grid>(this);
@@ -177,6 +180,7 @@ public class Grid
 		this.title = gridToCopy.title;
 		this.author = gridToCopy.author;
 		this.copyright = gridToCopy.copyright;
+		this.notes = gridToCopy.notes;
 		this.maintainingSymmetry = gridToCopy.maintainingSymmetry;
 		this.displayingWordNumbers = gridToCopy.displayingWordNumbers;
 		this.wrappingCursor = gridToCopy.wrappingCursor;
@@ -857,6 +861,20 @@ public class Grid
 	}
 
 	/**
+	 * @return the notes associated with this grid
+	 */
+	public String getNotes() {
+		return notes;
+	}
+
+	/**
+	 * @param notes the notes to set
+	 */
+	public void setNotes(String notes) {
+		this.notes = notes;
+	}
+
+	/**
 	 * @return the displayingWordNumbers
 	 */
 	public boolean isDisplayingWordNumbers() {
@@ -1125,4 +1143,5 @@ public class Grid
 	public void setCursorSkipBehavior(CursorSkipBehavior cursorSkipBehavior) {
 		this.cursorSkipBehavior = cursorSkipBehavior;
 	}
+
 }
