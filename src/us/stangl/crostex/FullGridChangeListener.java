@@ -4,21 +4,20 @@
 package us.stangl.crostex;
 
 /**
- * Interface for objects which listen to changes to a single cell.
+ * Interface for objects which listen to changes to the full grid.
+ * This is used instead of CellChangeListener when bulk changes are
+ * made to a grid. GridChangeListener is used when *any* changes are
+ * made to a grid.
  * NOTE: Any listener that receives FullGridChange events should probably
  * also be prepared for CellChangeEvents, as generally either one or the other occurs.
  * @author Alex Stangl
  */
-public interface CellChangeListener {
-
+public interface FullGridChangeListener {
 	/**
-	 * Receive notification that grid cell has changed state in some way.
+	 * Receive notification that grid has been substantially altered.
 	 * The listener can respond in any way desired, updating UI
 	 * components, etc.
 	 * @param grid grid that has changed state
-	 * @param cell cell that has changed state
-	 * @param row row of cell that has changed state
-	 * @param column column of cell that has changed state
 	 */
-	void handleChange(Grid grid, Cell cell, int row, int column);
+	void handleFullGridChange(Grid grid);
 }

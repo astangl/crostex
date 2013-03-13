@@ -4,7 +4,7 @@
 package us.stangl.crostex;
 
 /**
- * Interface for objects which listen for changes to a Grid.
+ * Interface for objects which listen for any changes to a Grid.
  * @author Alex Stangl
  */
 public interface GridChangeListener {

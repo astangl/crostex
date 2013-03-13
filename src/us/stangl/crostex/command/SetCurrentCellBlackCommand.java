@@ -89,5 +89,6 @@ public class SetCurrentCellBlackCommand  implements UndoableCommand<Grid> {
 			grid.notifyCellChangeListeners(cell, row, column);
 		}
 		grid.notifyGridChangeListeners();
+		grid.notifyFullGridChangeListeners();
 	}
 }

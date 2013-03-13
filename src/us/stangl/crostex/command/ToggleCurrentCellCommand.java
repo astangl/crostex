@@ -68,6 +68,7 @@ public class ToggleCurrentCellCommand implements UndoableCommand<Grid> {
 			grid.getCell(rc.row, rc.column).setBlack(values.get(i));
 		}
 		grid.renumberCells();
+		/*
 		for (int i = 0; i < coordinates.size(); ++i) {
 			RowColumnPair rc = coordinates.get(i);
 			int row = rc.row;
@@ -75,6 +76,8 @@ public class ToggleCurrentCellCommand implements UndoableCommand<Grid> {
 			Cell cell = grid.getCell(row, column);
 			grid.notifyCellChangeListeners(cell, row, column);
 		}
+		*/
 		grid.notifyGridChangeListeners();
+		grid.notifyFullGridChangeListeners();
 	}
 }

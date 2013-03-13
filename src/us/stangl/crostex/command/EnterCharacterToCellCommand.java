@@ -52,7 +52,10 @@ public class EnterCharacterToCellCommand implements UndoableCommand<Grid> {
 			grid.renumberCells();
 		
 		grid.notifyGridChangeListeners();
-		grid.notifyCellChangeListeners(cell, row, column);
+		if (renumberRequired)
+			grid.notifyFullGridChangeListeners();
+		else
+			grid.notifyCellChangeListeners(cell, row, column);
 	}
 	
 	/**
@@ -71,6 +74,9 @@ public class EnterCharacterToCellCommand implements UndoableCommand<Grid> {
 			grid.renumberCells();
 		
 		grid.notifyGridChangeListeners();
-		grid.notifyCellChangeListeners(cell, row, column);
+		if (renumberRequired)
+			grid.notifyFullGridChangeListeners();
+		else
+			grid.notifyCellChangeListeners(cell, row, column);
 	}
 }

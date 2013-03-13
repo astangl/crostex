@@ -17,8 +17,8 @@ import javax.swing.JTextField;
 import us.stangl.crostex.Cell;
 import us.stangl.crostex.CellChangeListener;
 import us.stangl.crostex.Clue;
+import us.stangl.crostex.FullGridChangeListener;
 import us.stangl.crostex.Grid;
-import us.stangl.crostex.GridChangeListener;
 import us.stangl.crostex.util.Message;
 import us.stangl.crostex.util.RowColumnPair;
 
@@ -26,7 +26,7 @@ import us.stangl.crostex.util.RowColumnPair;
  * Panel to display clues on a side tab.
  * @author Alex Stangl
  */
-public final class CluesPanel extends JPanel implements GridChangeListener, CellChangeListener {
+public final class CluesPanel extends JPanel implements FullGridChangeListener, CellChangeListener {
 	private static final long serialVersionUID = 1L;
 	
 	// length to use for text fields
@@ -42,7 +42,7 @@ public final class CluesPanel extends JPanel implements GridChangeListener, Cell
 	public CluesPanel(Grid grid) {
 		this.grid = grid;
 		
-		//grid.addGridChangeListener(this);
+		grid.addFullGridChangeListener(this);
 		grid.addCellChangeListener(this);
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
@@ -147,11 +147,8 @@ public final class CluesPanel extends JPanel implements GridChangeListener, Cell
 		sca.downLabel.setText(buildLabelString(sca.downClueNumber, sca.downCells));
 	}
 	
-	/* (non-Javadoc)
-	 * @see us.stangl.crostex.GridChangeListener#handleChange(us.stangl.crostex.Grid)
-	 */
 	@Override
-	public void handleChange(Grid grid) {
+	public void handleFullGridChange(Grid grid) {
 		regenerate();
 	}
 	

@@ -40,13 +40,13 @@ public class TopLevelTabPanel extends JPanel {
 
 	private final JSlider zoomSlider = new JSlider();
 	
-	private final JScrollPane scrollPane;
+	//private final JScrollPane scrollPane;
 	
 	public TopLevelTabPanel(MainFrame mainFrame, Grid grid) {
 
 		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 		crosswordPanel = new CrosswordPanel(mainFrame, grid);
-		scrollPane = new JScrollPane(crosswordPanel);
+		final JScrollPane scrollPane = new JScrollPane(crosswordPanel);
 		JPanel leftPanel = GuiUtils.yBoxLayoutPanel(scrollPane, zoomSlider);
 		
 		// set range on zoomSlider

@@ -110,6 +110,9 @@ public class Grid
 	// registered cell change listeners; these get notified whenever a cell in this grid changes
 	private List<CellChangeListener> cellChangeListeners = new ArrayList<CellChangeListener>();
 	
+	// registered full grid change listeners; these get notified whenever whole grid substantially changes
+	private List<FullGridChangeListener> fullGridChangeListeners = new ArrayList<FullGridChangeListener>();
+	
 	// whether word numbers are being displayed in grid
 	private boolean displayingWordNumbers = true;
 
@@ -739,6 +742,15 @@ public class Grid
 
 	/**
 	 * Add change listener to collection of listeners, to be notified whenever
+	 * the grid substantially (e.g., more than 1 cell/entire grid) changes state.
+	 * @param changeListener listener to add
+	 */
+	public void addFullGridChangeListener(FullGridChangeListener listener) {
+		fullGridChangeListeners.add(listener);
+	}
+
+	/**
+	 * Add change listener to collection of listeners, to be notified whenever
 	 * a grid cell changes state.
 	 * @param changeListener listener to add
 	 */
@@ -768,6 +780,22 @@ public class Grid
 			});
 			*/
 			changeListener.handleChange(this);
+		}
+	}
+	
+	/**
+	 * Notify all the registered full-grid change listeners that this Grid has substantially changed.
+	 */
+	public void notifyFullGridChangeListeners() {
+		for (final FullGridChangeListener listener : fullGridChangeListeners) {
+			/*
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					changeListener.handleChange(Grid.this);
+				}
+			});
+			*/
+			listener.handleFullGridChange(this);
 		}
 	}
 	
