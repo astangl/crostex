@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.swing.SwingUtilities;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -31,14 +29,14 @@ import us.stangl.crostex.command.EnterCharacterToCellCommand;
 import us.stangl.crostex.command.SetCurrentCellBlackCommand;
 import us.stangl.crostex.command.ToggleCurrentCellCommand;
 import us.stangl.crostex.dictionary.Dictionary;
-import us.stangl.crostex.gui.MainFrame;
+import us.stangl.crostex.io.IoGrid;
 import us.stangl.crostex.util.RowColumnPair;
 
 /**
  * Crossword grid.
  * @author Alex Stangl
  */
-public class Grid 
+public class Grid implements IoGrid
 {
 	// logger
 	private static final Logger LOG = Logger.getLogger(Grid.class.getName());
@@ -138,21 +136,31 @@ public class Grid
 	 * Constructor for Grid
 	 * @param width width of grid, in number of cells
 	 * @param height height of grid, in number of cells
-	 * @param name short name for grid
-	 * @param description longer description for grid
 	 */
-	public Grid(int width, int height, String name, String description)
+	public Grid(int width, int height)
 	{
 		this.width = width;
 		this.height = height;
-		this.name = name;
-		this.description = description;
 		cells = new Cell[this.height][this.width];
 		for (int row = 0; row < height; ++row) {
 			for (int col = 0; col < width; ++col) {
 				cells[row][col] = new Cell();
 			}
 		}
+	}
+	
+	/**
+	 * Constructor for Grid
+	 * @param width width of grid, in number of cells
+	 * @param height height of grid, in number of cells
+	 * @param name short name for grid
+	 * @param description longer description for grid
+	 */
+	public Grid(int width, int height, String name, String description)
+	{
+		this(width, height);
+		this.name = name;
+		this.description = description;
 	}
 	
 	/**
@@ -342,6 +350,23 @@ public class Grid
 	 */
 	public Cell getCell(int row, int col) {
 		return cells[row][col];
+	}
+
+	/* (non-Javadoc)
+	 * @see us.stangl.crostex.io.IoGrid#isBlackCell(int, int)
+	 */
+	@Override
+	public boolean isBlackCell(int row, int col) {
+		return getCell(row, col).isBlack();
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see us.stangl.crostex.io.IoGrid#getCellContents(int, int)
+	 */
+	@Override
+	public String getCellContents(int row, int col) {
+		return getCell(row, col).getContents();
 	}
 	
 	/**
@@ -897,6 +922,11 @@ public class Grid
 		acrossClues = validateClues(getAcrossWords(), acrossClues, AcrossDownDirection.ACROSS);
 		return acrossClues;
 	}
+	
+	@Override
+	public List<Clue> getAcrossClues() {
+		return acrossClues;
+	}
 
 	/**
 	 * Validate Down clues, making sure they still match the letters in the grid, discarding
@@ -905,6 +935,11 @@ public class Grid
 	 */
 	public List<Clue> validateAndGetDownClues() {
 		downClues = validateClues(getDownWords(), downClues, AcrossDownDirection.DOWN);
+		return downClues;
+	}
+	
+	@Override
+	public List<Clue> getDownClues() {
 		return downClues;
 	}
 
@@ -933,31 +968,31 @@ public class Grid
 			if (startCompare > 0) {
 				// clue is past this point. Make a new clue for this point
 				clue = new Clue();
-				clue.setAcrossDown(direction);
+				clue.setDirection(direction);
 				clue.setClueText("");
 				clue.setStartOfWord(gridWordStart);
 				clue.setEndOfWord(gridWordEnd);
 				clue.setGridWord(new String(gridWord.getPattern()));
-				clue.setWordNumber(gridWord.getNumber());
+				clue.setNumber(gridWord.getNumber());
 				clue.setWordComplete(gridWord.isComplete());
 				clue.setCells(gridWord.getCells());
 				retval.add(clue);
 				++j;
 			} else if (clueEnd.equals(gridWordEnd) && clue.getGridWord().equals(new String(gridWord.getPattern()))){
 				// clue matches grid space
-				clue.setWordNumber(gridWord.getNumber());
+				clue.setNumber(gridWord.getNumber());
 				retval.add(clue);
 				++i;
 				++j;
 			} else {
 				// discard this old clue and create a new one
 				clue = new Clue();
-				clue.setAcrossDown(direction);
+				clue.setDirection(direction);
 				clue.setClueText("");
 				clue.setStartOfWord(gridWordStart);
 				clue.setEndOfWord(gridWordEnd);
 				clue.setGridWord(new String(gridWord.getPattern()));
-				clue.setWordNumber(gridWord.getNumber());
+				clue.setNumber(gridWord.getNumber());
 				clue.setWordComplete(gridWord.isComplete());
 				clue.setCells(gridWord.getCells());
 				retval.add(clue);
@@ -969,12 +1004,12 @@ public class Grid
 		for (; j < gridWords.size(); ++j) {
 			GridWord gridWord = gridWords.get(j);
 			Clue clue = new Clue();
-			clue.setAcrossDown(direction);
+			clue.setDirection(direction);
 			clue.setClueText("");
 			clue.setStartOfWord(gridWord.getStartOfWord());
 			clue.setEndOfWord(gridWord.getEndOfWord());
 			clue.setGridWord(new String(gridWord.getPattern()));
-			clue.setWordNumber(gridWord.getNumber());
+			clue.setNumber(gridWord.getNumber());
 			clue.setWordComplete(gridWord.isComplete());
 			clue.setCells(gridWord.getCells());
 			retval.add(clue);

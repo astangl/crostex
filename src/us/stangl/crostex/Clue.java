@@ -3,13 +3,14 @@
  */
 package us.stangl.crostex;
 
+import us.stangl.crostex.io.IoClue;
 import us.stangl.crostex.util.RowColumnPair;
 
 /**
  * Object representing a single clue for a crossword puzzle.
  * @author Alex Stangl
  */
-public class Clue {
+public class Clue implements IoClue {
 
 	// corresponding word in the grid
 	private String gridWord;
@@ -18,13 +19,13 @@ public class Clue {
 	private boolean wordComplete;
 	
 	// whether this is an across or down clue
-	private AcrossDownDirection acrossDown;
+	private AcrossDownDirection direction;
 	
 	// text of the clue
 	private String clueText;
 	
 	// number of the word in the grid
-	private int wordNumber;
+	private int number;
 	
 	// Start of the corresponding word in the grid (should stay fixed even if wordNumber changes)
 	private RowColumnPair startOfWord;
@@ -50,31 +51,31 @@ public class Clue {
 	}
 
 	/**
-	 * @return the wordNumber
+	 * @return the number associated with this clue
 	 */
-	public int getWordNumber() {
-		return wordNumber;
+	public int getNumber() {
+		return number;
 	}
 
 	/**
-	 * @param wordNumber the wordNumber to set
+	 * @param number the new number associated with this clue
 	 */
-	public void setWordNumber(int wordNumber) {
-		this.wordNumber = wordNumber;
+	public void setNumber(int number) {
+		this.number = number;
 	}
 
 	/**
-	 * @return the acrossDown
+	 * @return the direction associated with this clue
 	 */
-	public AcrossDownDirection getAcrossDown() {
-		return acrossDown;
+	public AcrossDownDirection getDirection() {
+		return direction;
 	}
 
 	/**
-	 * @param acrossDown the acrossDown to set
+	 * @param direction the direction to set
 	 */
-	public void setAcrossDown(AcrossDownDirection acrossDown) {
-		this.acrossDown = acrossDown;
+	public void setDirection(AcrossDownDirection direction) {
+		this.direction = direction;
 	}
 
 	/**

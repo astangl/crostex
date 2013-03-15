@@ -5,7 +5,6 @@ package us.stangl.crostex.gui;
 
 import java.awt.Component;
 import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
 import java.awt.LayoutManager;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;

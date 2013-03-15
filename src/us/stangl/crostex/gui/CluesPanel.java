@@ -100,7 +100,7 @@ public final class CluesPanel extends JPanel implements FullGridChangeListener, 
 				sca.acrossLabel = label;
 				sca.acrossClueField = textField;
 				sca.acrossCells = clue.getCells();
-				sca.acrossClueNumber = clue.getWordNumber();
+				sca.acrossClueNumber = clue.getNumber();
 			}
 		}
 		//topPanel.add();
@@ -133,7 +133,7 @@ public final class CluesPanel extends JPanel implements FullGridChangeListener, 
 				sca.downLabel = label;
 				sca.downClueField = textField;
 				sca.downCells = clue.getCells();
-				sca.downClueNumber = clue.getWordNumber();
+				sca.downClueNumber = clue.getNumber();
 			}
 		}
 		
@@ -154,8 +154,8 @@ public final class CluesPanel extends JPanel implements FullGridChangeListener, 
 	
 	// build label string for clue based upon clue number and pattern
 	private String buildLabelString(Clue clue) {
-		//return Integer.toString(clue.getWordNumber()) + "  " + clue.getGridWord();
-		return buildLabelString(clue.getWordNumber(), clue.getCells());
+		//return Integer.toString(clue.getNumber()) + "  " + clue.getGridWord();
+		return buildLabelString(clue.getNumber(), clue.getCells());
 	}
 	
 	// build label string for clue based upon clue number and pattern from specified cells

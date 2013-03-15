@@ -1,18 +1,17 @@
 /**
  * Copyright 2013, Alex Stangl. See LICENSE for licensing details.
  */
-package us.stangl.crostex.util;
+package us.stangl.crostex.io;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import us.stangl.crostex.AcrossDownDirection;
-import us.stangl.crostex.Cell;
-import us.stangl.crostex.Clue;
-import us.stangl.crostex.Grid;
+import us.stangl.crostex.util.Pair;
 
 /**
  * Object used to serialize a Grid to/from Across Lite .PUZ file format.
@@ -26,24 +25,51 @@ public class PuzSerializer {
 	
 	// Version string
 	private static final String VERSION_STRING = "1.3\0";
+	
+	// Character set to use for byte array <-> String conversions
+	private static final String CHARACTER_SET = "ISO-8859-1";
 
 	/**
 	 * @return whether the specified grid is in a state ready to export
 	 */
-	public boolean isReadyToExportToPuz(Grid grid) {
+	public boolean isReadyToExportToPuz(IoGrid grid) {
 		Pair<String, String> solutionAndPlayerState = getSolutionAndPlayerState(grid);
 		return solutionAndPlayerState != null;
 	}
 
-	public byte[] toPuz(Grid grid) {
+	/**
+	 * Build grid from the specified PUZ file bytes.
+	 * @param bytes bytes comprising PUZ file
+	 * @param factory factory to use to create new grid
+	 * @return new grid built from the specified PUZ file bytes
+	 * @throws IllegalArgumentException if bytes do not appear to be a valid PUZ file
+	 */
+	public <T extends IoGrid> T fromBytes(byte[] bytes, IoGridFactory<T> factory, boolean enforceChecksums) {
+		if (! Arrays.equals(toByteArray(FILE_MAGIC_STRING), Arrays.copyOfRange(bytes, 0x02, 0x0e)))
+			throw new IllegalArgumentException("Not a valid PUZ byte stream: FILE MAGIC mismatch");
+
+		int width = bytes[0x2c];
+		if (width <= 0)
+			throw new IllegalArgumentException("Not a valid PUZ byte stream: width = " + width);
+		
+		int height = bytes[0x2d];
+		if (height <= 0)
+			throw new IllegalArgumentException("Not a valid PUZ byte stream: height = " + height);
+		
+		T retval = factory.newGrid(width, height);
+		//TODO finish implementing this
+		return retval;
+	}
+	
+	public byte[] toPuz(IoGrid grid) {
 		int width = grid.getWidth();
 		int height = grid.getHeight();
 		int nCells = width * height;
 		// get all the clues in the correct sorted order
-		List<Clue> acrossClues = grid.validateAndGetAcrossClues();
-		List<Clue> downClues = grid.validateAndGetDownClues();
+		List<? extends IoClue> acrossClues = grid.getAcrossClues();
+		List<? extends IoClue> downClues = grid.getDownClues();
 		int nbrClues = acrossClues.size() + downClues.size();
-		List<Clue> allClues = new ArrayList<Clue>(nbrClues);
+		List<IoClue> allClues = new ArrayList<IoClue>(nbrClues);
 		allClues.addAll(acrossClues);
 		allClues.addAll(downClues);
 		Collections.sort(allClues, new ClueComparator());
@@ -102,7 +128,7 @@ public class PuzSerializer {
 			cksum = cksum_region(copyrightBytes, 0, copyrightBytes.length, cksum);
 		}
 		// ...and strings
-		for (Clue clue : allClues) {
+		for (IoClue clue : allClues) {
 			String clueText = clue.getClueText();
 			strings.add(clueText);
 			byte[] clueBytes = toByteArray(clueText);
@@ -148,11 +174,12 @@ public class PuzSerializer {
 			index += stringBytes.length;
 		}
 
-		short fullChecksum = cksum_region(mainPuz, 2, totalLength - 2, (short)0);
-		mainPuz[0] = (byte)fullChecksum;
-		mainPuz[1] = (byte)(fullChecksum / 256);
+		mainPuz[0] = (byte)cksum;
+		mainPuz[1] = (byte)(cksum / 256);
 		return mainPuz;
 	}
+	
+	// return checksum of len bytes starting at region[index], and initial checksum value cksum
 	private short cksum_region(byte[] region, int index, int len, short cksum) {
 		// use int to accumulate actual checksum so we don't have to worry about sign issues
 		int intSum = cksum & 0xffff;
@@ -167,7 +194,7 @@ public class PuzSerializer {
 	}
 	
 	// return solution and player state for grid, if possible, else null
-	private Pair<String, String> getSolutionAndPlayerState(Grid grid) {
+	private Pair<String, String> getSolutionAndPlayerState(IoGrid grid) {
 		int width = grid.getWidth();
 		int height = grid.getHeight();
 		int nCells = width * height;
@@ -176,13 +203,12 @@ public class PuzSerializer {
 		StringBuilder playerStringBuilder = new StringBuilder(nCells);
 		for (int row = 0; row < height; ++row) {
 			for (int column = 0; column < width; ++column) {
-				Cell cell = grid.getCell(row, column);
-				if (cell.isBlack()) {
+				if (grid.isBlackCell(row, column)) {
 					solutionBuilder.append('.');
 					playerStringBuilder.append('.');
 				} else {
 					// TODO what to do if cell not black, but doesn't have contents either?
-					String cellContents = cell.getContents();
+					String cellContents = grid.getCellContents(row, column);
 					if (cellContents == null || cellContents.length() == 0)
 						return null;
 					solutionBuilder.append(cellContents.charAt(0));
@@ -196,28 +222,37 @@ public class PuzSerializer {
 	// convert string to byte array using ISO-8859-1 encoding
 	private byte[] toByteArray(String string) {
 		try {
-			return string.getBytes("ISO-8859-1");
+			return string.getBytes(CHARACTER_SET);
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException("UnsupportedEncodingException unexpectedly caught, trying to getBytes for '" + string + "'.", e);
 		}
 	}
 	
+	// convert byte array to String using ISO-8859-1 encoding
+	private String fromByteArray(byte[] bytes) {
+		try {
+			return new String(bytes, CHARACTER_SET);
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException("UnsupportedEncodingException unexpectedly caught, trying fromBytes for '" + bytes + "'.", e);
+		}
+	}
+	
 	// comparator to sort Clues in order, first by number, then by Across before Down (for identical numbers)
-	private static final class ClueComparator implements Comparator<Clue> {
+	private static final class ClueComparator implements Comparator<IoClue> {
 
 		/* (non-Javadoc)
 		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 		 */
 		@Override
-		public int compare(Clue clue1, Clue clue2) {
-			int clueNumber1 = clue1.getWordNumber();
-			int clueNumber2 = clue2.getWordNumber();
+		public int compare(IoClue clue1, IoClue clue2) {
+			int clueNumber1 = clue1.getNumber();
+			int clueNumber2 = clue2.getNumber();
 			if (clueNumber1 < clueNumber2)
 				return -1;
 			if (clueNumber1 > clueNumber2)
 				return 1;
-			AcrossDownDirection direction1 = clue1.getAcrossDown();
-			AcrossDownDirection direction2 = clue2.getAcrossDown();
+			AcrossDownDirection direction1 = clue1.getDirection();
+			AcrossDownDirection direction2 = clue2.getDirection();
 			
 			// we should never have to return 0, as we should never be comparing to the same clue
 			// so we will treat that as an error condition
