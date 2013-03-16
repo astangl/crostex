@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import us.stangl.crostex.AcrossDownDirection;
-import us.stangl.crostex.Grid;
 import us.stangl.crostex.util.Pair;
 
 /**

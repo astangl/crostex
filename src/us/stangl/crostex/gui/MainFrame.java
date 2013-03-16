@@ -187,9 +187,13 @@ public class MainFrame extends JFrame {
 
 		JMenuItem newItem = new JMenuItem(Message.FILE_MENU_OPTION_NEW.toString());
 		saveAsTemplate.setEnabled(false);
+		JMenuItem importPuzItem = new JMenuItem(Message.FILE_MENU_OPTION_IMPORT_PUZ.toString());
+		JMenuItem exportPuzItem = new JMenuItem(Message.FILE_MENU_OPTION_EXPORT_AS_PUZ.toString());
 		JMenuItem exitItem = new JMenuItem(Message.FILE_MENU_OPTION_EXIT.toString());
 		fileMenu.add(newItem);
 		fileMenu.add(saveAsTemplate);
+		fileMenu.add(importPuzItem);
+		fileMenu.add(exportPuzItem);
 		fileMenu.addSeparator();
 		fileMenu.add(exitItem);
 		
@@ -261,6 +265,19 @@ public class MainFrame extends JFrame {
 			}
 		});
 		
+		importPuzItem.setActionCommand("Import PUZ file");
+		importPuzItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				
+			}
+		});
+		exportPuzItem.setActionCommand("Export as PUZ file");
+		exportPuzItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				
+			}
+		});
+
 		topLevelMenuBar.add(fileMenu);
 		
 		undoItem.addActionListener(new ActionListener() {

@@ -21,7 +21,7 @@ public class PuzSerializerTest {
 	@Test()
 	public void testPuzRead() throws IOException {
 		//FileReader reader = new FileReader();
-		byte[] bytes = FileReader.getFileBytes(new File("resources", "BostonGlobe19221210.puz"));
+		byte[] bytes = FileReader.getFileBytes(new File("test", "BostonGlobe19221210.puz"));
 		PuzSerializer serializer = new PuzSerializer();
 		Grid grid = serializer.fromBytes(bytes, new GridFactory(), true);
 		assertEquals(23, grid.getWidth());
