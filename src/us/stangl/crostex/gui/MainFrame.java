@@ -87,7 +87,6 @@ public class MainFrame extends JFrame {
 	
 	public MainFrame() {
 		super(Message.MAIN_FRAME_TITLE.toString());
-//		System.out.println("Created GUI on EDT? " + SwingUtilities.isEventDispatchThread());
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		Preferences p = Preferences.userNodeForPackage(Main.class);
@@ -102,13 +101,12 @@ public class MainFrame extends JFrame {
 					Message.DIALOG_TITLE_SET_DATA_DIRECTORY.toString(),
 					JOptionPane.OK_CANCEL_OPTION);
 			if (answer == JOptionPane.OK_OPTION) {
-				System.out.println("OK option chosen");
 				JFileChooser fileChooser = new JFileChooser();
 				fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				int state = fileChooser.showDialog(this, Message.BUTTON_PICK_DATA_DIRECTORY.toString());
 				if (state == JFileChooser.APPROVE_OPTION) {
 					File directoryFile = fileChooser.getSelectedFile();
-					System.out.println("Chose " + directoryFile.getAbsolutePath());
+					LOG.fine("Chose data directory " + directoryFile.getAbsolutePath());
 					if (! directoryFile.isFile()) {
 						p.put(dataDirectoryPropertyName, directoryFile.getAbsolutePath());
 					}
@@ -183,7 +181,7 @@ public class MainFrame extends JFrame {
 //		});
 		
 		// Create menus
-		// Edit Menu, E - Mnemonic
+		// File Menu, F - Mnemonic
 		JMenu fileMenu = new JMenu(Message.FILE_MENU_HEADER.toString());
 		fileMenu.setMnemonic(KeyEvent.VK_F);
 
@@ -199,11 +197,6 @@ public class MainFrame extends JFrame {
 		newItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				NewCrosswordDialog dialog = new NewCrosswordDialog(gridsDb);
-				int height = dialog.getGridHeight();
-				int width = dialog.getGridWidth();
-				if (height != -1 && width != -1) {
-					new PickGridDialog(height, width);
-				}
 				
 				LOG.finest("Back from NewCrosswordDialog! width = " + dialog.getGridWidth() + ", height = " + dialog.getGridHeight());
 				
@@ -263,12 +256,7 @@ public class MainFrame extends JFrame {
 				JTextField nameField = dialog.getNameField();
 				JTextField descriptionField = dialog.getDescriptionField();
 				if (nameField != null && descriptionField != null) {
-					String name = nameField.getText();
-					String description = descriptionField.getText();
 					LOG.fine("done with SaveGridTemplateDialog, name = " + dialog.getNameField().getText() + ", description = " +dialog.getDescriptionField().getText());
-//					for (Grid grid : gridsDb_.getGrids()) {
-//						if (grid.getName() == name)
-//					}
 				}
 			}
 		});
@@ -320,6 +308,7 @@ public class MainFrame extends JFrame {
 			}
 		});
 
+		// Edit Menu, E - Mnemonic
 		JMenu editMenu = new JMenu(Message.EDIT_MENU_HEADER.toString());
 		editMenu.setMnemonic(KeyEvent.VK_E);
 		editMenu.add(undoItem);
@@ -364,15 +353,6 @@ public class MainFrame extends JFrame {
 			builder.append(c);
 		}
 		return builder.toString();
-//		for (char c : rawWord) {
-//			
-//		}
-//		String uppercaseWord = rawWord.toUpperCase();
-//		if (! uppercaseWord.matches("[A-Z]*")) {
-////			System.out.println("Not using " + uppercaseWord);
-//			return null;
-//		}
-//		return uppercaseWord;
 	}
 	
 	private boolean readDictionaryFile(String dataDirectory, String filename) {

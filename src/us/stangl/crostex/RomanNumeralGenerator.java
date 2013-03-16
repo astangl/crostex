@@ -95,9 +95,6 @@ public class RomanNumeralGenerator {
 		List<String> list = instance.generateAllNumeralsOfLength(7);
 		for (String numeral : list)
 			System.out.println(numeral);
-//		for (int i = 1; i <= 1000; ++i)
-//			System.out.println(i + " = " + instance.getRomanNumeral(i));
-		
 	}
 	
 	private List<String> getBucketOfLength(int length) {

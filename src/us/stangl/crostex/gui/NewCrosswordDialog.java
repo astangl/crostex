@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -43,7 +44,10 @@ import us.stangl.crostex.util.Message;
 public class NewCrosswordDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
 
-	// chosen width and height, -1 if cancelled
+	// logger
+	private static final Logger LOG = Logger.getLogger(NewCrosswordDialog.class.getName());
+
+	// chosen width and height, or -1 if cancelled
 	private int height = -1;
 	private int width = -1;
 
@@ -69,7 +73,6 @@ public class NewCrosswordDialog extends JDialog {
 	private JPanel gridPreviewPanel = new GridPreviewPanel();
 	
 	// full collection of all grid templates
-//	private final Collection<Grid> gridTemplates_;
 	private final GridsDb gridsdb;
 	
 	// grid picker table model
@@ -82,7 +85,6 @@ public class NewCrosswordDialog extends JDialog {
 		super((Frame)null, Message.DIALOG_TITLE_NEW_CROSSWORD.toString(), true);
 		
 		this.gridsdb = gridsdb;
-//		gridTemplates_ = gridTemplates;
 		tableModel = new GridPickerTableModel(this.gridsdb.getGrids());
 		tableModel.setGridDimensions(15, 15);
 
@@ -123,7 +125,6 @@ public class NewCrosswordDialog extends JDialog {
 		buttonsPanel.add(cancelButton);
 		
 		getContentPane().add(new NewCrosswordPanel(), BorderLayout.CENTER);
-//		getContentPane().add(new GridPickerPanel(), BorderLayout.EAST);
 		getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
 		pack();
 		setVisible(true);
@@ -174,7 +175,7 @@ public class NewCrosswordDialog extends JDialog {
 			}
 		}
 		
-		private class DimensionPanel extends JPanel {
+		private final class DimensionPanel extends JPanel {
 			private static final long serialVersionUID = 1L;
 
 			// button group
@@ -187,48 +188,21 @@ public class NewCrosswordDialog extends JDialog {
 			private JLabel heightLabel = new JLabel(Message.TEXT_CELLS_HIGH.toString());
 			
 			public DimensionPanel() {
-//				setBorder(new CompoundBorder(
-//						BorderFactory.createTitledBorder("Dimensions"),
-//						BorderFactory.createEmptyBorder(10,10,10,10)));
 				setBorder(BorderFactory.createTitledBorder(Message.PANEL_DIMENSIONS_TITLE.toString()));
-//				setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 				Box box = new Box(BoxLayout.Y_AXIS);
 				add(box);
 
 				button15x15.setSelected(true);
-				button15x15.addItemListener(new ItemListener() {
-					public void itemStateChanged(ItemEvent evt) {
-						if (button15x15.isSelected()) {
-							height = 15;
-							width = 15;
-							tableModel.setGridDimensions(width, height);
-						}
-					}
-				});
+				
+				addWidthHeightListener(button15x15, 15, 15);
 				box.add(button15x15);
 				buttonGroup.add(button15x15);
 
-				button21x21.addItemListener(new ItemListener() {
-					public void itemStateChanged(ItemEvent evt) {
-						if (button21x21.isSelected()) {
-							height = 21;
-							width = 21;
-							tableModel.setGridDimensions(width, height);
-						}
-					}
-				});
+				addWidthHeightListener(button21x21, 21, 21);
 				box.add(button21x21);
 				buttonGroup.add(button21x21);
 
-				button23x23.addItemListener(new ItemListener() {
-					public void itemStateChanged(ItemEvent evt) {
-						if (button23x23.isSelected()) {
-							height = 23;
-							width = 23;
-							tableModel.setGridDimensions(width, height);
-						}
-					}
-				});
+				addWidthHeightListener(button23x23, 23, 23);
 				box.add(button23x23);
 				buttonGroup.add(button23x23);
 
@@ -236,6 +210,19 @@ public class NewCrosswordDialog extends JDialog {
 				buttonGroup.add(buttonCustom);
 				
 				box.add(new CustomDimensionPanel());
+			}
+			
+			// add ItemListener to the specified radio button to set the specified width and height
+			private void addWidthHeightListener(final JRadioButton button, final int width, final int height) {
+				button.addItemListener(new ItemListener() {
+					public void itemStateChanged(ItemEvent evt) {
+						if (button.isSelected()) {
+							NewCrosswordDialog.this.height = 23;
+							NewCrosswordDialog.this.width = 23;
+							tableModel.setGridDimensions(width, height);
+						}
+					}
+				});
 			}
 
 			private class CustomDimensionPanel extends JPanel {
@@ -272,7 +259,7 @@ public class NewCrosswordDialog extends JDialog {
 			}
 			
 			private void setCustomFieldsEnabled(boolean value) {
-				System.out.println("Setting all to " + value);
+				LOG.fine("Setting all to " + value);
 				widthLabel.setEnabled(value);
 				heightLabel.setEnabled(value);
 				customWidthField.setEnabled(value);
@@ -314,7 +301,6 @@ public class NewCrosswordDialog extends JDialog {
 
 			public GridPickerPanel() {
 				setBorder(BorderFactory.createTitledBorder(Message.PANEL_GRID_PICKER_TITLE.toString()));
-//				setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 				Box box = new Box(BoxLayout.Y_AXIS);
 				add(box);
 
@@ -325,7 +311,6 @@ public class NewCrosswordDialog extends JDialog {
 				scrollPane.setPreferredSize(new Dimension(400, 400));
 				table.setPreferredSize(new Dimension(100, 100));
 				box.add(scrollPane);
-//				getContentPane().add(scrollPane);
 			}
 		}
 		

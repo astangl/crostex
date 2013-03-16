@@ -14,8 +14,8 @@ public class ServiceException extends Exception {
 	 * @param message descriptive message
 	 */
 	public ServiceException(String message) {
-        super(message);
-    }
+		super(message);
+	}
 
 	/**
 	 * Constructor taking a message and an underlying cause. 
@@ -23,6 +23,6 @@ public class ServiceException extends Exception {
 	 * @param cause underlying cause
 	 */
 	public ServiceException(String message, Throwable cause) {
-        super(message, cause);
-    }
+		super(message, cause);
+	}
 }

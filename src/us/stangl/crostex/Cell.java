@@ -7,11 +7,6 @@ package us.stangl.crostex;
  * Object representing a single cell/box in a crossword puzzle.
  */
 public class Cell {
-//	enum CellType { EMPTY, BLACK, STRING };
-	
-	// cell type
-//	private CellType cellType = CellType.EMPTY;
-
 	// cell contents, when string contents
 	private String stringContents = "";
 	
@@ -22,14 +17,10 @@ public class Cell {
 	
 	public boolean isBlack() {
 		return black;
-//		return cellType == CellType.BLACK;
-//		return stringContents_ == null;
 	}
 	
 	public void setBlack(boolean black) {
 		this.black = black;
-//		stringContents_ = null;
-//		cellType = CellType.BLACK;
 	}
 	
 	public void toggleBlack() {
@@ -41,36 +32,20 @@ public class Cell {
 	 */
 	public boolean isEmpty() {
 		return !black && stringContents.length() == 0;
-//		return cellType == CellType.EMPTY;
 	}
 	
 	public void setEmpty() {
 		black = false;
 		stringContents = "";
-		// cellType = CellType.EMPTY;
 	}
 
-	/*
-	public String getStateAsString() {
-	}
-	
-	public void restoreStateFromString() {
-	}
-	*/
 	public String getContents() {
-//		return black ? null : stringContents;
 		return stringContents;
 	}
 
 	/** for compatability setContents(null) and getContents() == null can be used to set/check BLACK. Better to use setBlack/isBlack though. */
 	public void setContents(String contents) {
 		stringContents = contents;
-		/*
-		cellType = contents == null ? CellType.BLACK : 
-			(contents.length() == 0 ? CellType.EMPTY : CellType.STRING);
-		if (cellType == CellType.STRING)
-			stringContents = contents;
-			*/
 	}
 	
 	/**
@@ -127,8 +102,6 @@ public class Cell {
 	
 	public boolean isEligibleForAutofill() {
 		return !black && stringContents.length() == 0;
-//		cellType == CellType.EMPTY;
-//		return multicharContents_ != null && multicharContents_.length() == 0;
 	}
 	
 	

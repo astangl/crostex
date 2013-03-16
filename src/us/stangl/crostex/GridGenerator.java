@@ -17,16 +17,18 @@ public class GridGenerator {
 	private final int width;
 	private final int minNumberBlack;
 	private final int maxNumberBlack;
+	
+	// grid cell flags, true = black cell, false = non-black (length = half the grid (or half-1 if odd # cells) due to symmetry)
 	private final boolean[] crosswordState;
 	private int blackCount = 0;
 	
-	/** flag indicating whether there is an odd number of cells (and therefore overlap in crosswordState_ symmetry) */
+	// whether there is an odd number of cells (and therefore overlap in crosswordState symmetry)
 	private boolean oddNumberCells;
 	
-	/** one polyomino grid constraint */
+	// one polyomino grid constraint, to enforce there are no unconnected regions
 	private GridConstraint ONE_POLYOMINO_GRID_CONSTRAINT = new OnePolyominoGridConstraint();
 	
-	/** minimum 3-letter word grid constraint */
+	// minimum 3-letter word grid constraint, to enforce no two-letter words
 	private GridConstraint THREE_LETTER_WORD_GRID_CONSTRAINT = new Min3LetterWordGridConstraint();
 	
 	public GridGenerator(int height, int width) {
@@ -67,7 +69,6 @@ public class GridGenerator {
 			if (ONE_POLYOMINO_GRID_CONSTRAINT.satisfiedBy(grid)
 					&& THREE_LETTER_WORD_GRID_CONSTRAINT.satisfiedBy(grid)) {
 				counter++;
-//				System.out.println("Found grid!");
 			}
 			if (! incrementToNextPossiblyGoodState())
 				break;
@@ -89,18 +90,19 @@ public class GridGenerator {
 		return true;
 	}
 	
-	/** increment crossword puzzle state. Return true unless rolling over back to zero */
+	// increment crossword puzzle state. Return true unless rolling over back to zero
 	private boolean incrementState() {
 		boolean retval = true;
 		int lastElementIndex = crosswordState.length - 1;
+		
 		// start at last element and scan towards start, looking for false, flipping all trues to false...
-		int index = lastElementIndex;
-		while (index >= 0 && crosswordState[index]) {
+		int index;
+		for (index = lastElementIndex; index >= 0 && crosswordState[index]; --index) {
 			--blackCount;
 			// Decrement black count again for lower half of puzzle unless on middle square which isn't duplicated
 			if (index < lastElementIndex || !oddNumberCells)
 				--blackCount;
-			crosswordState[index--] = false;
+			crosswordState[index] = false;
 		}
 			
 		// If index < 0, no 0 digits found, so we are wrapping around, and no 1 is necessary
@@ -114,14 +116,6 @@ public class GridGenerator {
 			retval = false;
 		}
 		
-//		// ... Now change everything after index to false
-//		while (++index <= lastElementIndex) {
-//			crosswordState_[index] = false;
-//			--blackCount_;
-//			// Decrement black count again for lower half of puzzle unless on middle square which isn't duplicated
-//			if (index < lastElementIndex || !oddNumberCells_)
-//				--blackCount_;
-//		}
 		return retval;
 	}
 

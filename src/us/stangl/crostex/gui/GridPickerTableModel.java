@@ -72,10 +72,7 @@ public class GridPickerTableModel extends AbstractTableModel {
 			return grid.getDescription();
 		if (col == 2)
 			return grid.getNumberOfWords();
-//		return "3";
-		return "" + (grid.getNumberBlackCells() * 100 / grid.getHeight() / grid.getWidth());
-//		int numBlack = grid.getNumberBlackCells();
-//		return numBlack == 0 ? "" : "" + (grid.getHeight() * grid.getWidth() * 100 / numBlack);
+		return Integer.toString(grid.getNumberBlackCells() * 100 / grid.getHeight() / grid.getWidth());
 	}
 	
 	public Grid getGridAtRow(int row) {
