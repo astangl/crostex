@@ -9,6 +9,8 @@ If you prefer, you can run the pre-built JAR file in this git repo, although it 
 
 To run:
 
-* You need to have installed on your computer JDK (or JRE) 1.6 or higher
+* You need to have installed on your computer JDK (or JRE) 1.6 or higher.
+* Under your home directory, create a data directory for crostex to store its dictionaries, etc.
+* Copy the *.TXT files from the data subdirectory in the crostex git repo into the data directory you created for crostex.
 * Assuming the JDK's bin directory is included in your PATH environment variable (or else fully-qualifying the java command), type "java -jar crostex.jar"
-* The first time crostex runs, it will ask you for a data directory. This is where it expects to read dictionaries and store its files, so set aside a directory for it under your home directory.
+* The first time crostex runs, it will ask you for the data directory. Point it to the directory you created for it. 
