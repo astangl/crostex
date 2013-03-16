@@ -29,6 +29,7 @@ import us.stangl.crostex.command.EnterCharacterToCellCommand;
 import us.stangl.crostex.command.SetCurrentCellBlackCommand;
 import us.stangl.crostex.command.ToggleCurrentCellCommand;
 import us.stangl.crostex.dictionary.Dictionary;
+import us.stangl.crostex.io.DOMSerializer;
 import us.stangl.crostex.io.IoGrid;
 import us.stangl.crostex.util.RowColumnPair;
 
@@ -360,6 +361,14 @@ public class Grid implements IoGrid
 		return getCell(row, col).isBlack();
 	}
 	
+	/* (non-Javadoc)
+	 * @see us.stangl.crostex.io.IoGrid#setBlackCell(int, int, boolean)
+	 */
+	@Override
+	public void setBlackCell(int row, int col, boolean isBlack) {
+		getCell(row, col).setBlack(isBlack);
+	}
+	
 	
 	/* (non-Javadoc)
 	 * @see us.stangl.crostex.io.IoGrid#getCellContents(int, int)
@@ -367,6 +376,14 @@ public class Grid implements IoGrid
 	@Override
 	public String getCellContents(int row, int col) {
 		return getCell(row, col).getContents();
+	}
+	
+	/* (non-Javadoc)
+	 * @see us.stangl.crostex.io.IoGrid#setCellContents(int, int, java.lang.String)
+	 */
+	@Override
+	public void setCellContents(int row, int col, String contents) {
+		getCell(row, col).setContents(contents);
 	}
 	
 	/**

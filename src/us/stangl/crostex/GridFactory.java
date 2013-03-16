@@ -9,7 +9,7 @@ import us.stangl.crostex.io.IoGridFactory;
  * Factory to create Grid instances
  * @author Alex Stangl
  */
-public class GridFactory implements IoGridFactory {
+public class GridFactory implements IoGridFactory<Grid> {
 
 	@Override
 	public Grid newGrid(int width, int height) {

@@ -9,8 +9,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Logger;
 
 import us.stangl.crostex.AcrossDownDirection;
+import us.stangl.crostex.Grid;
 import us.stangl.crostex.util.Pair;
 
 /**
@@ -19,6 +21,8 @@ import us.stangl.crostex.util.Pair;
  * @author Alex Stangl
  */
 public class PuzSerializer {
+	// logger
+	private static final Logger LOG = Logger.getLogger(PuzSerializer.class.getName());
 	
 	// File magic string
 	private static final String FILE_MAGIC_STRING = "ACROSS&DOWN\0";
@@ -28,6 +32,20 @@ public class PuzSerializer {
 	
 	// Character set to use for byte array <-> String conversions
 	private static final String CHARACTER_SET = "ISO-8859-1";
+
+	// Offsets of various fields within the PUZ data block
+	private static final int OFFSET_OVERALL_CHKSUM = 0x00;
+	private static final int OFFSET_FILE_MAGIC = 0x02;
+	private static final int OFFSET_CIB_CHKSUM = 0x0e;
+	private static final int OFFSET_ENCRYPTED_CHKSUMS = 0x10;
+	private static final int OFFSET_VERSION_STRING = 0x18;
+	private static final int OFFSET_WIDTH = 0x2c;
+	private static final int OFFSET_HEIGHT = 0x2d;
+	private static final int OFFSET_NBR_CLUES = 0x2e;
+	private static final int OFFSET_SOLUTION = 0x34;
+	
+	// contents of a solution cell that represents black
+	private static final byte BLACK_SOLUTION_CELL = 0x2e;
 
 	/**
 	 * @return whether the specified grid is in a state ready to export
@@ -41,22 +59,72 @@ public class PuzSerializer {
 	 * Build grid from the specified PUZ file bytes.
 	 * @param bytes bytes comprising PUZ file
 	 * @param factory factory to use to create new grid
-	 * @return new grid built from the specified PUZ file bytes
+	 * @return new grid built from the specified PUZ file bytes, or null if bytes don't form a valid PUZ
 	 * @throws IllegalArgumentException if bytes do not appear to be a valid PUZ file
 	 */
 	public <T extends IoGrid> T fromBytes(byte[] bytes, IoGridFactory<T> factory, boolean enforceChecksums) {
-		if (! Arrays.equals(toByteArray(FILE_MAGIC_STRING), Arrays.copyOfRange(bytes, 0x02, 0x0e)))
+		//TODO allow for PUZ files with preamble before the global checksum and file magic. Requires searching for magic string.
+		if (! Arrays.equals(toByteArray(FILE_MAGIC_STRING), Arrays.copyOfRange(bytes, OFFSET_FILE_MAGIC, 0x0e)))
 			throw new IllegalArgumentException("Not a valid PUZ byte stream: FILE MAGIC mismatch");
 
-		int width = bytes[0x2c];
+		int width = bytes[OFFSET_WIDTH] & 0xff;
 		if (width <= 0)
 			throw new IllegalArgumentException("Not a valid PUZ byte stream: width = " + width);
 		
-		int height = bytes[0x2d];
+		int height = bytes[OFFSET_HEIGHT] & 0xff;
 		if (height <= 0)
 			throw new IllegalArgumentException("Not a valid PUZ byte stream: height = " + height);
-		
+
+		int nbrClues = getShortAt(bytes, OFFSET_NBR_CLUES);
+		if (nbrClues <= 0)
+			throw new IllegalArgumentException("Not a valid PUZ byte stream: nbrClues = " + nbrClues);
+
 		T retval = factory.newGrid(width, height);
+		PuzChecksums checksums = new PuzChecksums(bytes, 0);
+		if (checksums.cksum != getShortAt(bytes, OFFSET_OVERALL_CHKSUM)) {
+			LOG.warning("Global checksum mismatch in fromBytes, computed = " + checksums.cksum + " versus stored " + getShortAt(bytes, OFFSET_OVERALL_CHKSUM));
+			if (enforceChecksums)
+				return null;
+		}
+		if (checksums.c_cib != getShortAt(bytes, OFFSET_CIB_CHKSUM)) {
+			LOG.warning("CIB checksum mismatch in fromBytes");
+			if (enforceChecksums)
+				return null;
+		}
+		for (int i = 0; i < 8; ++i) {
+			if (checksums.encrypted_chksums[i] != bytes[OFFSET_ENCRYPTED_CHKSUMS + i]) {
+				LOG.warning("Encrypted checksum mismatch in fromBytes at i = " + i + ", computed = " + checksums.encrypted_chksums[i] + " versus stored " + bytes[OFFSET_ENCRYPTED_CHKSUMS + i]);
+				if (enforceChecksums)
+					return null;
+			}
+		}
+		int solutionIndex = OFFSET_SOLUTION;
+		for (int row = 0; row < height; ++row) {
+			for (int column = 0; column < width; ++ column) {
+				byte b = bytes[solutionIndex];
+				if (b == BLACK_SOLUTION_CELL)
+					retval.setBlackCell(row, column, true);
+				else
+					retval.setCellContents(row, column, fromByteArray(bytes, solutionIndex, 1));
+				++solutionIndex;
+			}
+		}
+		
+		int nCells = width * height;
+		
+		int offsetStrings = OFFSET_SOLUTION + nCells + nCells;
+		int nbrStrings = 4 + nbrClues;
+		String[] strings = new String[nbrStrings];
+		for (int i = 0; i < nbrStrings; ++i) {
+			int strlen = strLength(bytes, offsetStrings);
+			strings[i] = fromByteArray(bytes, offsetStrings, strlen);
+			offsetStrings = offsetStrings + strlen + 1;
+		}
+		
+		retval.setTitle(strings[0]);
+		retval.setAuthor(strings[1]);
+		retval.setCopyright(strings[2]);
+		
 		//TODO finish implementing this
 		return retval;
 	}
@@ -90,56 +158,9 @@ public class PuzSerializer {
 		if (playerState.length() != nCells)
 			throw new RuntimeException("playerState '" + playerState + "' not expected length " + nCells);
 
-		// build CIB; cib[4]...cib[7] are null for now, so they don't need explicit initialization
-		byte[] cib = new byte[8];
-		cib[0] = (byte)width;
-		cib[1] = (byte)height;
-		cib[2] = (byte)nbrClues;
-		cib[3] = (byte)(nbrClues / 256);
-		
-		
-		// calculate some of the checksums
-		short c_cib = cksum_region(cib, 0, 8, (short)0);
-		short cksum = c_cib;
-		short c_part = (short)0;
-		
-		byte[] solutionBytes = toByteArray(solution);
-		short c_sol = cksum_region(solutionBytes, 0, nCells, (short)0);
-		cksum = cksum_region(solutionBytes, 0, nCells, cksum);
-		
-		byte[] playerStateBytes = toByteArray(playerState);
-		short c_grid = cksum_region(playerStateBytes, 0, nCells, (short)0);
-		cksum = cksum_region(playerStateBytes, 0, nCells, cksum);
-		
-		if (title.length() > 0) {
-			byte[] titleBytes = toByteArray(title + "\0");
-			c_part = cksum_region(titleBytes, 0, titleBytes.length, c_part);
-			cksum = cksum_region(titleBytes, 0, titleBytes.length, cksum);
-		}
-		
-		if (author.length() > 0) {
-			byte[] authorBytes = toByteArray(author + "\0");
-			c_part = cksum_region(authorBytes, 0, authorBytes.length, c_part);
-			cksum = cksum_region(authorBytes, 0, authorBytes.length, cksum);
-		}
-		if (copyright.length() > 0) {
-			byte[] copyrightBytes = toByteArray(copyright + "\0");
-			c_part = cksum_region(copyrightBytes, 0, copyrightBytes.length, c_part);
-			cksum = cksum_region(copyrightBytes, 0, copyrightBytes.length, cksum);
-		}
 		// ...and strings
-		for (IoClue clue : allClues) {
-			String clueText = clue.getClueText();
-			strings.add(clueText);
-			byte[] clueBytes = toByteArray(clueText);
-			c_part = cksum_region(clueBytes, 0, clueBytes.length, c_part);
-			cksum = cksum_region(clueBytes, 0, clueBytes.length, cksum);
-		}
-		if (notes.length() > 0) {
-			byte[] notesBytes = toByteArray(notes + "\0");
-			c_part = cksum_region(notesBytes, 0, notesBytes.length, c_part);
-			cksum = cksum_region(notesBytes, 0, notesBytes.length, cksum);
-		}
+		for (IoClue clue : allClues)
+			strings.add(clue.getClueText());
 		
 		strings.add(notes);
 		
@@ -151,46 +172,27 @@ public class PuzSerializer {
 		// Allocate full byte array, not taking into account any extra sections (that may come later), then populate it
 		int totalLength = 52 + nCells + nCells + totalStringsLength;
 		byte[] mainPuz = new byte[totalLength];
-		System.arraycopy(toByteArray(FILE_MAGIC_STRING), 0, mainPuz, 2, 12);
-		mainPuz[0x0e] = (byte)c_cib;
-		mainPuz[0x0f] = (byte)(c_cib / 256);
-		mainPuz[0x10] = (byte)(0x49 ^ (c_cib & 0xff));
-		mainPuz[0x11] = (byte)(0x43 ^ (c_sol & 0xff));
-		mainPuz[0x12] = (byte)(0x48 ^ (c_grid & 0xff));
-		mainPuz[0x13] = (byte)(0x45 ^ (c_part ^ 0xff));
-		mainPuz[0x14] = (byte)(0x41 ^ (c_cib / 256));
-		mainPuz[0x15] = (byte)(0x54 ^ (c_sol / 256));
-		mainPuz[0x16] = (byte)(0x45 ^ (c_grid / 256));
-		mainPuz[0x17] = (byte)(0x44 ^ (c_part / 256));
-		System.arraycopy(toByteArray(VERSION_STRING), 0, mainPuz, 0x18, 4);
-		System.arraycopy(cib,0, mainPuz, 0x2c, 8);
-		System.arraycopy(toByteArray(solution), 0, mainPuz, 0x34, nCells);
-		System.arraycopy(toByteArray(playerState), 0, mainPuz, 0x34 + nCells, nCells);
+		mainPuz[OFFSET_WIDTH] = (byte)width;
+		mainPuz[OFFSET_HEIGHT] = (byte)height;
+		putShortAt((short)nbrClues, mainPuz, OFFSET_NBR_CLUES);
+		System.arraycopy(toByteArray(FILE_MAGIC_STRING), 0, mainPuz, OFFSET_FILE_MAGIC, 12);
+		System.arraycopy(toByteArray(VERSION_STRING), 0, mainPuz, OFFSET_VERSION_STRING, 4);
+		System.arraycopy(toByteArray(solution), 0, mainPuz, OFFSET_SOLUTION, nCells);
+		System.arraycopy(toByteArray(playerState), 0, mainPuz, OFFSET_SOLUTION + nCells, nCells);
 		
-		int index = 0x34 + nCells + nCells;
+		int index = OFFSET_SOLUTION + nCells + nCells;
 		for (String string : strings) {
 			byte[] stringBytes = toByteArray(string + "\0");
 			System.arraycopy(stringBytes, 0, mainPuz, index, stringBytes.length);
 			index += stringBytes.length;
 		}
 
-		mainPuz[0] = (byte)cksum;
-		mainPuz[1] = (byte)(cksum / 256);
+		// Now compute and add in checksums
+		PuzChecksums checksums = new PuzChecksums(mainPuz, 0);
+		System.arraycopy(checksums.encrypted_chksums, 0, mainPuz, OFFSET_ENCRYPTED_CHKSUMS, 8);
+		putShortAt(checksums.cksum, mainPuz, OFFSET_OVERALL_CHKSUM);
+		putShortAt(checksums.c_cib, mainPuz, OFFSET_CIB_CHKSUM);
 		return mainPuz;
-	}
-	
-	// return checksum of len bytes starting at region[index], and initial checksum value cksum
-	private short cksum_region(byte[] region, int index, int len, short cksum) {
-		// use int to accumulate actual checksum so we don't have to worry about sign issues
-		int intSum = cksum & 0xffff;
-		for (int i = 0; i < len; ++i) {
-			boolean lowBit = intSum % 1 == 1;
-			intSum >>= 1;
-			if (lowBit)
-				intSum += 0x8000;
-			intSum += region[index + i] & 0xff;
-		}
-		return (short)intSum;
 	}
 	
 	// return solution and player state for grid, if possible, else null
@@ -236,6 +238,35 @@ public class PuzSerializer {
 			throw new RuntimeException("UnsupportedEncodingException unexpectedly caught, trying fromBytes for '" + bytes + "'.", e);
 		}
 	}
+
+	// convert byte array to String using ISO-8859-1 encoding
+	private String fromByteArray(byte[] bytes, int index, int length) {
+		try {
+			return new String(bytes, index, length, CHARACTER_SET);
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException("UnsupportedEncodingException unexpectedly caught, trying fromBytes for '" + bytes + "'.", e);
+		}
+	}
+
+	// store short into byte array at specified offset, in little-endian order
+	private static void putShortAt(short value, byte[] bytes, int offset) {
+		bytes[offset] = (byte)value;
+		bytes[offset + 1] = (byte)(value >> 8);
+	}
+
+	// retrieve short from byte array at specified offset, in little-endian order
+	private static short getShortAt(byte[] bytes, int offset) {
+		return (short)((bytes[offset] & 0xff) + 256 * (bytes[offset + 1] & 0xff));
+	}
+
+
+	// return length of null-terminated string starting at region[index], not including null terminator
+	private static int strLength(byte[] region, int index) {
+		int len = 0;
+		while (region[index + len] != 0)
+			++len;
+		return len;
+	}
 	
 	// comparator to sort Clues in order, first by number, then by Across before Down (for identical numbers)
 	private static final class ClueComparator implements Comparator<IoClue> {
@@ -261,5 +292,67 @@ public class PuzSerializer {
 			return direction1 == AcrossDownDirection.ACROSS ? -1 : 1;
 		}
 		
+	}
+	private static final class PuzChecksums {
+		public final short c_cib;
+		public final short cksum;
+		public final byte[] encrypted_chksums = new byte[8];
+		//
+		public PuzChecksums(byte[] puzData, int startOffset) {
+			int width = puzData[startOffset + OFFSET_WIDTH] & 0xff;
+			int height = puzData[startOffset + OFFSET_HEIGHT] & 0xff;
+			int nCells = width * height;
+			int nbrClues = getShortAt(puzData, startOffset + OFFSET_NBR_CLUES);
+			c_cib = cksum_region(puzData, startOffset + OFFSET_WIDTH, 8, (short)0);
+			short cksum = c_cib;
+			short c_part = (short)0;
+			
+			short c_sol = cksum_region(puzData, startOffset + OFFSET_SOLUTION, nCells, (short)0);
+			cksum = cksum_region(puzData, startOffset + OFFSET_SOLUTION, nCells, cksum);
+			
+			short c_grid = cksum_region(puzData, startOffset + OFFSET_SOLUTION + nCells, nCells, (short)0);
+			cksum = cksum_region(puzData, startOffset + OFFSET_SOLUTION + nCells, nCells, cksum);
+			
+			int currOffset = startOffset + OFFSET_SOLUTION + nCells + nCells;
+
+			int nbrStrings = nbrClues + 4;
+			for (int i = 0; i < nbrStrings; ++i) {
+				// only include null in checksum for title, author, copyright, and notes
+				boolean includeNullInChecksum = i < 3 || i == nbrStrings - 1;
+				int strLen = strLength(puzData, currOffset);
+				int nextOffset = currOffset + strLen + 1;
+				if (includeNullInChecksum)
+					++strLen;
+				// If it's one of the ones including null in checksum, only include in checksum for non-empty strings
+				if (!includeNullInChecksum || strLen > 1) {
+					c_part = cksum_region(puzData, currOffset, strLen, c_part);
+					cksum = cksum_region(puzData, currOffset, strLen, cksum);
+				}
+				currOffset = nextOffset;
+			}
+			this.cksum = cksum;
+			encrypted_chksums[0] = (byte)(0x49 ^ c_cib);
+			encrypted_chksums[1] = (byte)(0x43 ^ c_sol);
+			encrypted_chksums[2] = (byte)(0x48 ^ c_grid);
+			encrypted_chksums[3] = (byte)(0x45 ^ c_part);
+			encrypted_chksums[4] = (byte)(0x41 ^ (c_cib >> 8));
+			encrypted_chksums[5] = (byte)(0x54 ^ (c_sol >> 8));
+			encrypted_chksums[6] = (byte)(0x45 ^ (c_grid >> 8));
+			encrypted_chksums[7] = (byte)(0x44 ^ (c_part >> 8));
+		}
+
+		// return checksum of len bytes starting at region[index], and initial checksum value cksum
+		private short cksum_region(byte[] region, int index, int len, short cksum) {
+			// use int to accumulate actual checksum so we don't have to worry about sign issues
+			int intSum = cksum & 0xffff;
+			for (int i = 0; i < len; ++i) {
+				boolean lowBit = intSum % 2 == 1;
+				intSum >>= 1;
+				if (lowBit)
+					intSum += 0x8000;
+				intSum = (intSum + (region[index + i] & 0xff)) & 0xffff;
+			}
+			return (short)intSum;
+		}
 	}
 }

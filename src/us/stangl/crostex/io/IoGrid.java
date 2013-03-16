@@ -74,6 +74,14 @@ public interface IoGrid {
 	 * @return whether the specified cell is black
 	 */
 	boolean isBlackCell(int row, int column);
+
+	/**
+	 * Set whether the specified cell is black or not.
+	 * @param row row of the cell
+	 * @param column column of the cell
+	 * @param isBlack whether the cell is black (or not)
+	 */
+	void setBlackCell(int row, int column, boolean isBlack);
 	
 	/**
 	 * Return contents for specified cell, as a String.
@@ -84,6 +92,14 @@ public interface IoGrid {
 	 * @return contents for specified cell, as a String
 	 */
 	String getCellContents(int row, int column);
+
+	/**
+	 * Set contents for specified cell.
+	 * @param row row of the cell
+	 * @param column column of the cell
+	 * @param contents contents for specified cell
+	 */
+	void setCellContents(int row, int column, String contents);
 	
 	/**
 	 * @return across clues for puzzle

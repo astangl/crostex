@@ -1,7 +1,7 @@
 /**
  * Copyright 2008, Alex Stangl. See LICENSE for licensing details.
  */
-package us.stangl.crostex;
+package us.stangl.crostex.io;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -23,6 +23,8 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+
+import us.stangl.crostex.ServiceException;
 
 /**
  * Utility class to serialize a Document into a file.

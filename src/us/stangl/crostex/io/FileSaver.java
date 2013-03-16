@@ -1,7 +1,7 @@
 /**
  * Copyright 2008, Alex Stangl. See LICENSE for licensing details.
  */
-package us.stangl.crostex;
+package us.stangl.crostex.io;
 
 import java.io.File;
 import java.io.FileNotFoundException;
