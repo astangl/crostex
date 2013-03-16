@@ -28,7 +28,7 @@
   </target>
 
   <target name="jar" depends="init,compile" description="build jarfile">
-    <jar destfile="crossword.jar" >
+    <jar destfile="crostex.jar" >
       <fileset dir="${build}"/>
       <fileset dir="resources"/>
       <manifest>
