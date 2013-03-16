@@ -48,6 +48,7 @@ public class Ydict<E> implements Dictionary<char[], E> {
 		wordsOfLength.get(word.length).put(new String(word), entry);
 	}
 
+	@SuppressWarnings("unchecked")
 	public void rebalance() {
 		wordsOfLengthArray = new Pair[wordsOfLength.size()][];
 		lenBuckets = new int[wordsOfLength.size()][][][];

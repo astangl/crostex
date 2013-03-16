@@ -17,6 +17,7 @@ public class TstNew<E> implements Dictionary<char[], E> {
 	/** each element at index N in forest_ contains an array of TST heads for words of size N + 3 */
 	private List<TstNode<E>[]> forest = new ArrayList<TstNode<E>[]>();
 
+	@SuppressWarnings("unchecked")
 	private void growForestToSize(int size) {
 		while (forest.size() < size)
 			forest.add(new TstNode[26]);
@@ -60,6 +61,7 @@ public class TstNew<E> implements Dictionary<char[], E> {
 	 * @param key key
 	 * @return Entry associated with key if it is found, else null
 	 */
+	@SuppressWarnings("unchecked")
 	public E lookup(char[] key) {
 		int forestIndex = key.length - 3;
 		if (forest.size() <= forestIndex)
@@ -158,6 +160,7 @@ public class TstNew<E> implements Dictionary<char[], E> {
 		return retval.toString();
 	}
 
+	@SuppressWarnings("unchecked")
 	private void getPatternMatches(TstNode<E> node, char[] pattern, int keyIndex, List<Pair<char[], E>> accumulator, char[] keybuff) {
 		char c = pattern[keyIndex];
 		//TODO consider splitting out wildcard path, but clutters code more, potentially kills L1 cache
@@ -180,6 +183,7 @@ public class TstNew<E> implements Dictionary<char[], E> {
 			getPatternMatches(node.rightChild, pattern, keyIndex, accumulator, keybuff);
 	}
 
+	@SuppressWarnings("unchecked")
 	private boolean isPatternFound(TstNode<E> node, char[] key, int keyIndex) {
 		if (node == null)
 			return false;
@@ -244,6 +248,7 @@ public class TstNew<E> implements Dictionary<char[], E> {
 		bulkInsert(entries, middleIndex + 1, highIndex);
 	}
 
+	@SuppressWarnings("unchecked")
 	private TstNode<E> add(TstNode<E> node, char[] key, int keyIndex, E entry) {
 		char c = key[keyIndex];
 		if (node == null)
@@ -276,6 +281,7 @@ public class TstNew<E> implements Dictionary<char[], E> {
 	 * turn tree into a "vine", collapsed down to being all linked along right links
 	 * @return size, not including pseudo-root
 	 */
+	@SuppressWarnings("unchecked")
 	private int treeToVine(TstNode<E> pseudoRoot) {
 		int size = 0;
 		TstNode<E> vineTail, remainder;

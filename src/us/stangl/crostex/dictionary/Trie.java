@@ -59,7 +59,8 @@ public class Trie<E> implements Dictionary<char[], E> {
 		private E word;
 
 		/** references to other nodes for successor characters A .. Z */
-		private TrieNode<E>[] children = new TrieNode[26];
+		@SuppressWarnings("rawtypes")
+		private TrieNode[] children = new TrieNode[26];
 
 		public void insert(char[] key, E newWord, int keyIndex) {
 			if (newWord == null)
@@ -71,6 +72,7 @@ public class Trie<E> implements Dictionary<char[], E> {
 				if (c < 'A' || c > 'Z')
 					throw new IllegalArgumentException("Unrecognized character " + c + " at index " + keyIndex);
 				int childIndex = c - 'A';
+				@SuppressWarnings("unchecked")
 				TrieNode<E> child = children[childIndex];
 				if (child == null) {
 					child = new TrieNode<E>();
@@ -89,6 +91,7 @@ public class Trie<E> implements Dictionary<char[], E> {
 				if (c < 'A' || c > 'Z')
 					throw new IllegalArgumentException("Unrecognized character " + c + " at index " + keyIndex);
 				int childIndex = c - 'A';
+				@SuppressWarnings("unchecked")
 				TrieNode<E> child = children[childIndex];
 				if (child != null)
 					child.remove(key, keyIndex + 1);
@@ -102,6 +105,7 @@ public class Trie<E> implements Dictionary<char[], E> {
 			if (c < 'A' || c > 'Z')
 				throw new IllegalArgumentException("Unrecognized character " + c + " at index " + keyIndex);
 			int childIndex = c - 'A';
+			@SuppressWarnings("unchecked")
 			TrieNode<E> child = children[childIndex];
 			return child == null ? null : child.lookup(key, keyIndex + 1);
 		}
@@ -120,15 +124,9 @@ public class Trie<E> implements Dictionary<char[], E> {
 			if (c < 'A' || c > 'Z')
 				throw new IllegalArgumentException("Unrecognized character " + c + " at index " + keyIndex);
 			int childIndex = c - 'A';
+			@SuppressWarnings("unchecked")
 			TrieNode<E> child = children[childIndex];
 			return child == null ? false : child.isPatternInTrie(key, keyIndex + 1);
-		}
-
-		public TrieNode<E> getFirstChild() {
-			for (int i = 0; i < 26; ++i)
-				if (children[i] != null)
-					return children[i];
-			return null;
 		}
 
 		public boolean isTerminal() {
@@ -154,6 +152,7 @@ public class Trie<E> implements Dictionary<char[], E> {
 		 */
 		private final TrieNode<E>[] descentGraph;
 
+		@SuppressWarnings("unchecked")
 		public TrieIterator(TrieNode<E> head, char[] pattern) {
 			int length = pattern.length;
 			this.pattern = pattern;
@@ -212,6 +211,7 @@ public class Trie<E> implements Dictionary<char[], E> {
 					// If we are at bottom depth and we have no wildcard, then
 					// we only have one possibility
 					int index = patChar - 'A';
+					@SuppressWarnings("unchecked")
 					TrieNode<E> node = descentGraph[depth].children[index];
 					if (node != null && node.isTerminal()) {
 						childIndexes[depth] = index;
@@ -222,6 +222,7 @@ public class Trie<E> implements Dictionary<char[], E> {
 				// We are at bottom depth and have wildcard, need to iterate thru
 				// possibilities
 				for (int i = 0; i < 26; ++i) {
+					@SuppressWarnings("unchecked")
 					TrieNode<E> node = descentGraph[depth].children[i];
 					if (node != null && node.isTerminal()) {
 						childIndexes[depth] = i;
@@ -235,6 +236,7 @@ public class Trie<E> implements Dictionary<char[], E> {
 				// If we are not at bottom depth and we have no wildcard, then
 				// we only have one possibility
 				int index = patChar - 'A';
+				@SuppressWarnings("unchecked")
 				TrieNode<E> node = descentGraph[depth].children[index];
 				if (node == null)
 					return false;
@@ -245,6 +247,7 @@ public class Trie<E> implements Dictionary<char[], E> {
 			// We are not at bottom depth and have wildcard, need to iterate thru
 			// possibilities
 			for (int i = 0; i < 26; ++i) {
+				@SuppressWarnings("unchecked")
 				TrieNode<E> node = descentGraph[depth].children[i];
 				if (node != null) {
 					descentGraph[depth + 1] = node;
@@ -278,6 +281,7 @@ public class Trie<E> implements Dictionary<char[], E> {
 			if (patChar != WILDCARD)
 				return false;            // nothing good below us
 
+			@SuppressWarnings("unchecked")
 			TrieNode<E>[] children = descentGraph[depth].children;
 			if (atBottom) {
 				// We are at bottom depth and have wildcard, need to iterate thru possibilities
