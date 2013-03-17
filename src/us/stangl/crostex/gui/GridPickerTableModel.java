@@ -15,6 +15,7 @@ import us.stangl.crostex.util.Message;
 
 /**
  * Table model for Grid Picker
+ * @author Alex Stangl
  */
 public class GridPickerTableModel extends AbstractTableModel {
 	private static final long serialVersionUID = 1L;

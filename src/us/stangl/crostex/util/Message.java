@@ -8,6 +8,7 @@ import java.util.ResourceBundle;
 /**
  * Enumeration of all displayed strings. Every value here should have a corresponding
  * value in Messages.properties (and any translated versions).
+ * @author Alex Stangl
  */
 public enum Message {
 	BUTTON_15X15,					// 15 x 15 button

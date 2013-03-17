@@ -12,6 +12,7 @@ import org.junit.Test;
 
 /**
  * JUnit tests. for CircularList.
+ * @author Alex Stangl
  */
 public class CircularListTest {
 	@Test()

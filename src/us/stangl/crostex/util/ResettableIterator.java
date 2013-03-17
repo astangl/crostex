@@ -8,6 +8,7 @@ import java.util.Iterator;
 /**
  * Iterator interface that supports a reset method to restore the iterator to its original state,
  * and method to allow iterator to jump ahead.
+ * @author Alex Stangl
  */
 public interface ResettableIterator<E> extends Iterator<E> {
 	/**

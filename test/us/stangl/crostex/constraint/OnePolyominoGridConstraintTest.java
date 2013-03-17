@@ -10,6 +10,7 @@ import us.stangl.crostex.constraint.OnePolyominoGridConstraint;
 
 /**
  * JUnit tests for OnePolyominoGridConstraint
+ * @author Alex Stangl
  */
 public class OnePolyominoGridConstraintTest extends TestCase {
 

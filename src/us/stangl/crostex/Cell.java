@@ -5,6 +5,7 @@ package us.stangl.crostex;
 
 /**
  * Object representing a single cell/box in a crossword puzzle.
+ * @author Alex Stangl
  */
 public class Cell {
 	// cell contents, when string contents

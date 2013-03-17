@@ -145,7 +145,7 @@ public class CrosswordPanel extends JPanel {
 			boolean rfiwReturn = requestFocusInWindow();
 			LOG.finest("requestFocusInWindow returned " + rfiwReturn);
 			grid.mouseClicked(evt);
-			parentFrame.resetEditMenuState();
+			parentFrame.resetMenuState();
 			CrosswordPanel.this.repaint(0);
 			maybeShowPopup(evt);
 		}
@@ -171,7 +171,7 @@ public class CrosswordPanel extends JPanel {
 		@Override
 		public void keyTyped(KeyEvent evt) {
 			grid.keyTyped(evt);
-			parentFrame.resetEditMenuState();
+			parentFrame.resetMenuState();
 			CrosswordPanel.this.repaint(0);
 		}
 	}
@@ -180,7 +180,7 @@ public class CrosswordPanel extends JPanel {
 		public void actionPerformed(ActionEvent evt) {
 			grid.toggleCurrentCell();
 			grid.renumberCells();
-			parentFrame.resetEditMenuState();
+			parentFrame.resetMenuState();
 			CrosswordPanel.this.repaint(0);
 		}
 	}

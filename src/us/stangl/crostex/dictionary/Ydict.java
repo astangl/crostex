@@ -16,6 +16,7 @@ import us.stangl.crostex.util.ResettableIterator;
 
 /**
  * Implementation of dictionary optimized for crossword pattern lookup. 
+ * @author Alex Stangl
  */
 public class Ydict<E> implements Dictionary<char[], E> {
 	/** flag indicating whether to use new pattern/intersection algorithm */

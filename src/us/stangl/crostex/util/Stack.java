@@ -8,6 +8,7 @@ package us.stangl.crostex.util;
  * Originally threw EmptyStackException, but really what's the point? Pay extra
  * cost for every pop/peek, just to have a "more descriptive" exception,
  * EmptyStackException instead of ArrayIndexOutOfBoundsException? No thanks. 
+ * @author Alex Stangl
  */
 public class Stack<E> {
 	// slots for holding elements

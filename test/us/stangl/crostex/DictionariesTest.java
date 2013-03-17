@@ -26,6 +26,7 @@ import us.stangl.crostex.util.Pair;
 
 /**
  * Check various Dictionary implementations for correctness and speed.
+ * @author Alex Stangl
  */
 public class DictionariesTest {
 	/** logger */

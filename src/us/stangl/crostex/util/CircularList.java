@@ -9,6 +9,7 @@ import java.util.Collection;
  * "List" that is circular in the sense that iterating over it using
  * getNext loops back from the end to the beginning, and deletePrev
  * loops back from the start to the end.
+ * @author Alex Stangl
  */
 public class CircularList<E> {
 	/** number of elements in list */

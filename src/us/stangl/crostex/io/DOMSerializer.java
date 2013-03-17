@@ -28,6 +28,7 @@ import us.stangl.crostex.ServiceException;
 
 /**
  * Utility class to serialize a Document into a file.
+ * @author Alex Stangl
  */
 public class DOMSerializer {
 	// logger

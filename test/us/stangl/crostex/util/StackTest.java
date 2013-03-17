@@ -12,6 +12,7 @@ import org.junit.Test;
 
 /**
  * JUnit tests for Stack.
+ * @author Alex Stangl
  */
 public class StackTest {
 

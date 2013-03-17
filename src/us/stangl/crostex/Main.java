@@ -22,6 +22,7 @@ import us.stangl.crostex.util.Pair;
 
 /**
  * Main class to startup application.
+ * @author Alex Stangl
  */
 public class Main {
 	/** set flag to true for profiling autofill */

@@ -8,6 +8,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.logging.Logger;
+
+import us.stangl.crostex.Grid;
 
 /**
  * File saver, for performing safe file save operations, trying to keep the original
@@ -17,29 +20,43 @@ import java.io.OutputStreamWriter;
  * 
  * Recommended usage:
  * 
+ * FileSaver.saveToFile(file, bytes);    which encapsulates the usage shown below
+ * 
+ * FileOutputStream out = null;
  * try {
  *     FileSaver fileSaver = new FileSaver(targetFile);
- *     OutputStream out = fileSaver.getFileOutputStream();	// or use getFileWriter instead
+ *     out = fileSaver.getFileOutputStream();	// or use getFileWriter instead
  *     // NOTE: if exception between here and commit, temp file will be left open. You need
  *     //       to decide if it is worth the complexity to try to close tempfile w/o losing the original Throwable
  *     out.write(bytes);									// write data to file
  *     out.close();
+ *     out = null;
  *     // Only performing the fileSaver commit operation if everything good up to this point
  *     fileSaver.commit();
  * } catch (IOException e) {
  *     LOG.severe("Caught IOException: " + e);
+ * } finally {
+ *     if (out != null)
+ *         try {
+ *             out.close();
+ *         } catch (IOException ignore) {
+ *         }
  * }
  *     
  * @see http://javacook.darwinsys.com/new_recipes/10saveuserdata.jsp
+ * @author Alex Stangl
  */
 public class FileSaver {
-	/** target file, designates the actual file (which may already exist) that we want to ultimately write to */
+	// logger
+	private static final Logger LOG = Logger.getLogger(Grid.class.getName());
+
+	// target file, designates the actual file (which may already exist) that we want to ultimately write to
 	private final File targetFile;
 	
-	/** temp file, where new file writing tentatively occurs */
+	// temp file, where new file writing tentatively occurs
 	private final File tempFile;
 	
-	/** flag tracking whether stream/writer has been retrieved */
+	// flag tracking whether stream/writer has been retrieved
 	private boolean isReturnedStreamOrWriter;
 	
 	/**
@@ -62,9 +79,9 @@ public class FileSaver {
 	 * @throws FileNotFoundException if unable to successfully complete operation due to inability to open temp file
 	 */
 	public FileOutputStream getFileOutputStream() throws FileNotFoundException {
-		if (isReturnedStreamOrWriter) {
+		if (isReturnedStreamOrWriter)
 			throw new IllegalStateException("Called getFileOutputStream or getFileWriter more than once");
-		}
+
 		isReturnedStreamOrWriter = true;
 		return new FileOutputStream(tempFile);
 	}
@@ -75,9 +92,9 @@ public class FileSaver {
 	 * @throws IOException if unable to successfully complete operation due to inability to open temp file
 	 */
 	public OutputStreamWriter getFileWriter() throws IOException {
-		if (isReturnedStreamOrWriter) {
+		if (isReturnedStreamOrWriter)
 			throw new IllegalStateException("Called getFileOutputStream or getFileWriter more than once");
-		}
+
 		isReturnedStreamOrWriter = true;
 		return new OutputStreamWriter(new FileOutputStream(tempFile), "UTF-8");
 	}
@@ -88,19 +105,46 @@ public class FileSaver {
 	 * @throws IOException if unable to successfully complete operation due to IO problems (i.e., inability to rename files)
 	 */
 	public void commit() throws IOException {
-		if (! isReturnedStreamOrWriter) {
+		if (! isReturnedStreamOrWriter)
 			throw new IllegalStateException("Called commit without ever calling getFileOutputStream or getFileWriter");
-		}
 
 		// Try to delete existing backup file, if it exists, then rename target file, if it already exists, to backup file name
 		File backupFile = new File(targetFile.getAbsolutePath() + ".bak");
 		backupFile.delete();
-		if (targetFile.exists() && ! targetFile.renameTo(backupFile)) {
+		if (targetFile.exists() && ! targetFile.renameTo(backupFile))
 			throw new IOException("Could not rename " + targetFile + " to " + backupFile);
-		}
-		if (! tempFile.renameTo(targetFile)) {
+
+		if (! tempFile.renameTo(targetFile))
 			throw new IOException("Could not rename " + tempFile + " to " + targetFile);
-		}
+
 		// Not resetting state here since it seems cleaner to create a new FileSaver each time
+	}
+	
+	/**
+	 * Save specified bytes to specified file, as safely as possible (i.e., not overwriting existing file if save fails).
+	 * @param bytes bytes to write to file
+	 * @param file file to write to
+	 */
+	public static void saveToFile(byte[] bytes, File file) {
+		FileOutputStream out = null;
+		try {
+			FileSaver fileSaver = new FileSaver(file);
+			out = fileSaver.getFileOutputStream();	// or use getFileWriter instead
+			// NOTE: if exception between here and commit, temp file will be left open. You need
+			//       to decide if it is worth the complexity to try to close tempfile w/o losing the original Throwable
+			out.write(bytes);									// write data to file
+			out.close();
+			out = null;
+			// Only performing the fileSaver commit operation if everything good up to this point
+			fileSaver.commit();
+		} catch (IOException e) {
+			LOG.severe("Caught IOException: " + e);
+		} finally {
+			if (out != null)
+				try {
+					out.close();
+				} catch (IOException ignore) {
+				}
+		}
 	}
 }

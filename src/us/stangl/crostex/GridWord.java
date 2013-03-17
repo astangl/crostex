@@ -11,6 +11,7 @@ import us.stangl.crostex.util.RowColumnPair;
 
 /**
  * Word in a Grid.
+ * @author Alex Stangl
  */
 public class GridWord {
 	// flag to enable additional debug code

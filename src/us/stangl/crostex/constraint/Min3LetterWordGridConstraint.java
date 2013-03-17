@@ -7,6 +7,7 @@ import us.stangl.crostex.Grid;
 
 /**
  * Grid constraint which enforces that all words in grid consist of at least 3 grid cells.
+ * @author Alex Stangl
  */
 public class Min3LetterWordGridConstraint implements GridConstraint {
 	/**

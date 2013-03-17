@@ -25,6 +25,7 @@ import us.stangl.crostex.util.Message;
 
 /**
  * Dialog box for saving a grid as a new template.
+ * @author Alex Stangl
  */
 public class SaveGridTemplateDialog  extends JDialog {
 	private static final long serialVersionUID = 1L;

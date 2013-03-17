@@ -8,6 +8,7 @@ import java.util.Map;
 
 /**
  * LRU cache. When cache reaches capacity, least-recently-used elements are discarded to make room for new elements.
+ * @author Alex Stangl
  */
 public class LruCache<K, V> {
 

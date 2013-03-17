@@ -5,6 +5,7 @@ package us.stangl.crostex.util;
 
 /**
  * Generic triple for constructing simple 3-tuples.
+ * @author Alex Stangl
  */
 public class Triple<F, S, T> {
 	public final F first;

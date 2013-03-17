@@ -11,6 +11,7 @@ import us.stangl.crostex.util.ResettableIterator;
 
 /**
  * Ternary search tree implementation of Dictionary.
+ * @author Alex Stangl
  */
 public class TST<E> implements Dictionary<char[], E> {
 	/** flag indicating whether to include avoidance logic */

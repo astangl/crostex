@@ -11,6 +11,7 @@ import static org.junit.Assert.*;
 
 /**
  * JUnit tests. for Message.
+ * @author Alex Stangl
  */
 public class MessageTest {
 	@Test

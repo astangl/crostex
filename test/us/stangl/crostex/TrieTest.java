@@ -23,6 +23,7 @@ import us.stangl.crostex.util.ResettableIterator;
 
 /**
  * JUnit tests for Trie.
+ * @author Alex Stangl
  */
 public class TrieTest {
 	@Test

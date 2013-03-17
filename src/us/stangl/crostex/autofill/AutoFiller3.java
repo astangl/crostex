@@ -21,6 +21,7 @@ import us.stangl.crostex.util.Pair;
 
 /**
  * 3rd generation grid autofill algorithm.
+ * @author Alex Stangl
  */
 public class AutoFiller3 implements AutoFill {
 	public boolean autoFill(Grid grid, Dictionary<char[], Word> dict) {

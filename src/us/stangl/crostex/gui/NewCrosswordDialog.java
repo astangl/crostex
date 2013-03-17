@@ -40,6 +40,7 @@ import us.stangl.crostex.util.Message;
 
 /**
  * Dialog box prompting for creation of a new crossword.
+ * @author Alex Stangl
  */
 public class NewCrosswordDialog extends JDialog {
 	private static final long serialVersionUID = 1L;

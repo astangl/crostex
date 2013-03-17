@@ -23,6 +23,7 @@ import us.stangl.crostex.util.Stack;
 /**
  * 7th generation implementation of auto-fill algorithm.
  * Uses dynamic backtrack, interative broadening, cheapest-first heuristic.
+ * @author Alex Stangl
  */
 public class AutoFiller7 implements AutoFill {
 	public boolean autoFill(Grid grid, Dictionary<char[], Word> dict) {

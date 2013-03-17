@@ -7,6 +7,7 @@ import us.stangl.crostex.Grid;
 
 /**
  * Public interface for a constraint on a grid.
+ * @author Alex Stangl
  */
 public interface GridConstraint {
 	/**

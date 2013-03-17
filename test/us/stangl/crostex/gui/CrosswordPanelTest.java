@@ -10,6 +10,7 @@ import us.stangl.crostex.ServiceException;
 
 /**
  * JUnit tests for CrosswordPanel.
+ * @author Alex Stangl
  */
 public class CrosswordPanelTest {
 	@Test

@@ -11,6 +11,7 @@ import us.stangl.crostex.util.ResettableIterator;
 
 /**
  * Trie holding dictionary for crossword.
+ * @author Alex Stangl
  */
 public class Trie<E> implements Dictionary<char[], E> {
 	/** head node of Trie */

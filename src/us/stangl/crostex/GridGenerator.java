@@ -9,6 +9,7 @@ import us.stangl.crostex.constraint.OnePolyominoGridConstraint;
 
 /**
  * Generate all valid grids of the specified size.
+ * @author Alex Stangl
  */
 public class GridGenerator {
 	private final float MIN_PROPORTION_BLACK = 0.04f;		// minimum proportion of allowable black 0-1

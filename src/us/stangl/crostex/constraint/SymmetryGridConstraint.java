@@ -7,6 +7,7 @@ import us.stangl.crostex.Grid;
 
 /**
  * Grid constraint that enforces 180 degree rotational symmetry.
+ * @author Alex Stangl
  */
 public class SymmetryGridConstraint implements GridConstraint {
 	/**

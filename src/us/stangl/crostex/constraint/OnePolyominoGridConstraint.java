@@ -10,6 +10,7 @@ import us.stangl.crostex.Grid;
  * Polyomino is defined to be areas of adjacent (row or column adjacent, not diagonal) non-black cells.
  * 
  * American crosswords traditionally have this one polyomino constraint -- no isolated islands.
+ * @author Alex Stangl
  */
 public class OnePolyominoGridConstraint implements GridConstraint {
 	/**

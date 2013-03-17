@@ -9,6 +9,7 @@ import us.stangl.crostex.dictionary.Dictionary;
 
 /**
  * Interface for classes providing grid autofill service.
+ * @author Alex Stangl
  */
 public interface AutoFill {
 	/**

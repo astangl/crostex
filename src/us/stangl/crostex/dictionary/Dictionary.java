@@ -12,6 +12,7 @@ import us.stangl.crostex.util.ResettableIterator;
  * Public interface for a dictionary class.
  * TODO consider reworking this to enforce that rebalance (maybe rename something like finalize) must
  * be called first before performing lookups
+ * @author Alex Stangl
  */
 public interface Dictionary<K, E> {
 	/** wildcard character */

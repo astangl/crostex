@@ -17,6 +17,7 @@ import us.stangl.crostex.io.DOMSerializer;
 
 /**
  * Grids template database.
+ * @author Alex Stangl
  */
 public class GridsDb {
 	// logger

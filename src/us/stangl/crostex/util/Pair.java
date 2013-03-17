@@ -5,6 +5,7 @@ package us.stangl.crostex.util;
 
 /**
  * Generic pair for constructing simple tuples.
+ * @author Alex Stangl
  */
 public class Pair<F, S> {
 	public final F first;

@@ -21,10 +21,11 @@ import us.stangl.crostex.util.ResettableIterator;
 
 /**
  * 0th generation grid auto-fill algorithm.
+ * @author Alex Stangl
  */
 public class AutoFiller0 implements AutoFill {
 	public boolean autoFill(Grid grid, Dictionary<char[], Word> dict) {
-        // Find all full words in xword, store in set for duplicate checking
+		// Find all full words in xword, store in set for duplicate checking
 		Set<String> wordsAlreadyInUse = new HashSet<String>();
 		List<GridWord> acrossWords = grid.getAcrossWords();
 		List<GridWord> downWords = grid.getDownWords();
@@ -58,8 +59,8 @@ public class AutoFiller0 implements AutoFill {
 			}
 		}
 
-        // Generate array of references from each partial across word to
-        // partial down words they intersect with a blank
+		// Generate array of references from each partial across word to
+		// partial down words they intersect with a blank
 		Map<GridWord, List<GridWord>> acrossToDownWordMap = new HashMap<GridWord, List<GridWord>>();
 		Map<GridWord, List<GridWord>> wordToCrossingWordsMap = new HashMap<GridWord, List<GridWord>>();
 		for (GridWord agw : acrossWordsToFill) {
@@ -78,8 +79,8 @@ public class AutoFiller0 implements AutoFill {
 //	System.out.println("In keyset now: " + word);
 		}
 
-        // Generate array of references from each partial down word to
-        // partial across words they intersect with a blank
+		// Generate array of references from each partial down word to
+		// partial across words they intersect with a blank
 		Map<GridWord, List<GridWord>> downToAcrossWordMap = new HashMap<GridWord, List<GridWord>>();
 		for (GridWord dgw : downWordsToFill) {
 			List<GridWord> list = new ArrayList<GridWord>();

@@ -22,6 +22,7 @@ import us.stangl.crostex.util.Stack;
 
 /**
  * 6th generation implementation of auto-fill algorithm.
+ * @author Alex Stangl
  */
 public class AutoFiller6  implements AutoFill {
 	public boolean autoFill(Grid grid, Dictionary<char[], Word> dict) {

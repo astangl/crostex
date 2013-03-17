@@ -1196,4 +1196,19 @@ public class Grid implements IoGrid
 		this.cursorSkipBehavior = cursorSkipBehavior;
 	}
 
+	/**
+	 * @return whether this grid is ready for export
+	 * Currently defined by whether all non-black squares are non-empty
+	 * Ultimately should take into account whether all clues are defined.
+	 */
+	public boolean isReadyToExport() {
+		for (int row = 0; row < height; ++row) {
+			for (int column = 0; column < width; ++column) {
+				Cell cell = getCell(row, column);
+				if (! cell.isBlack() && cell.getContents().isEmpty())
+					return false;
+			}
+		}
+		return true;
+	}
 }

@@ -12,6 +12,7 @@ import us.stangl.crostex.util.ResettableIterator;
 
 /**
  * Ternary search tree implementation of Dictionary.
+ * @author Alex Stangl
  */
 public class TstNew<E> implements Dictionary<char[], E> {
 	/** each element at index N in forest_ contains an array of TST heads for words of size N + 3 */

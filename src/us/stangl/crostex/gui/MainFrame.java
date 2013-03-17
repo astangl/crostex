@@ -43,11 +43,14 @@ import us.stangl.crostex.ServiceException;
 import us.stangl.crostex.Word;
 import us.stangl.crostex.dictionary.Dictionary;
 import us.stangl.crostex.dictionary.Ydict;
+import us.stangl.crostex.io.FileSaver;
+import us.stangl.crostex.io.PuzSerializer;
 import us.stangl.crostex.util.Message;
 import us.stangl.crostex.util.Pair;
 
 /**
  * Main GUI frame.
+ * @author Alex Stangl
  */
 public class MainFrame extends JFrame {
 	private static final long serialVersionUID = 1L;
@@ -72,6 +75,12 @@ public class MainFrame extends JFrame {
 	
 	// File menu option to save grid as template
 	private JMenuItem saveAsTemplate = newMenuItem(Message.FILE_MENU_OPTION_SAVE_GRID_AS_TEMPLATE);
+	
+	// File menu option to import PUZ file
+	private JMenuItem importPuzItem = new JMenuItem(Message.FILE_MENU_OPTION_IMPORT_PUZ.toString());
+	
+	// File menu option to export PUZ file
+	private JMenuItem exportPuzItem = new JMenuItem(Message.FILE_MENU_OPTION_EXPORT_AS_PUZ.toString());
 
 	// Edit menu option to undo
 	private JMenuItem undoItem = newMenuItem(Message.EDIT_MENU_OPTION_UNDO);
@@ -164,7 +173,7 @@ public class MainFrame extends JFrame {
 		
 		topLevelTabbedPane.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent evt) {
-				resetEditMenuState();
+				resetMenuState();
 			}
 		});
 		add(topLevelTabbedPane);
@@ -187,8 +196,6 @@ public class MainFrame extends JFrame {
 
 		JMenuItem newItem = new JMenuItem(Message.FILE_MENU_OPTION_NEW.toString());
 		saveAsTemplate.setEnabled(false);
-		JMenuItem importPuzItem = new JMenuItem(Message.FILE_MENU_OPTION_IMPORT_PUZ.toString());
-		JMenuItem exportPuzItem = new JMenuItem(Message.FILE_MENU_OPTION_EXPORT_AS_PUZ.toString());
 		JMenuItem exitItem = new JMenuItem(Message.FILE_MENU_OPTION_EXIT.toString());
 		fileMenu.add(newItem);
 		fileMenu.add(saveAsTemplate);
@@ -274,7 +281,15 @@ public class MainFrame extends JFrame {
 		exportPuzItem.setActionCommand("Export as PUZ file");
 		exportPuzItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				
+				CrosswordPanel crosswordPanel = getCrosswordPanel();
+				if (crosswordPanel != null) {
+					JFileChooser fileChooser = new JFileChooser();
+					if (fileChooser.showSaveDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION)
+					{
+						byte[] bytes = new PuzSerializer().toPuz(crosswordPanel.getGrid());
+						FileSaver.saveToFile(bytes, fileChooser.getSelectedFile());
+					}
+				}
 			}
 		});
 
@@ -286,7 +301,7 @@ public class MainFrame extends JFrame {
 				if (crosswordPanel != null) {
 					Grid grid = crosswordPanel.getGrid();
 					grid.undo();
-					resetEditMenuState();
+					resetMenuState();
 					crosswordPanel.repaint(0);
 				}
 			}
@@ -299,7 +314,7 @@ public class MainFrame extends JFrame {
 				if (crosswordPanel != null) {
 					Grid grid = crosswordPanel.getGrid();
 					grid.redo();
-					resetEditMenuState();
+					resetMenuState();
 					crosswordPanel.repaint(0);
 				}
 			}
@@ -312,7 +327,7 @@ public class MainFrame extends JFrame {
 				if (crosswordPanel != null) {
 					Grid grid = crosswordPanel.getGrid();
 					grid.setCurrentCellBlack();
-					resetEditMenuState();
+					resetMenuState();
 					crosswordPanel.repaint(0);
 				}
 			}
@@ -412,18 +427,20 @@ public class MainFrame extends JFrame {
 	}
 	
 	/**
-	 * Set undo/redo enabled/disabled based upon whether these operation can be performed on current CrosswordPuzzle.
+	 * Set undo/redo enabled/disabled, etc. based upon whether these operation can be performed on current CrosswordPuzzle.
 	 */
-	public void resetEditMenuState() {
+	public void resetMenuState() {
 		CrosswordPanel crosswordPanel = getCrosswordPanel();
 		if (crosswordPanel == null) {
 			undoItem.setEnabled(false);
 			redoItem.setEnabled(false);
+			exportPuzItem.setEnabled(false);
 			
 		} else {
 			Grid grid = crosswordPanel.getGrid();
 			undoItem.setEnabled(grid.isAbleToUndo());
 			redoItem.setEnabled(grid.isAbleToRedo());
+			exportPuzItem.setEnabled(grid.isReadyToExport());
 		}
 	}
 

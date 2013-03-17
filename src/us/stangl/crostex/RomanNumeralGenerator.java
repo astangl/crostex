@@ -9,6 +9,7 @@ import java.util.List;
 /**
  * Generator for Roman Numerals.
  * Not thread-safe. If shared between threads, need external synchronization.
+ * @author Alex Stangl
  */
 public class RomanNumeralGenerator {
 	/** largest numeral we can generate */

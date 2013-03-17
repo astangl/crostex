@@ -23,6 +23,7 @@ import us.stangl.crostex.util.Stack;
 /**
  * 4th generation auto-fill algorithm.
  * Iterative implementation of DFS.
+ * @author Alex Stangl
  */
 public class AutoFiller4 implements AutoFill {
 	public boolean autoFill(Grid grid, Dictionary<char[], Word> dict) {

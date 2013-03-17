@@ -17,6 +17,7 @@ import us.stangl.crostex.util.StackTest;
  
 /**
  * Test suite to run all unit tests.
+ * @author Alex Stangl
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({

@@ -9,6 +9,7 @@ import org.junit.Test;
 
 /**
  * JUnit tests for RomanNumeralGenerator.
+ * @author Alex Stangl
  */
 public class RomanNumeralGeneratorTest  {
 	

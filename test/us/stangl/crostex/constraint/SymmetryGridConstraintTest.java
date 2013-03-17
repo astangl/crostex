@@ -13,6 +13,7 @@ import us.stangl.crostex.constraint.SymmetryGridConstraint;
 
 /**
  * JUnit tests for SymmetryGridConstraint.
+ * @author Alex Stangl
  */
 public class SymmetryGridConstraintTest {
 	@Test
