@@ -24,6 +24,7 @@ import us.stangl.crostex.util.RowColumnPair;
 
 /**
  * Panel to display clues on a side tab.
+ * TODO: invalidate clue field when its corresponding grid word changes -- if necessary
  * @author Alex Stangl
  */
 public final class CluesPanel extends JPanel implements FullGridChangeListener, CellChangeListener {
@@ -63,9 +64,7 @@ public final class CluesPanel extends JPanel implements FullGridChangeListener, 
 		
 		removeAll();
 		GridBagLayout gbl = new GridBagLayout();
-		//Border border = BorderFactory.createLineBorder(Color.RED);
 		JPanel topPanel = new JPanel();
-		//topPanel.setBorder(border);
 		topPanel.setLayout(gbl);
 		scrollPane = new JScrollPane(topPanel);
 		
@@ -154,7 +153,6 @@ public final class CluesPanel extends JPanel implements FullGridChangeListener, 
 	
 	// build label string for clue based upon clue number and pattern
 	private String buildLabelString(Clue clue) {
-		//return Integer.toString(clue.getNumber()) + "  " + clue.getGridWord();
 		return buildLabelString(clue.getNumber(), clue.getCells());
 	}
 	
@@ -182,17 +180,6 @@ public final class CluesPanel extends JPanel implements FullGridChangeListener, 
 		public JTextField downClueField;
 		public Cell[] downCells;
 		public int downClueNumber;
-		
-		/*
-		public SquareClueAssociation(JLabel acrossLabel, JTextField acrossClueField,
-				JLabel downLabel, JTextField downClueField)
-		{
-			this.acrossLabel = acrossLabel;
-			this.acrossClueField = acrossClueField;
-			this.downLabel = downLabel;
-			this.downClueField = downClueField;
-		}
-		*/
 	}
 
 }
