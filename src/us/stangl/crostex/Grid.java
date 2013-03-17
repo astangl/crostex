@@ -499,9 +499,9 @@ public class Grid implements IoGrid
 					int colEnd = col;
 					while (colEnd < width && ! getCell(row, colEnd).isBlack())
 						colEnd++;
+					Cell[] cells = new Cell[colEnd - col];
 					--colEnd;
 					RowColumnPair endOfWord = new RowColumnPair(row, colEnd);
-					Cell[] cells = new Cell[colEnd - col];
 					for (int i = 0; i < cells.length; ++i)
 						cells[i] = getCell(row, col + i);
 					retval.add(new GridWord(cells, AcrossDownDirection.ACROSS,
@@ -527,9 +527,9 @@ public class Grid implements IoGrid
 					int rowEnd = row;
 					while (rowEnd < height && ! getCell(rowEnd, col).isBlack())
 						rowEnd++;
+					Cell[] cells = new Cell[rowEnd - row];
 					--rowEnd;
 					RowColumnPair endOfWord = new RowColumnPair(rowEnd, col);
-					Cell[] cells = new Cell[rowEnd - row];
 					for (int i =0; i < cells.length; ++i)
 						cells[i] = getCell(row + i, col);
 					retval.add(new GridWord(cells, AcrossDownDirection.DOWN,

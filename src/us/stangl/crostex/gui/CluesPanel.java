@@ -111,14 +111,14 @@ public final class CluesPanel extends JPanel implements FullGridChangeListener, 
 			topPanel.add(label, new GBC(0, row).anchor(GBC.NORTHWEST));
 			final JTextField textField = new JTextField(clue.getClueText(), TEXT_FIELD_LENGTH);
 			boolean editable = clue.isWordComplete();
-			if (editable) {
+//			if (editable) {
 				textField.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent evt) {
 						clue.setClueText(textField.getText());
 					}
 				});
 				GuiUtils.addListenerToCommitOnFocusLost(textField);
-			}
+//			}
 			textField.setEnabled(editable);
 			textField.setEditable(editable);
 			topPanel.add(textField, new GBC(1, row).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
@@ -140,10 +140,16 @@ public final class CluesPanel extends JPanel implements FullGridChangeListener, 
 		add(scrollPane);
 	}
 	
+	/* (non-Javadoc)
+	 * @see us.stangl.crostex.CellChangeListener#handleChange(us.stangl.crostex.Grid, us.stangl.crostex.Cell, int, int)
+	 */
 	public void handleChange(Grid grid, Cell cell, int row, int column) {
 		SquareClueAssociation sca = squaresToClues[row][column];
 		sca.acrossLabel.setText(buildLabelString(sca.acrossClueNumber, sca.acrossCells));
 		sca.downLabel.setText(buildLabelString(sca.downClueNumber, sca.downCells));
+
+		enableOrDisableField(sca.acrossClueField, allCellsFilled(sca.acrossCells));
+		enableOrDisableField(sca.downClueField, allCellsFilled(sca.downCells));
 	}
 	
 	@Override
@@ -168,7 +174,23 @@ public final class CluesPanel extends JPanel implements FullGridChangeListener, 
 			builder.append(cell.isEligibleForAutofill() ? "_" : cell.getContents());
 		return builder.toString();
 	}
+
+	// return whether all the specified cells are filled
+	private boolean allCellsFilled(Cell[] cells) {
+		for (Cell cell : cells)
+			if (cell.isEmpty())
+				return false;
+		return true;
+	}
 	
+	// enable or disable text field based upon boolean value, clearing field if false
+	private void enableOrDisableField(JTextField field, boolean isEnabled) {
+		field.setEnabled(isEnabled);
+		field.setEditable(isEnabled);
+		if (!isEnabled)
+			field.setText("");
+	}
+
 	// private object to keep track of association between a grid square and its corresponding clues/text fields
 	private static class SquareClueAssociation {
 
