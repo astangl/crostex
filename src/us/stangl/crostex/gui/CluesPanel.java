@@ -24,7 +24,6 @@ import us.stangl.crostex.util.RowColumnPair;
 
 /**
  * Panel to display clues on a side tab.
- * TODO: invalidate clue field when its corresponding grid word changes -- if necessary
  * @author Alex Stangl
  */
 public final class CluesPanel extends JPanel implements FullGridChangeListener, CellChangeListener {
@@ -102,7 +101,6 @@ public final class CluesPanel extends JPanel implements FullGridChangeListener, 
 				sca.acrossClueNumber = clue.getNumber();
 			}
 		}
-		//topPanel.add();
 		topPanel.add(new JLabel(Message.LABEL_DOWN.toString()), new GBC(0, row).anchor(GBC.NORTHWEST));
 		++row;
 		List<Clue> downClues = grid.validateAndGetDownClues();
@@ -111,14 +109,12 @@ public final class CluesPanel extends JPanel implements FullGridChangeListener, 
 			topPanel.add(label, new GBC(0, row).anchor(GBC.NORTHWEST));
 			final JTextField textField = new JTextField(clue.getClueText(), TEXT_FIELD_LENGTH);
 			boolean editable = clue.isWordComplete();
-//			if (editable) {
-				textField.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent evt) {
-						clue.setClueText(textField.getText());
-					}
-				});
-				GuiUtils.addListenerToCommitOnFocusLost(textField);
-//			}
+			textField.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent evt) {
+					clue.setClueText(textField.getText());
+				}
+			});
+			GuiUtils.addListenerToCommitOnFocusLost(textField);
 			textField.setEnabled(editable);
 			textField.setEditable(editable);
 			topPanel.add(textField, new GBC(1, row).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
@@ -136,7 +132,6 @@ public final class CluesPanel extends JPanel implements FullGridChangeListener, 
 			}
 		}
 		
-//		add(topPanel);
 		add(scrollPane);
 	}
 	
