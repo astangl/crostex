@@ -70,6 +70,9 @@ public final class StatsPanel extends JPanel implements GridChangeListener {
 	// text field for copyright notice
 	private final JTextField copyrightField;
 	
+	// text field for notes
+	private final JTextField notesField;
+	
 	// checkbox field for enforcing symmetry
 	private final JCheckBox enforceSymmetryField;
 	
@@ -139,6 +142,14 @@ public final class StatsPanel extends JPanel implements GridChangeListener {
 		});
 		GuiUtils.addListenerToCommitOnFocusLost(copyrightField);
 		
+		notesField = new JTextField(this.grid.getNotes(), TEXT_FIELD_LENGTH);
+		notesField.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				StatsPanel.this.grid.setNotes(notesField.getText());
+			}
+		});
+		GuiUtils.addListenerToCommitOnFocusLost(notesField);
+		
 		enforceSymmetryField = new JCheckBox(Message.LABEL_ENFORCE_SYMMETRY.toString(), grid.isMaintainingSymmetry());
 		enforceSymmetryField.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent evt) {
@@ -179,21 +190,24 @@ public final class StatsPanel extends JPanel implements GridChangeListener {
 		topPanel.add(titleField, new GBC(2, 0).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
 		topPanel.add(newLabel(Message.LABEL_AUTHOR), new GBC(0, 1).anchor(GBC.NORTHWEST));
 		topPanel.add(authorField, new GBC(2, 1).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
-		topPanel.add(newLabel(Message.LABEL_COPYRIGHT), new GBC(0, 2));
+		topPanel.add(newLabel(Message.LABEL_COPYRIGHT), new GBC(0, 2).anchor(GBC.NORTHWEST));
 		topPanel.add(copyrightField, new GBC(2, 2).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
+		topPanel.add(newLabel(Message.LABEL_NOTES), new GBC(0, 3).anchor(GBC.NORTHWEST));
+		topPanel.add(notesField, new GBC(2, 3).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
+		
 		topPanel.add(GuiUtils.newJPanel(new FlowLayout(FlowLayout.LEFT, 0, 0),
 				singlePolyominoConstraintMetLabel, singlePolyominoConstraintViolatedLabel),
-				new GBC(0, 3).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
-		topPanel.add(GuiUtils.newJPanel(new FlowLayout(FlowLayout.LEADING, 0, 0),
-				min3LetterWordConstraintMetLabel, min3LetterWordConstraintViolatedLabel),
 				new GBC(0, 4).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
 		topPanel.add(GuiUtils.newJPanel(new FlowLayout(FlowLayout.LEADING, 0, 0),
-				symmetricGridConstraintMetLabel, symmetricGridConstraintViolatedLabel),
+				min3LetterWordConstraintMetLabel, min3LetterWordConstraintViolatedLabel),
 				new GBC(0, 5).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
-		topPanel.add(enforceSymmetryField, new GBC(2, 6).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
-		topPanel.add(showNumbersField, new GBC(2, 7).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
-		topPanel.add(wraparoundCursorField, new GBC(2, 8).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
-		topPanel.add(cursorSkippingBehaviorField, new GBC(2, 9).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
+		topPanel.add(GuiUtils.newJPanel(new FlowLayout(FlowLayout.LEADING, 0, 0),
+				symmetricGridConstraintMetLabel, symmetricGridConstraintViolatedLabel),
+				new GBC(0, 6).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
+		topPanel.add(enforceSymmetryField, new GBC(2, 7).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
+		topPanel.add(showNumbersField, new GBC(2, 8).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
+		topPanel.add(wraparoundCursorField, new GBC(2, 9).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
+		topPanel.add(cursorSkippingBehaviorField, new GBC(2, 10).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
 
 		// add extra row w/ weighty=1.0 to fill remaining vertical space, to force layout to NW corner
 		topPanel.add(new JLabel(), new GBC(2, 10).weighty(1.0));

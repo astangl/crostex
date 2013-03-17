@@ -59,6 +59,7 @@ public enum Message {
 	LABEL_ENFORCE_SYMMETRY,			// label Enforce Symmetry
 	LABEL_LETTER_FREQUENCY_CHART,	// label for letter frequency chart
 	LABEL_NAME,						// label Name
+	LABEL_NOTES,					// label Notes
 	LABEL_SHOW_NUMBERS,				// label Show Numbers
 	LABEL_TITLE,					// label Title
 	LABEL_WRAPAROUND_CURSOR,		// label Wraparound Cursor
