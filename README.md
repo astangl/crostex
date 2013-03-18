@@ -5,7 +5,7 @@ Crossword puzzle compiler written in Java, intended to run as single JAR under J
 
 To build, either load project in Eclipse and build and run us.stangl.crostex.Main, or use Apache Ant to build: "ant jar"
 
-If you prefer, you can run the pre-built JAR file in this git repo, although it may not always be kept up-to-date.
+If you prefer, you can run [the pre-built JAR file from SourceForge](http://sourceforge.net/projects/crostex/files/crostex.jar/download), although it may not always be kept up-to-date.
 
 Before running:
 
