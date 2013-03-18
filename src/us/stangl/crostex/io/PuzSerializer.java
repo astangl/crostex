@@ -137,30 +137,34 @@ public class PuzSerializer {
 					continue;
 				boolean startOfAcrossWord = isStartOfAcrossWord(grid, row, column);
 				boolean startOfDownWord = isStartOfDownWord(grid, row, column);
-				if (isStartOfAcrossWord(grid, row, column)) {
-					IoClue newClue = grid.newClue();
-					newClue.setNumber(currCellNumber);
-					newClue.setClueText(strings[clueStringIndex++]);
-					newClue.setDirection(AcrossDownDirection.ACROSS);
-					acrossClues.add(newClue);
-				}
-				if (isStartOfDownWord(grid, row, column)) {
-					IoClue newClue = grid.newClue();
-					newClue.setNumber(currCellNumber);
-					newClue.setClueText(strings[clueStringIndex++]);
-					newClue.setDirection(AcrossDownDirection.DOWN);
-					downClues.add(newClue);
-				}
+				if (startOfAcrossWord)
+					acrossClues.add(newIoClue(grid, currCellNumber, strings[clueStringIndex++], AcrossDownDirection.ACROSS));
+				if (startOfDownWord)
+					downClues.add(newIoClue(grid, currCellNumber, strings[clueStringIndex++], AcrossDownDirection.DOWN));
 				if (startOfAcrossWord || startOfDownWord)
 					++currCellNumber;
 			}
 		}
 		grid.setAcrossClues(acrossClues);
 		grid.setDownClues(downClues);
-		//TODO finish implementing this
 		return grid;
 	}
 	
+	// return new IoClue associated with specified grid, initialized with specified number/direction/text
+	private IoClue newIoClue(IoGrid grid, int clueNumber, String clueText, AcrossDownDirection clueDirection) {
+		IoClue clue = grid.newClue();
+		clue.setNumber(clueNumber);
+		clue.setClueText(clueText);
+		clue.setDirection(clueDirection);
+		return clue;
+	}
+	
+	/**
+	 * Serialize specified grid to a PUZ (Across Lite) format byte array.
+	 * @param grid grid to serialize to PUZ-format byte array.
+	 * @return PUZ-format byte array
+	 * @throws RuntimeException if error occurs during serialization
+	 */
 	public byte[] toPuz(IoGrid grid) {
 		int width = grid.getWidth();
 		int height = grid.getHeight();
@@ -225,13 +229,6 @@ public class PuzSerializer {
 		putShortAt(checksums.cksum, mainPuz, OFFSET_OVERALL_CHKSUM);
 		putShortAt(checksums.c_cib, mainPuz, OFFSET_CIB_CHKSUM);
 		return mainPuz;
-	}
-	
-	private boolean cellNeedsAcrossNumber(IoGrid grid, int row, int column) {
-		if (column == 0 || grid.isBlackCell(row, column - 1)) {
-			
-		}
-		return false;
 	}
 	
 	/**
@@ -300,15 +297,6 @@ public class PuzSerializer {
 	}
 	
 	// convert byte array to String using ISO-8859-1 encoding
-	private String fromByteArray(byte[] bytes) {
-		try {
-			return new String(bytes, CHARACTER_SET);
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException("UnsupportedEncodingException unexpectedly caught, trying fromBytes for '" + bytes + "'.", e);
-		}
-	}
-
-	// convert byte array to String using ISO-8859-1 encoding
 	private String fromByteArray(byte[] bytes, int index, int length) {
 		try {
 			return new String(bytes, index, length, CHARACTER_SET);
@@ -360,8 +348,9 @@ public class PuzSerializer {
 				throw new RuntimeException("Unexpectedly found duplicate clue in ClueComparator: " + clue1 + ", " + clue2);
 			return direction1 == AcrossDownDirection.ACROSS ? -1 : 1;
 		}
-		
 	}
+	
+	// private class that holds checksums computed from a PUZ grid byte array
 	private static final class PuzChecksums {
 		public final short c_cib;
 		public final short cksum;
