@@ -78,7 +78,7 @@ public class PuzSerializer {
 		if (nbrClues <= 0)
 			throw new IllegalArgumentException("Not a valid PUZ byte stream: nbrClues = " + nbrClues);
 
-		T retval = factory.newGrid(width, height);
+		T grid = factory.newGrid(width, height);
 		PuzChecksums checksums = new PuzChecksums(bytes, 0);
 		if (checksums.cksum != getShortAt(bytes, OFFSET_OVERALL_CHKSUM)) {
 			LOG.warning("Global checksum mismatch in fromBytes, computed = " + checksums.cksum + " versus stored " + getShortAt(bytes, OFFSET_OVERALL_CHKSUM));
@@ -102,9 +102,9 @@ public class PuzSerializer {
 			for (int column = 0; column < width; ++ column) {
 				byte b = bytes[solutionIndex];
 				if (b == BLACK_SOLUTION_CELL)
-					retval.setBlackCell(row, column, true);
+					grid.setBlackCell(row, column, true);
 				else
-					retval.setCellContents(row, column, fromByteArray(bytes, solutionIndex, 1));
+					grid.setCellContents(row, column, fromByteArray(bytes, solutionIndex, 1));
 				++solutionIndex;
 			}
 		}
@@ -120,12 +120,45 @@ public class PuzSerializer {
 			offsetStrings = offsetStrings + strlen + 1;
 		}
 		
-		retval.setTitle(strings[0]);
-		retval.setAuthor(strings[1]);
-		retval.setCopyright(strings[2]);
+		grid.setTitle(strings[0]);
+		grid.setAuthor(strings[1]);
+		grid.setCopyright(strings[2]);
+		grid.setNotes(strings[nbrStrings - 1]);
 		
+		// create the clues, stored in order first by number, then across before down
+		int currCellNumber = 1;
+		int clueStringIndex = 3;
+		List<IoClue> acrossClues = new ArrayList<IoClue>();
+		List<IoClue> downClues = new ArrayList<IoClue>();
+		
+		for (int row = 0; row < height; ++row) {
+			for (int column = 0; column < width; ++column) {
+				if (grid.isBlackCell(row,  column))
+					continue;
+				boolean startOfAcrossWord = isStartOfAcrossWord(grid, row, column);
+				boolean startOfDownWord = isStartOfDownWord(grid, row, column);
+				if (isStartOfAcrossWord(grid, row, column)) {
+					IoClue newClue = grid.newClue();
+					newClue.setNumber(currCellNumber);
+					newClue.setClueText(strings[clueStringIndex++]);
+					newClue.setDirection(AcrossDownDirection.ACROSS);
+					acrossClues.add(newClue);
+				}
+				if (isStartOfDownWord(grid, row, column)) {
+					IoClue newClue = grid.newClue();
+					newClue.setNumber(currCellNumber);
+					newClue.setClueText(strings[clueStringIndex++]);
+					newClue.setDirection(AcrossDownDirection.DOWN);
+					downClues.add(newClue);
+				}
+				if (startOfAcrossWord || startOfDownWord)
+					++currCellNumber;
+			}
+		}
+		grid.setAcrossClues(acrossClues);
+		grid.setDownClues(downClues);
 		//TODO finish implementing this
-		return retval;
+		return grid;
 	}
 	
 	public byte[] toPuz(IoGrid grid) {
@@ -194,6 +227,43 @@ public class PuzSerializer {
 		return mainPuz;
 	}
 	
+	private boolean cellNeedsAcrossNumber(IoGrid grid, int row, int column) {
+		if (column == 0 || grid.isBlackCell(row, column - 1)) {
+			
+		}
+		return false;
+	}
+	
+	/**
+	 * Return whether the specified (row, col) starts an across word.
+	 * It starts an across word if it is not black AND (leftmost on the
+	 * line, or has a black to its left) AND non-black to the right.
+	 * @param row 0-based row coordinate
+	 * @param col 0-based column coordinate
+	 * @return whether the specified (row, col) starts an across word
+	 */
+	private boolean isStartOfAcrossWord(IoGrid grid, int row, int col) {
+		return ! grid.isBlackCell(row,  col)
+				&& (col == 0 || grid.isBlackCell(row, col - 1))
+				&& col < grid.getWidth() - 1
+				&& ! grid.isBlackCell(row, col + 1);
+	}
+
+	/**
+	 * Return whether the specified (row, col) starts a down word.
+	 * It starts an down word if it is not black AND (it is topmost in
+	 * its column, or has a black above it) AND and non-black below it.
+	 * @param row 0-based row coordinate
+	 * @param col 0-based column coordinate
+	 * @return whether the specified (row, col) starts a down word
+	 */
+	private boolean isStartOfDownWord(IoGrid grid, int row, int col) {
+		return ! grid.isBlackCell(row,  col)
+				&& (row == 0 || grid.isBlackCell(row - 1, col))
+				&& row < grid.getHeight() - 1
+				&& ! grid.isBlackCell(row + 1, col);
+	}
+
 	// return solution and player state for grid, if possible, else null
 	private Pair<String, String> getSolutionAndPlayerState(IoGrid grid) {
 		int width = grid.getWidth();

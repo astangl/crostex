@@ -16,9 +16,21 @@ public interface IoClue {
 	int getNumber();
 	
 	/**
+	 * Set number associated with clue
+	 * @param number number associated with clue
+	 */
+	void setNumber(int number);
+	
+	/**
 	 * @return direction of this clue
 	 */
 	AcrossDownDirection getDirection();
+	
+	/**
+	 * Set direction associated with this clue.
+	 * @param direction direction associated with this clue
+	 */
+	void setDirection(AcrossDownDirection direction);
 
 	/**
 	 * @return text of clue

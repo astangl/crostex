@@ -105,9 +105,26 @@ public interface IoGrid {
 	 * @return across clues for puzzle
 	 */
 	List<? extends IoClue> getAcrossClues();
+	
+	/**
+	 * Set minimal (#/direction/text) across clues.
+	 * @param acrossClues
+	 */
+	void setAcrossClues(List<? extends IoClue> acrossClues);
 
 	/**
 	 * @return down clues for puzzle
 	 */
 	List<? extends IoClue> getDownClues();
+	
+	/**
+	 * Set minimal (#/direction/text) down clues.
+	 * @param downClues
+	 */
+	void setDownClues(List<? extends IoClue> downClues);
+	
+	/**
+	 * @return a new clue
+	 */
+	IoClue newClue();
 }

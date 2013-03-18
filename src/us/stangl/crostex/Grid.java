@@ -30,6 +30,7 @@ import us.stangl.crostex.command.SetCurrentCellBlackCommand;
 import us.stangl.crostex.command.ToggleCurrentCellCommand;
 import us.stangl.crostex.dictionary.Dictionary;
 import us.stangl.crostex.io.DOMSerializer;
+import us.stangl.crostex.io.IoClue;
 import us.stangl.crostex.io.IoGrid;
 import us.stangl.crostex.util.RowColumnPair;
 
@@ -959,7 +960,47 @@ public class Grid implements IoGrid
 	public List<Clue> getDownClues() {
 		return downClues;
 	}
+	
+	/* (non-Javadoc)
+	 * @see us.stangl.crostex.io.IoGrid#setAcrossClues(java.util.List)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public void setAcrossClues(List<? extends IoClue> clues) {
+		populateIoClues(getAcrossWords(), clues, AcrossDownDirection.ACROSS);
+		acrossClues = (List<Clue>)clues;
+	}
 
+	/* (non-Javadoc)
+	 * @see us.stangl.crostex.io.IoGrid#setDownClues(java.util.List)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public void setDownClues(List<? extends IoClue> clues) {
+		populateIoClues(getDownWords(), clues, AcrossDownDirection.DOWN);
+		downClues = (List<Clue>)clues;
+	}
+
+	// load clues from list of IoClue that (presumably) came from import, so only has #/direction/text and needs to be fully populated
+	private void populateIoClues(List<GridWord> gridWords, List<? extends IoClue> clues, AcrossDownDirection direction) {
+
+		int size = gridWords.size();
+		if (size != clues.size())
+			throw new RuntimeException("Error: collection size mismatch: " + size + " gridWords vs " + clues.size() + " clues.");
+//		List<Clue> retval = new ArrayList<Clue>(size);
+		for (int i = 0; i < size; ++i) {
+			Clue clue = (Clue)clues.get(i);
+			GridWord gridWord = gridWords.get(i);
+			RowColumnPair gridWordStart = gridWord.getStartOfWord();
+			RowColumnPair gridWordEnd = gridWord.getEndOfWord();
+
+			clue.setStartOfWord(gridWordStart);
+			clue.setEndOfWord(gridWordEnd);
+			clue.setGridWord(gridWord.getContents());
+			clue.setWordComplete(gridWord.isComplete());
+			clue.setCells(gridWord.getCells());
+		}
+	}
 	// Validate clues to make sure they are still applicable, replacing/creating new ones as necessary
 	// Simplifying assumptions for now:
 	// 1. Not retaining discarded clues for now.  (This will probably come later, maybe in the form of tracking clues by grid position rather than word #.)
@@ -1061,6 +1102,13 @@ public class Grid implements IoGrid
 		return false;
 	}
 
+	/* (non-Javadoc)
+	 * @see us.stangl.crostex.io.IoGrid#newClue()
+	 */
+	public Clue newClue() {
+		return new Clue();
+	}
+	
 	/**
 	 * @return next cursor position as a (row, column) pair,
 	 * taking into current cursor direction and wrap/skip behavior

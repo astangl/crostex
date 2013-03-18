@@ -36,6 +36,7 @@ import javax.swing.event.ChangeListener;
 
 import us.stangl.crostex.Grid;
 import us.stangl.crostex.GridChangeListener;
+import us.stangl.crostex.GridFactory;
 import us.stangl.crostex.GridsDb;
 import us.stangl.crostex.Main;
 import us.stangl.crostex.RomanNumeralGenerator;
@@ -43,6 +44,7 @@ import us.stangl.crostex.ServiceException;
 import us.stangl.crostex.Word;
 import us.stangl.crostex.dictionary.Dictionary;
 import us.stangl.crostex.dictionary.Ydict;
+import us.stangl.crostex.io.FileReader;
 import us.stangl.crostex.io.FileSaver;
 import us.stangl.crostex.io.PuzSerializer;
 import us.stangl.crostex.util.Message;
@@ -224,18 +226,20 @@ public class MainFrame extends JFrame {
 					String title = MessageFormat.format(Message.UNTITLED_TAB_TITLE.toString(), untitledTabCounter++);
 					Grid gridCopy = new Grid(chosenGrid);
 					gridCopy.setTitle(title);
-					gridCopy.addTitleChangeListener(new GridChangeListener() {
-						public void handleChange(Grid grid) {
-							topLevelTabbedPane.setTitleAt(topLevelTabbedPane.getSelectedIndex(), grid.getTitle());
-						}
-					});
-					//CrosswordPanel crosswordPanel = new CrosswordPanel(MainFrame.this, gridCopy);
-					//topLevelTabbedPane.addTab(tabTitle, crosswordPanel);
-//					topLevelTabbedPane.addTab(tabTitle, new CrosswordPanel(MainFrame.this, gridCopy));
-					topLevelTabbedPane.addTab(title, new TopLevelTabPanel(MainFrame.this, gridCopy));
-					topLevelTabbedPane.setSelectedIndex(topLevelTabbedPane.getTabCount() - 1);
-//					crosswordPanel.setFocusable(true);
-//					crosswordPanel.requestFocusInWindow();
+					openGridInNewTab(gridCopy);
+					
+//					gridCopy.addTitleChangeListener(new GridChangeListener() {
+//						public void handleChange(Grid grid) {
+//							topLevelTabbedPane.setTitleAt(topLevelTabbedPane.getSelectedIndex(), grid.getTitle());
+//						}
+//					});
+//					//CrosswordPanel crosswordPanel = new CrosswordPanel(MainFrame.this, gridCopy);
+//					//topLevelTabbedPane.addTab(tabTitle, crosswordPanel);
+////					topLevelTabbedPane.addTab(tabTitle, new CrosswordPanel(MainFrame.this, gridCopy));
+//					topLevelTabbedPane.addTab(title, new TopLevelTabPanel(MainFrame.this, gridCopy));
+//					topLevelTabbedPane.setSelectedIndex(topLevelTabbedPane.getTabCount() - 1);
+////					crosswordPanel.setFocusable(true);
+////					crosswordPanel.requestFocusInWindow();
 				}
 				saveAsTemplate.setEnabled(true);
 //				tabbedPane_.addTab(title, component);
@@ -275,7 +279,22 @@ public class MainFrame extends JFrame {
 		importPuzItem.setActionCommand("Import PUZ file");
 		importPuzItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				
+				JFileChooser fileChooser = new JFileChooser();
+				if (fileChooser.showOpenDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION)
+				{
+					File file = fileChooser.getSelectedFile();
+					try {
+						byte[] bytes = FileReader.getFileBytes(file);
+						Grid grid = new PuzSerializer().fromBytes(bytes, new GridFactory(), true);
+						if (grid == null) {
+							LOG.severe("Couldn't open PUZ file " + file + " because it appears invalid");
+						} else {
+							openGridInNewTab(grid);
+						}
+					} catch (IOException e) {
+						LOG.severe("IOException caught trying to import PUZ file " + file + ": " + e);
+					}
+				}
 			}
 		});
 		exportPuzItem.setActionCommand("Export as PUZ file");
@@ -424,6 +443,17 @@ public class MainFrame extends JFrame {
 	// return new JMenuItem for the specified Message
 	private JMenuItem newMenuItem(Message message) {
 		return new JMenuItem(message.toString());
+	}
+	
+	// open specified grid in new tab
+	private void openGridInNewTab(Grid grid) {
+		grid.addTitleChangeListener(new GridChangeListener() {
+			public void handleChange(Grid grid) {
+				topLevelTabbedPane.setTitleAt(topLevelTabbedPane.getSelectedIndex(), grid.getTitle());
+			}
+		});
+		topLevelTabbedPane.addTab(grid.getTitle(), new TopLevelTabPanel(MainFrame.this, grid));
+		topLevelTabbedPane.setSelectedIndex(topLevelTabbedPane.getTabCount() - 1);
 	}
 	
 	/**
