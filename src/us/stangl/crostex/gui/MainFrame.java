@@ -3,7 +3,10 @@
  */
 package us.stangl.crostex.gui;
 
+import java.awt.BorderLayout;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -19,15 +22,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 
 import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -38,7 +43,8 @@ import us.stangl.crostex.Grid;
 import us.stangl.crostex.GridChangeListener;
 import us.stangl.crostex.GridFactory;
 import us.stangl.crostex.GridsDb;
-import us.stangl.crostex.Main;
+import us.stangl.crostex.PreferenceKey;
+import us.stangl.crostex.PreferencesStore;
 import us.stangl.crostex.RomanNumeralGenerator;
 import us.stangl.crostex.ServiceException;
 import us.stangl.crostex.Word;
@@ -96,16 +102,20 @@ public class MainFrame extends JFrame {
 	// Dictionary
 	private Dictionary<char[], Word> dict = new Ydict<Word>();
 	
+	// Preferences store
+	private final PreferencesStore preferencesStore = new PreferencesStore();
+	
+	// width of preferences text fields
+	private static final int PREFERENCES_TEXT_FIELD_WIDTH = 40;
+	
 	public MainFrame() {
 		super(Message.MAIN_FRAME_TITLE.toString());
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		Preferences p = Preferences.userNodeForPackage(Main.class);
-		
 		// Ensure that dataDirectory preference is set, request it otherwise.
-		String dataDirectoryPropertyName = "dataDirectory";
 		//p.remove(dataDirectoryPropertyName);
-		String dataDirectory = p.get(dataDirectoryPropertyName, null);
+		PreferenceKey dataDirectoryKey = PreferenceKey.DATA_DIRECTORY;
+		String dataDirectory = preferencesStore.getValue(dataDirectoryKey, null);
 		while (dataDirectory == null) {
 			int answer = JOptionPane.showConfirmDialog(this,
 					Message.DIALOG_TEXT_SET_DATA_DIRECTORY.toString(),
@@ -119,7 +129,7 @@ public class MainFrame extends JFrame {
 					File directoryFile = fileChooser.getSelectedFile();
 					LOG.fine("Chose data directory " + directoryFile.getAbsolutePath());
 					if (! directoryFile.isFile()) {
-						p.put(dataDirectoryPropertyName, directoryFile.getAbsolutePath());
+						preferencesStore.putValue(dataDirectoryKey, directoryFile.getAbsolutePath());
 					}
 				} else {
 					System.exit(0);
@@ -127,7 +137,7 @@ public class MainFrame extends JFrame {
 			} else {
 				System.exit(0);
 			}
-			dataDirectory = p.get(dataDirectoryPropertyName, null);
+			dataDirectory = preferencesStore.getValue(dataDirectoryKey, null);
 		}
 		
 		// ... and ensure data directory exists, offering to create it otherwise
@@ -262,6 +272,9 @@ public class MainFrame extends JFrame {
 					String title = MessageFormat.format(Message.UNTITLED_TAB_TITLE.toString(), untitledTabCounter++);
 					Grid gridCopy = new Grid(chosenGrid);
 					gridCopy.setTitle(title);
+					gridCopy.setAuthor(preferencesStore.getValue(PreferenceKey.DEFAULT_AUTHOR, ""));
+					gridCopy.setCopyright(preferencesStore.getValue(PreferenceKey.DEFAULT_COPYRIGHT, ""));
+					gridCopy.setNotes(preferencesStore.getValue(PreferenceKey.DEFAULT_NOTES, ""));
 					openGridInNewTab(gridCopy);
 					
 //					gridCopy.addTitleChangeListener(new GridChangeListener() {
@@ -395,6 +408,7 @@ public class MainFrame extends JFrame {
 		JMenuItem preferencesItem = newMenuItem(Message.EDIT_MENU_OPTION_PREFERENCES);
 		preferencesItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
+				showPreferencesDialog();
 			}
 		});
 
@@ -417,7 +431,10 @@ public class MainFrame extends JFrame {
 		JMenuItem aboutItem = new JMenuItem(Message.HELP_MENU_OPTION_ABOUT.toString());
 		aboutItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				JOptionPane.showMessageDialog(MainFrame.this, "Crostex\nWritten by Alex Stangl\nCopyright 2008-2013", Message.HELP_MENU_OPTION_ABOUT.toString(), JOptionPane.PLAIN_MESSAGE, new CrosswordIcon(5));
+				JOptionPane.showMessageDialog(MainFrame.this,
+					Message.HELP_ABOUT_DIALOG_TEXT.toString(),
+					Message.HELP_MENU_OPTION_ABOUT.toString(),
+					JOptionPane.PLAIN_MESSAGE, new CrosswordIcon(5));
 			}
 		});
 		helpMenu.add(aboutItem);
@@ -474,6 +491,57 @@ public class MainFrame extends JFrame {
 		topLevelTabbedPane.setSelectedIndex(topLevelTabbedPane.getTabCount() - 1);
 	}
 	
+	private void showPreferencesDialog() {
+		final JDialog dialog = new JDialog(MainFrame.this, Message.DIALOG_TITLE_PREFERENCES.toString(), true);
+		JPanel panel = new JPanel();
+		panel.setLayout(new GridBagLayout());
+		final JTextField dataDirectoryField = new JTextField(
+				preferencesStore.getValue(PreferenceKey.DATA_DIRECTORY, ""), PREFERENCES_TEXT_FIELD_WIDTH);
+		final JTextField defaultAuthorField = new JTextField(
+				preferencesStore.getValue(PreferenceKey.DEFAULT_AUTHOR, ""), PREFERENCES_TEXT_FIELD_WIDTH);
+		final JTextField defaultCopyrightField = new JTextField(
+				preferencesStore.getValue(PreferenceKey.DEFAULT_COPYRIGHT, ""), PREFERENCES_TEXT_FIELD_WIDTH);
+		final JTextField defaultNotesField = new JTextField(
+				preferencesStore.getValue(PreferenceKey.DEFAULT_NOTES, ""), PREFERENCES_TEXT_FIELD_WIDTH);
+
+		panel.add(Message.LABEL_DATA_DIRECTORY.label(), new GBC(0, 0).anchor(GBC.NORTHWEST));
+		panel.add(Box.createHorizontalStrut(10));
+		panel.add(dataDirectoryField, new GBC(2, 0).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
+		panel.add(Message.LABEL_DEFAULT_AUTHOR.label(), new GBC(0, 1).anchor(GBC.NORTHWEST));
+		panel.add(defaultAuthorField, new GBC(2, 1).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
+		panel.add(Message.LABEL_DEFAULT_COPYRIGHT.label(), new GBC(0, 2).anchor(GBC.NORTHWEST));
+		panel.add(defaultCopyrightField, new GBC(2, 2).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
+		panel.add(Message.LABEL_DEFAULT_NOTES.label(), new GBC(0, 3).anchor(GBC.NORTHWEST));
+		panel.add(defaultNotesField, new GBC(2, 3).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
+		Container dialogContentPane = dialog.getContentPane();
+		JPanel buttonsPanel = new JPanel();
+		JButton okButton = new JButton(Message.BUTTON_OK.toString());
+		okButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				preferencesStore.putValue(PreferenceKey.DATA_DIRECTORY, dataDirectoryField.getText());
+				preferencesStore.putValue(PreferenceKey.DEFAULT_AUTHOR, defaultAuthorField.getText());
+				preferencesStore.putValue(PreferenceKey.DEFAULT_COPYRIGHT, defaultCopyrightField.getText());
+				preferencesStore.putValue(PreferenceKey.DEFAULT_NOTES, defaultNotesField.getText());
+				//TODO set preferences here
+				dialog.dispose();
+			}
+		});
+		buttonsPanel.add(okButton);
+		JButton cancelButton = new JButton(Message.BUTTON_CANCEL.toString());
+		cancelButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				//TODO discard preferences here
+				dialog.dispose();
+			}
+		});
+		buttonsPanel.add(cancelButton);
+		dialogContentPane.add(panel, BorderLayout.CENTER);
+		dialogContentPane.add(buttonsPanel, BorderLayout.SOUTH);
+		dialog.pack();
+		dialog.setLocationRelativeTo(MainFrame.this);
+		dialog.setVisible(true);
+	}
+	
 	/**
 	 * Set undo/redo enabled/disabled, etc. based upon whether these operation can be performed on current CrosswordPuzzle.
 	 */
@@ -497,6 +565,7 @@ public class MainFrame extends JFrame {
 		TopLevelTabPanel tabPanel = getTopLevelTabPanel();
 		return tabPanel == null ? null : tabPanel.getCrosswordPanel();
 	}
+	
 	
 	// return currently selected top-level tab panel, if any, else null
 	private TopLevelTabPanel getTopLevelTabPanel() {

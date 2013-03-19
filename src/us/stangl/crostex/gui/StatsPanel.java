@@ -82,14 +82,14 @@ public final class StatsPanel extends JPanel implements GridChangeListener {
 	
 	private final JCheckBox wraparoundCursorField;
 	
-	private final JLabel singlePolyominoConstraintMetLabel = newLabel(Message.MESSAGE_SINGLE_POLYOMINO_CONSTRAINT_MET);
-	private final JLabel singlePolyominoConstraintViolatedLabel = newLabel(Message.MESSAGE_SINGLE_POLYOMINO_CONSTRAINT_VIOLATED);
+	private final JLabel singlePolyominoConstraintMetLabel = Message.MESSAGE_SINGLE_POLYOMINO_CONSTRAINT_MET.label();
+	private final JLabel singlePolyominoConstraintViolatedLabel = Message.MESSAGE_SINGLE_POLYOMINO_CONSTRAINT_VIOLATED.label();
 	
-	private final JLabel min3LetterWordConstraintMetLabel = newLabel(Message.MESSAGE_MIN_3_LETTER_WORD_CONSTRAINT_MET);
-	private final JLabel min3LetterWordConstraintViolatedLabel = newLabel(Message.MESSAGE_MIN_3_LETTER_WORD_CONSTRAINT_VIOLATED);
+	private final JLabel min3LetterWordConstraintMetLabel = Message.MESSAGE_MIN_3_LETTER_WORD_CONSTRAINT_MET.label();
+	private final JLabel min3LetterWordConstraintViolatedLabel = Message.MESSAGE_MIN_3_LETTER_WORD_CONSTRAINT_VIOLATED.label();
 	
-	private final JLabel symmetricGridConstraintMetLabel = newLabel(Message.MESSAGE_SYMMETRIC_GRID_CONSTRAINT_MET);
-	private final JLabel symmetricGridConstraintViolatedLabel = newLabel(Message.MESSAGE_SYMMETRIC_GRID_CONSTRAINT_VIOLATED);
+	private final JLabel symmetricGridConstraintMetLabel = Message.MESSAGE_SYMMETRIC_GRID_CONSTRAINT_MET.label();
+	private final JLabel symmetricGridConstraintViolatedLabel = Message.MESSAGE_SYMMETRIC_GRID_CONSTRAINT_VIOLATED.label();
 	
 	// text area used for displaying letter frequency chart
 	private JTextArea letterFrequencyChart = new JTextArea(1, 40);
@@ -111,11 +111,9 @@ public final class StatsPanel extends JPanel implements GridChangeListener {
 		letterFrequencyChart.setBackground(super.getBackground());
 		letterFrequencyChart.setAlignmentY(TOP_ALIGNMENT);
 		
-		GridBagLayout gbl = new GridBagLayout();
 		JPanel topPanel = new JPanel();
-		//Border border = BorderFactory.createLineBorder(Color.RED);
-		topPanel.setLayout(gbl);
-		//topPanel.setBorder(border);
+		topPanel.setLayout(new GridBagLayout());
+
 		titleField = new JTextField(this.grid.getTitle(), TEXT_FIELD_LENGTH);
 		titleField.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
@@ -185,14 +183,14 @@ public final class StatsPanel extends JPanel implements GridChangeListener {
 		singlePolyominoConstraintViolatedLabel.setForeground(Color.RED);
 		min3LetterWordConstraintViolatedLabel.setForeground(Color.RED);
 		symmetricGridConstraintViolatedLabel.setForeground(Color.RED);
-		topPanel.add(newLabel(Message.LABEL_TITLE), new GBC(0, 0).anchor(GBC.NORTHWEST));
+		topPanel.add(Message.LABEL_TITLE.label(), new GBC(0, 0).anchor(GBC.NORTHWEST));
 		topPanel.add(Box.createHorizontalStrut(10));
 		topPanel.add(titleField, new GBC(2, 0).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
-		topPanel.add(newLabel(Message.LABEL_AUTHOR), new GBC(0, 1).anchor(GBC.NORTHWEST));
+		topPanel.add(Message.LABEL_AUTHOR.label(), new GBC(0, 1).anchor(GBC.NORTHWEST));
 		topPanel.add(authorField, new GBC(2, 1).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
-		topPanel.add(newLabel(Message.LABEL_COPYRIGHT), new GBC(0, 2).anchor(GBC.NORTHWEST));
+		topPanel.add(Message.LABEL_COPYRIGHT.label(), new GBC(0, 2).anchor(GBC.NORTHWEST));
 		topPanel.add(copyrightField, new GBC(2, 2).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
-		topPanel.add(newLabel(Message.LABEL_NOTES), new GBC(0, 3).anchor(GBC.NORTHWEST));
+		topPanel.add(Message.LABEL_NOTES.label(), new GBC(0, 3).anchor(GBC.NORTHWEST));
 		topPanel.add(notesField, new GBC(2, 3).anchor(GBC.NORTHWEST).weightx(1.0).gridwidth(GBC.REMAINDER));
 		
 		topPanel.add(GuiUtils.newJPanel(new FlowLayout(FlowLayout.LEFT, 0, 0),
@@ -262,10 +260,5 @@ public final class StatsPanel extends JPanel implements GridChangeListener {
 			labelText.append(c).append(": ").append(Integer.toString(freqs[c - 'A'])).append("  ");
 
 		letterFrequencyChart.setText(labelText.toString());
-	}
-	
-	// return new label, with specified message
-	private JLabel newLabel(Message message) {
-		return new JLabel(message.toString());
 	}
 }

@@ -5,6 +5,8 @@ package us.stangl.crostex.util;
 
 import java.util.ResourceBundle;
 
+import javax.swing.JLabel;
+
 /**
  * Enumeration of all displayed strings. Every value here should have a corresponding
  * value in Messages.properties (and any translated versions).
@@ -36,6 +38,7 @@ public enum Message {
 	DIALOG_TITLE_NEW_CROSSWORD,		// title for New Crossword dialog box
 	DIALOG_TITLE_NONEMPTY_NAME_DESCRIPTION,	// title for ""
 	DIALOG_TITLE_OVERWRITE_EXISTING_GRID,		// title for ""
+	DIALOG_TITLE_PREFERENCES,		// title for Preferences dialog box
 	DIALOG_TITLE_SAVE_GRID_TEMPLATE,				// title for Save Grid Template dialog box
 	DIALOG_TITLE_SET_DATA_DIRECTORY,// title for Set Data Directory dialog box
 	DIALOG_TITLE_UNABLE_TO_CREATE_DATA_DIRECTORY,	// title unable to create data directory
@@ -50,11 +53,16 @@ public enum Message {
 	FILE_MENU_OPTION_IMPORT_PUZ,	// File menu Import PUZ file option
 	FILE_MENU_OPTION_NEW,			// File menu New ... option
 	FILE_MENU_OPTION_SAVE_GRID_AS_TEMPLATE,	// File menu Save Grid as Template... option
+	HELP_ABOUT_DIALOG_TEXT,			// text in Help/About dialog box
 	HELP_MENU_HEADER,				// header for Help menu
 	HELP_MENU_OPTION_ABOUT,			// Help menu option About Crostex
 	LABEL_ACROSS,					// label Across
 	LABEL_AUTHOR,					// label Author
 	LABEL_COPYRIGHT,				// label Copyright
+	LABEL_DATA_DIRECTORY,			// label Data Directory
+	LABEL_DEFAULT_AUTHOR,			// label Default Author
+	LABEL_DEFAULT_COPYRIGHT,		// label Default Copyright
+	LABEL_DEFAULT_NOTES,			// label Default Notes
 	LABEL_DESCRIPTION,				// label Description
 	LABEL_DOWN,						// label Down
 	LABEL_ENFORCE_SYMMETRY,			// label Enforce Symmetry
@@ -92,9 +100,16 @@ public enum Message {
 	}
 	
 	/**
-	 * @return internationalized string resource corresponding 
+	 * @return internationalized string resource corresponding to this message 
 	 */
 	public String toString() {
 		return resourceBundle_.getString(name());
+	}
+	
+	/**
+	 * @return JLabel with internationalized string resource corresponding to this message 
+	 */
+	public JLabel label() {
+		return new JLabel(toString());
 	}
 }
