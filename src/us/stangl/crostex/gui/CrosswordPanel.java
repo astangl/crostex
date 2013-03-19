@@ -101,9 +101,26 @@ public class CrosswordPanel extends JPanel {
 		this.grid.renumberCells();
 		
 		JMenuItem toggleCellBlackWhiteItem = new JMenuItem(Message.CELL_POPUP_MENU_OPTION_TOGGLE_CELL_BLACK.toString());
-		cellPopupMenu.add(toggleCellBlackWhiteItem);
 		toggleCellBlackWhiteItem.setActionCommand("Toggle cell between black/white");
-		toggleCellBlackWhiteItem.addActionListener(new ToggleCellActionListener());
+		toggleCellBlackWhiteItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				CrosswordPanel.this.grid.toggleCellBlackCommand();
+				CrosswordPanel.this.grid.renumberCells();
+				CrosswordPanel.this.parentFrame.resetMenuState();
+				CrosswordPanel.this.repaint(0);
+			}
+		});
+		cellPopupMenu.add(toggleCellBlackWhiteItem);
+
+		JMenuItem toggleCellCircledItem = new JMenuItem(Message.CELL_POPUP_MENU_OPTION_TOGGLE_CELL_CIRCLED.toString());
+		toggleCellCircledItem.setActionCommand("Toggle cell circled/uncircled");
+		toggleCellCircledItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				CrosswordPanel.this.grid.toggleCellCircledCommand();
+				CrosswordPanel.this.repaint(0);
+			}
+		});
+		cellPopupMenu.add(toggleCellCircledItem);
 	}
 	
 	private void addKeystrokeAction(int keyCode, String actionMapKey, Action action) {
@@ -171,15 +188,6 @@ public class CrosswordPanel extends JPanel {
 		@Override
 		public void keyTyped(KeyEvent evt) {
 			grid.keyTyped(evt);
-			parentFrame.resetMenuState();
-			CrosswordPanel.this.repaint(0);
-		}
-	}
-	
-	private class ToggleCellActionListener implements ActionListener {
-		public void actionPerformed(ActionEvent evt) {
-			grid.toggleCurrentCell();
-			grid.renumberCells();
 			parentFrame.resetMenuState();
 			CrosswordPanel.this.repaint(0);
 		}

@@ -11,11 +11,11 @@ import us.stangl.crostex.Grid;
 import us.stangl.crostex.util.RowColumnPair;
 
 /**
- * Undoable command to toggle current cell and possibly its symmetric twin
+ * Undoable command to toggle current cell black and possibly its symmetric twin
  * in the crossword puzzle.
  * @author Alex Stangl
  */
-public class ToggleCurrentCellCommand implements UndoableCommand<Grid> {
+public class ToggleCurrentCellBlackCommand implements UndoableCommand<Grid> {
 	// list of (row, column) coordinates of cells to toggle
 	private final List<RowColumnPair> coordinates = new ArrayList<RowColumnPair>(2);
 	
@@ -25,7 +25,7 @@ public class ToggleCurrentCellCommand implements UndoableCommand<Grid> {
 	// list of values to unApply to each corresponding cell
 	private final List<Boolean> unApplyValues = new ArrayList<Boolean>(2);
 
-	public ToggleCurrentCellCommand(Grid grid) {
+	public ToggleCurrentCellBlackCommand(Grid grid) {
 		int currentRow = grid.getCurrentRow();
 		int currentColumn = grid.getCurrentColumn();
 		coordinates.add(new RowColumnPair(currentRow, currentColumn));
@@ -68,15 +68,6 @@ public class ToggleCurrentCellCommand implements UndoableCommand<Grid> {
 			grid.getCell(rc.row, rc.column).setBlack(values.get(i));
 		}
 		grid.renumberCells();
-		/*
-		for (int i = 0; i < coordinates.size(); ++i) {
-			RowColumnPair rc = coordinates.get(i);
-			int row = rc.row;
-			int column = rc.column;
-			Cell cell = grid.getCell(row, column);
-			grid.notifyCellChangeListeners(cell, row, column);
-		}
-		*/
 		grid.notifyGridChangeListeners();
 		grid.notifyFullGridChangeListeners();
 	}

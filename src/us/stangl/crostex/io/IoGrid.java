@@ -76,6 +76,22 @@ public interface IoGrid {
 	boolean isBlackCell(int row, int column);
 
 	/**
+	 * Set whether the specified cell is circled or not.
+	 * @param row row of the cell
+	 * @param column column of the cell
+	 * @param isCircled whether the cell is circled (or not)
+	 */
+	void setCircledCell(int row, int column, boolean isCircled);
+	
+	/**
+	 * Return whether the specified cell is circled.
+	 * @param row row of the cell
+	 * @param column column of the cell
+	 * @return whether the specified cell is circled
+	 */
+	boolean isCircledCell(int row, int column);
+
+	/**
 	 * Set whether the specified cell is black or not.
 	 * @param row row of the cell
 	 * @param column column of the cell

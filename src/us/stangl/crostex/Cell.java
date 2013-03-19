@@ -14,7 +14,11 @@ public class Cell {
 	// cell number, if any; 0 means no cell number
 	private int number;
 	
+	// whether this cell is filled in black
 	private boolean black;
+	
+	// whether this cell is circled
+	private boolean circled;
 	
 	public boolean isBlack() {
 		return black;
@@ -57,6 +61,7 @@ public class Cell {
 		stringContents = other.stringContents;
 		number = other.number;
 		black = other.black;
+		circled = other.circled;
 	}
 
 	/** append contents to the builder in the most efficient way possible */
@@ -93,27 +98,52 @@ public class Cell {
 		return 0;
 	}
 	
+	/**
+	 * @return number associated with cell (0 means no number)
+	 */
 	public int getNumber() {
 		return number;
 	}
 	
+	/**
+	 * Set number associated with cell.
+	 * @param number number associated with cell (0 means no number)
+	 */
 	public void setNumber(int number) {
 		this.number = number;
 	}
 	
+	/**
+	 * @return whether cell is eligible for auto-fill (empty, and not black)
+	 */
 	public boolean isEligibleForAutofill() {
 		return !black && stringContents.length() == 0;
 	}
 	
+	/**
+	 * @return the circled
+	 */
+	public boolean isCircled() {
+		return circled;
+	}
+
+	/**
+	 * @param circled the circled to set
+	 */
+	public void setCircled(boolean circled) {
+		this.circled = circled;
+	}
 	
 	public String toString() {
-		StringBuilder retval = new StringBuilder();
-		retval.append(", stringContents = ")
+		return new StringBuilder()
+			.append(", stringContents = ")
 			.append(stringContents)
 			.append(", number = ")
 			.append(number)
 			.append(", black = ")
-			.append(black);
-		return retval.toString();
+			.append(black)
+			.append(", circled =")
+			.append(circled)
+			.toString();
 	}
 }

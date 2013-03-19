@@ -67,8 +67,9 @@ public class TopLevelTabPanel extends JPanel {
 		
 		JSplitPane sp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, tabbedPane);
 		add(sp);
-		tabbedPane.addTab(Message.STATS_TAB_TITLE.toString(), new StatsPanel(crosswordPanel));
-		tabbedPane.addTab(Message.CLUES_TAB_TITLE.toString(), new CluesPanel(grid));
+		tabbedPane.addTab(Message.TAB_TITLE_STATS.toString(), new StatsPanel(crosswordPanel));
+		tabbedPane.addTab(Message.TAB_TITLE_CLUES.toString(), new CluesPanel(grid));
+		tabbedPane.addTab(Message.TAB_TITLE_REBUS.toString(), new RebusPanel(crosswordPanel));
 		tabbedPane.setSelectedIndex(0);
 	}
 

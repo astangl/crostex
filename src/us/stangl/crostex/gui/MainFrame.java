@@ -180,7 +180,6 @@ public class MainFrame extends JFrame {
 		});
 		add(topLevelTabbedPane);
 		
-//		add(new CrosswordPanel());
 		pack();
 		setVisible(true);
 
@@ -191,7 +190,44 @@ public class MainFrame extends JFrame {
 //			}
 //		});
 		
-		// Create menus
+		// Create menus: File, Edit, Help (mnemonics F, E, H)
+		topLevelMenuBar.add(fileMenu());
+		topLevelMenuBar.add(editMenu());
+		
+		// put help menu on right side of menubar
+		topLevelMenuBar.add(Box.createHorizontalGlue());
+		topLevelMenuBar.add(helpMenu());
+
+		getRootPane().setJMenuBar(topLevelMenuBar);
+	}
+	
+
+	/**
+	 * @return preferred size
+	 */
+	public Dimension getPreferredSize() {
+		return PREFERRED_SIZE;
+	}
+	
+	// normalize raw word from dictionary; return null if word is unacceptable
+	private String normalizeWord(String rawWord) {
+		int len = rawWord.length();
+		if (len < 3)
+			return null;
+		StringBuilder builder = new StringBuilder(rawWord.length());
+		for (int i = 0; i < len; ++i) {
+			char c = rawWord.charAt(i);
+			if (c >= 'a' && c <= 'z')
+				c = Character.toUpperCase(c);
+			if (c < 'A' || c > 'Z')
+				return null;
+			builder.append(c);
+		}
+		return builder.toString();
+	}
+
+	// return File menu, F - mnemonic
+	private JMenu fileMenu() {
 		// File Menu, F - Mnemonic
 		JMenu fileMenu = new JMenu(Message.FILE_MENU_HEADER.toString());
 		fileMenu.setMnemonic(KeyEvent.VK_F);
@@ -311,9 +347,12 @@ public class MainFrame extends JFrame {
 				}
 			}
 		});
-
-		topLevelMenuBar.add(fileMenu);
 		
+		return fileMenu;
+	}
+
+	// return Edit menu, E - mnemonic
+	private JMenu editMenu() {
 		undoItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				CrosswordPanel crosswordPanel = getCrosswordPanel();
@@ -345,7 +384,7 @@ public class MainFrame extends JFrame {
 				CrosswordPanel crosswordPanel = getCrosswordPanel();
 				if (crosswordPanel != null) {
 					Grid grid = crosswordPanel.getGrid();
-					grid.setCurrentCellBlack();
+					grid.setCellBlackCommand();
 					resetMenuState();
 					crosswordPanel.repaint(0);
 				}
@@ -359,7 +398,6 @@ public class MainFrame extends JFrame {
 			}
 		});
 
-		// Edit Menu, E - Mnemonic
 		JMenu editMenu = new JMenu(Message.EDIT_MENU_HEADER.toString());
 		editMenu.setMnemonic(KeyEvent.VK_E);
 		editMenu.add(undoItem);
@@ -368,44 +406,24 @@ public class MainFrame extends JFrame {
 		editMenu.add(setToBlackItem);
 		editMenu.addSeparator();
 		editMenu.add(preferencesItem);
-		topLevelMenuBar.add(editMenu);
-		
-		// put help menu on right side of menubar
-		topLevelMenuBar.add(Box.createHorizontalGlue());
+		return editMenu;
+	}
 
-		// Help Menu, H - Mnemonic
+	// return Help menu - H mnemonic
+	private JMenu helpMenu() {
 		JMenu helpMenu = new JMenu(Message.HELP_MENU_HEADER.toString());
 		helpMenu.setMnemonic(KeyEvent.VK_H);
-		topLevelMenuBar.add(helpMenu);
+		helpMenu.addSeparator();
+		JMenuItem aboutItem = new JMenuItem(Message.HELP_MENU_OPTION_ABOUT.toString());
+		aboutItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				JOptionPane.showMessageDialog(MainFrame.this, "Crostex\nWritten by Alex Stangl\nCopyright 2008-2013", Message.HELP_MENU_OPTION_ABOUT.toString(), JOptionPane.PLAIN_MESSAGE, new CrosswordIcon(5));
+			}
+		});
+		helpMenu.add(aboutItem);
+		return helpMenu;
+	}
 
-		getRootPane().setJMenuBar(topLevelMenuBar);
-	}
-	
-
-	/**
-	 * @return preferred size
-	 */
-	public Dimension getPreferredSize() {
-		return PREFERRED_SIZE;
-	}
-	
-	// normalize raw word from dictionary; return null if word is unacceptable
-	private String normalizeWord(String rawWord) {
-		int len = rawWord.length();
-		if (len < 3)
-			return null;
-		StringBuilder builder = new StringBuilder(rawWord.length());
-		for (int i = 0; i < len; ++i) {
-			char c = rawWord.charAt(i);
-			if (c >= 'a' && c <= 'z')
-				c = Character.toUpperCase(c);
-			if (c < 'A' || c > 'Z')
-				return null;
-			builder.append(c);
-		}
-		return builder.toString();
-	}
-	
 	private boolean readDictionaryFile(String dataDirectory, String filename) {
 		File dictionaryFile = new File(dataDirectory, filename);
 		BufferedReader in = null;

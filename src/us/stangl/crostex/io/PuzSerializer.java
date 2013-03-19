@@ -45,6 +45,11 @@ public class PuzSerializer {
 	
 	// contents of a solution cell that represents black
 	private static final byte BLACK_SOLUTION_CELL = 0x2e;
+	
+	// extra section names
+	private static final String SECTION_NAME_GRBS = "GRBS";		// where rebuses are located in the solution
+	private static final String SECTION_NAME_RTBL = "RTBL";		// contents of rebus squares, refered to by GRBS
+	private static final String SECTION_NAME_GEXT = "GEXT";		// circled squares, incorrect and given flags
 
 	/**
 	 * @return whether the specified grid is in a state ready to export
@@ -111,13 +116,13 @@ public class PuzSerializer {
 		
 		int nCells = width * height;
 		
-		int offsetStrings = OFFSET_SOLUTION + nCells + nCells;
+		int currOffset = OFFSET_SOLUTION + nCells + nCells;
 		int nbrStrings = 4 + nbrClues;
 		String[] strings = new String[nbrStrings];
 		for (int i = 0; i < nbrStrings; ++i) {
-			int strlen = strLength(bytes, offsetStrings);
-			strings[i] = fromByteArray(bytes, offsetStrings, strlen);
-			offsetStrings = offsetStrings + strlen + 1;
+			int strlen = strLength(bytes, currOffset);
+			strings[i] = fromByteArray(bytes, currOffset, strlen);
+			currOffset = currOffset + strlen + 1;
 		}
 		
 		grid.setTitle(strings[0]);
@@ -147,6 +152,45 @@ public class PuzSerializer {
 		}
 		grid.setAcrossClues(acrossClues);
 		grid.setDownClues(downClues);
+		
+		// Array to store IDs of rebuses, one per cell. If rebusIds null, there are no rebuses.
+		// If element is 0, corresponding cell is not a rebus. Otherwise element encodes rebus ID + 1
+		byte[] rebusIds = null;
+		
+		// Parse extra sections
+		while (currOffset + 8 < bytes.length) {
+			String sectionName = fromByteArray(bytes, currOffset, 4);
+			short dataLength = getShortAt(bytes, currOffset + 4);
+			short checksum = getShortAt(bytes, currOffset + 6);
+			short computed_chksum = cksum_region(bytes, currOffset + 8, dataLength, (short) 0);
+			LOG.fine("Section name = " + sectionName + ", length = " + dataLength + ", checksum = " + checksum + ", computed_chksum = " + computed_chksum);
+			if (checksum != computed_chksum) {
+				LOG.warning("Section " + sectionName + " checksum mismatch in fromBytes, computed = " + computed_chksum + " versus stored " + checksum);
+				if (enforceChecksums)
+					return null;
+			}
+			
+			int cellIndex = currOffset + 8;
+			if (sectionName.equals(SECTION_NAME_GEXT)) {
+				for (int row = 0; row < height; ++row) {
+					for (int column = 0; column < width; ++column) {
+						byte b = bytes[cellIndex++];
+						grid.setCircledCell(row, column, (b & 0x80) != 0);
+					}
+				}
+			} else if (sectionName.equals(SECTION_NAME_GRBS)) {
+				if (dataLength != nCells)
+					throw new RuntimeException("GRBS data length mismatch: expected " + nCells + " versus actual " + dataLength);
+				rebusIds = new byte[nCells];
+				System.arraycopy(bytes, currOffset + 8, rebusIds, 0, nCells);
+			} else if (sectionName.equals(SECTION_NAME_RTBL)) {
+				if (dataLength != nCells)
+					throw new RuntimeException("RTBL data length mismatch: expected " + nCells + " versus actual " + dataLength);
+				String rtbl = fromByteArray(bytes, currOffset + 8, nCells);
+			}
+
+			currOffset = currOffset + dataLength + 9;
+		}
 		return grid;
 	}
 	
@@ -169,6 +213,7 @@ public class PuzSerializer {
 		int width = grid.getWidth();
 		int height = grid.getHeight();
 		int nCells = width * height;
+		
 		// get all the clues in the correct sorted order
 		List<? extends IoClue> acrossClues = grid.getAcrossClues();
 		List<? extends IoClue> downClues = grid.getDownClues();
@@ -177,6 +222,7 @@ public class PuzSerializer {
 		allClues.addAll(acrossClues);
 		allClues.addAll(downClues);
 		Collections.sort(allClues, new ClueComparator());
+		
 		String title = grid.getTitle();
 		String author = grid.getAuthor();
 		String copyright = grid.getCopyright();
@@ -194,7 +240,6 @@ public class PuzSerializer {
 		if (playerState.length() != nCells)
 			throw new RuntimeException("playerState '" + playerState + "' not expected length " + nCells);
 
-		// ...and strings
 		for (IoClue clue : allClues)
 			strings.add(clue.getClueText());
 		
@@ -205,8 +250,11 @@ public class PuzSerializer {
 		for (String string : strings)
 			totalStringsLength += string.length();
 
-		// Allocate full byte array, not taking into account any extra sections (that may come later), then populate it
-		int totalLength = 52 + nCells + nCells + totalStringsLength;
+		byte[] gextSection = buildGextSection(grid);
+		int gextSectionLength = gextSection == null ? 0 : gextSection.length;
+
+		// Allocate full byte array, then populate it
+		int totalLength = 52 + nCells + nCells + totalStringsLength + gextSectionLength;
 		byte[] mainPuz = new byte[totalLength];
 		mainPuz[OFFSET_WIDTH] = (byte)width;
 		mainPuz[OFFSET_HEIGHT] = (byte)height;
@@ -216,11 +264,17 @@ public class PuzSerializer {
 		System.arraycopy(toByteArray(solution), 0, mainPuz, OFFSET_SOLUTION, nCells);
 		System.arraycopy(toByteArray(playerState), 0, mainPuz, OFFSET_SOLUTION + nCells, nCells);
 		
-		int index = OFFSET_SOLUTION + nCells + nCells;
+		int currOffset = OFFSET_SOLUTION + nCells + nCells;
 		for (String string : strings) {
 			byte[] stringBytes = toByteArray(string + "\0");
-			System.arraycopy(stringBytes, 0, mainPuz, index, stringBytes.length);
-			index += stringBytes.length;
+			System.arraycopy(stringBytes, 0, mainPuz, currOffset, stringBytes.length);
+			currOffset += stringBytes.length;
+		}
+		
+		// If GEXT section generated, add it in
+		if (gextSectionLength != 0) {
+			System.arraycopy(gextSection, 0, mainPuz, currOffset, gextSectionLength);
+			currOffset += gextSectionLength;
 		}
 
 		// Now compute and add in checksums
@@ -350,6 +404,47 @@ public class PuzSerializer {
 		}
 	}
 	
+	// return checksum of len bytes starting at region[index], and initial checksum value cksum
+	private static short cksum_region(byte[] region, int index, int len, short cksum) {
+		// use int to accumulate actual checksum so we don't have to worry about sign issues
+		int intSum = cksum & 0xffff;
+		for (int i = 0; i < len; ++i) {
+			boolean lowBit = intSum % 2 == 1;
+			intSum >>= 1;
+			if (lowBit)
+				intSum += 0x8000;
+			intSum = (intSum + (region[index + i] & 0xff)) & 0xffff;
+		}
+		return (short)intSum;
+	}
+	
+	// return GEXT section for the specified grid, or null if no GEXT section is needed
+	private byte[] buildGextSection(IoGrid grid) {
+		int width= grid.getWidth();
+		int height = grid.getHeight();
+		int length = width * height;
+		byte[] retval = new byte[length + 9];
+		int index = 8;
+		boolean anyCircled = false;
+		for (int row = 0; row < height; ++row) {
+			for (int column = 0; column < width; ++column) {
+				boolean circled = grid.isCircledCell(row, column);
+				if (circled)
+					anyCircled = true;
+				retval[index++] = circled ? (byte)0x80 : (byte)0x00;
+			}
+		}
+		
+		// If no squares circled, return null to indicate no need for GEXT section
+		if (! anyCircled)
+			return null;
+		
+		System.arraycopy(toByteArray(SECTION_NAME_GEXT), 0, retval, 0, 4);
+		putShortAt((short)length, retval, 4);
+		putShortAt(cksum_region(retval, 8, length, (short) 0), retval, 6);
+		return retval;
+	}
+	
 	// private class that holds checksums computed from a PUZ grid byte array
 	private static final class PuzChecksums {
 		public final short c_cib;
@@ -397,20 +492,6 @@ public class PuzSerializer {
 			encrypted_chksums[5] = (byte)(0x54 ^ (c_sol >> 8));
 			encrypted_chksums[6] = (byte)(0x45 ^ (c_grid >> 8));
 			encrypted_chksums[7] = (byte)(0x44 ^ (c_part >> 8));
-		}
-
-		// return checksum of len bytes starting at region[index], and initial checksum value cksum
-		private short cksum_region(byte[] region, int index, int len, short cksum) {
-			// use int to accumulate actual checksum so we don't have to worry about sign issues
-			int intSum = cksum & 0xffff;
-			for (int i = 0; i < len; ++i) {
-				boolean lowBit = intSum % 2 == 1;
-				intSum >>= 1;
-				if (lowBit)
-					intSum += 0x8000;
-				intSum = (intSum + (region[index + i] & 0xff)) & 0xffff;
-			}
-			return (short)intSum;
 		}
 	}
 }

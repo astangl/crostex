@@ -27,7 +27,8 @@ import us.stangl.crostex.command.ClearCellCommand;
 import us.stangl.crostex.command.CommandBuffer;
 import us.stangl.crostex.command.EnterCharacterToCellCommand;
 import us.stangl.crostex.command.SetCurrentCellBlackCommand;
-import us.stangl.crostex.command.ToggleCurrentCellCommand;
+import us.stangl.crostex.command.ToggleCurrentCellBlackCommand;
+import us.stangl.crostex.command.ToggleCurrentCellCircledCommand;
 import us.stangl.crostex.dictionary.Dictionary;
 import us.stangl.crostex.io.DOMSerializer;
 import us.stangl.crostex.io.IoClue;
@@ -37,6 +38,10 @@ import us.stangl.crostex.util.RowColumnPair;
 /**
  * Crossword grid.
  * @author Alex Stangl
+ */
+/**
+ * @author Alex Stangl
+ *
  */
 public class Grid implements IoGrid
 {
@@ -273,6 +278,9 @@ public class Grid implements IoGrid
 							g.drawString(Integer.toString(cell.getNumber()), xoffset + col * cellWidth, yoffset + row * cellHeight + (int)smallFontSize);
 							g.setFont(font);
 						}
+						if (cell.isCircled()) {
+							g.drawArc(xoffset + col * cellWidth, yoffset + row * cellHeight, cellWidth, cellHeight, 0, 360);
+						}
 					}
 				}
 				g.drawRect(xoffset + col * cellWidth, yoffset + row * cellHeight, cellWidth, cellHeight);
@@ -370,6 +378,22 @@ public class Grid implements IoGrid
 		getCell(row, col).setBlack(isBlack);
 	}
 	
+	/* (non-Javadoc)
+	 * @see us.stangl.crostex.io.IoGrid#isCircledCell(int, int)
+	 */
+	@Override
+	public boolean isCircledCell(int row, int col) {
+		return getCell(row, col).isCircled();
+	}
+	
+	/* (non-Javadoc)
+	 * @see us.stangl.crostex.io.IoGrid#setCircledCell(int, int, boolean)
+	 */
+	@Override
+	public void setCircledCell(int row, int col, boolean isCircled) {
+		getCell(row, col).setCircled(isCircled);
+	}
+	
 	
 	/* (non-Javadoc)
 	 * @see us.stangl.crostex.io.IoGrid#getCellContents(int, int)
@@ -432,15 +456,25 @@ public class Grid implements IoGrid
 		}
 	}
 	
-	public void toggleCurrentCell() {
-		commandBuffer.applyCommand(new ToggleCurrentCellCommand(this));
-		//notifyCellChangeListeners
-		//notifyGridChangeListeners();
+	/**
+	 * Execute undoable command to toggle current cell black.
+	 */
+	public void toggleCellBlackCommand() {
+		commandBuffer.applyCommand(new ToggleCurrentCellBlackCommand(this));
 	}
 	
-	public void setCurrentCellBlack() {
+	/**
+	 * Execute undoable command to toggle current cell circled.
+	 */
+	public void toggleCellCircledCommand() {
+		commandBuffer.applyCommand(new ToggleCurrentCellCircledCommand(this));
+	}
+	
+	/**
+	 * Execute undoable command to set current cell black.
+	 */
+	public void setCellBlackCommand() {
 		commandBuffer.applyCommand(new SetCurrentCellBlackCommand(this));
-		//notifyGridChangeListeners();
 	}
 	
 	public int getHeight() {

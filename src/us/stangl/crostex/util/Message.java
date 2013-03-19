@@ -19,7 +19,7 @@ public enum Message {
 	BUTTON_OK,						// text for OK button
 	BUTTON_PICK_DATA_DIRECTORY,		// text for pick data directory button
 	CELL_POPUP_MENU_OPTION_TOGGLE_CELL_BLACK,	// popup menu for cell, option to toggle cell black/white
-	CLUES_TAB_TITLE,				// title for clues tab
+	CELL_POPUP_MENU_OPTION_TOGGLE_CELL_CIRCLED,	// popup menu for cell, option to toggle cell circled/uncircled
 	COMBO_BOX_OPTION_SKIP_BLACK,	// combo box Skip Black option
 	COMBO_BOX_OPTION_SKIP_BLACK_AND_FILLED,		// combo box Skip Black and Filled option
 	COMBO_BOX_OPTION_SKIP_NONE,		// combo box Skip None option
@@ -51,6 +51,7 @@ public enum Message {
 	FILE_MENU_OPTION_NEW,			// File menu New ... option
 	FILE_MENU_OPTION_SAVE_GRID_AS_TEMPLATE,	// File menu Save Grid as Template... option
 	HELP_MENU_HEADER,				// header for Help menu
+	HELP_MENU_OPTION_ABOUT,			// Help menu option About Crostex
 	LABEL_ACROSS,					// label Across
 	LABEL_AUTHOR,					// label Author
 	LABEL_COPYRIGHT,				// label Copyright
@@ -73,7 +74,9 @@ public enum Message {
 	PANEL_DIMENSIONS_TITLE,			// title for Dimensions panel
 	PANEL_GRID_PICKER_TITLE,		// title for Grid picker panel
 	PANEL_PREVIEW_TITLE,			// title for Preview panel
-	STATS_TAB_TITLE,				// title for Stats tab
+	TAB_TITLE_CLUES,				// title for clues tab
+	TAB_TITLE_REBUS,				// title for Rebus tab
+	TAB_TITLE_STATS,				// title for Stats tab
 	TEXT_CELLS_HIGH,				// text "cells high"
 	TEXT_CELLS_WIDE,				// text "cells wide"
 	TEXT_DESCRIPTION,				// text "description"
