@@ -52,6 +52,9 @@ public class Grid implements IoGrid
 	
 	private static final Color LIGHT_GREEN = new Color(170, 255, 170);
 	
+	// # of points per inch
+	private static final double POINTS_PER_INCH = 72.0;
+	
 	// cell width
 	private int cellWidth = 24;
 	
@@ -240,11 +243,11 @@ public class Grid implements IoGrid
 	 * @param g graphics context
 	 */
 	public void render(Graphics2D g, int cellWidth, int cellHeight, boolean thumbnail) {
-		int dpi = Toolkit.getDefaultToolkit().getScreenResolution();
 		Font originalFont = g.getFont();
 		
-		Font font = originalFont.deriveFont((float)(cellHeight * 72.0 / dpi));
-		float smallFontSize = (float)(cellHeight * 32.0 / dpi);
+		// derive new font point size by converting cellHeight in pixels to # of points
+		Font font = originalFont.deriveFont(pixelsToPoints(cellHeight));
+		float smallFontSize = pixelsToPoints((int)(cellHeight / 2.25));
 		Font smallFont = font.deriveFont(smallFontSize);
 		FontMetrics fontMetrics = g.getFontMetrics(font);
 		int ascent = fontMetrics.getAscent();
@@ -271,8 +274,20 @@ public class Grid implements IoGrid
 							g.fillRect(xoffset + col * cellWidth, yoffset + row * cellHeight, cellWidth, cellHeight);
 							g.setColor(Color.BLACK);
 						}
-						g.drawString(cell.getContents(), xoffset + col * cellWidth + cellWidthResidual / 2,
-								yoffset + row * cellHeight + ascent + cellHeightResidual / 2);
+						String string = cell.getContents();
+						if (string.length() > 1) {
+							// Handle rebus cell special, computing optimal font size to squeeze rebus in
+							FontMetrics rebusFontMetrics = scaleFontToFitWidth(g, originalFont, string, cellWidth - 2);
+							g.setFont(rebusFontMetrics.getFont());
+							int rebusHeightResidual = cellHeight - rebusFontMetrics.getAscent();
+							int rebusWidthResidual = cellWidth - rebusFontMetrics.stringWidth(string);
+							g.drawString(string, xoffset + col * cellWidth + rebusWidthResidual / 2,
+									yoffset + row * cellHeight + rebusFontMetrics.getAscent() + rebusHeightResidual / 2);
+							g.setFont(font);
+						} else {
+							g.drawString(string, xoffset + col * cellWidth + cellWidthResidual / 2,
+									yoffset + row * cellHeight + ascent + cellHeightResidual / 2);
+						}
 						if (displayingWordNumbers && cell.getNumber() > 0) {
 							g.setFont(smallFont);
 							g.drawString(Integer.toString(cell.getNumber()), xoffset + col * cellWidth, yoffset + row * cellHeight + (int)smallFontSize);
@@ -1249,6 +1264,36 @@ public class Grid implements IoGrid
 				&& !cell.isBlack() && cell.isEmpty();
 	}
 
+	// convert # of pixels to typography points (where point is 1/72 of an inch)
+	private float pixelsToPoints(int pixels) {
+		int dpi = Toolkit.getDefaultToolkit().getScreenResolution();
+		return (float)((double)pixels * POINTS_PER_INCH / (double)dpi);
+	}
+
+	// scale specified font so that string will fit in specified width, erring on low side
+	private FontMetrics scaleFontToFitWidth(Graphics2D g, Font originalFont, String string, int desiredWidth) {
+		Font font = originalFont;
+		FontMetrics fontMetrics = g.getFontMetrics(font);
+		float hiFactor = pixelsToPoints(desiredWidth + 3);
+		float loFactor = (float)2.0;	// use 2 points as our lower limit
+		// try maximum of 10 iterations to nail it. After that, just return whatever we have
+		for (int i = 0; i < 10; ++i) {
+			float scalingFactor = (float)((loFactor + hiFactor) / 2.0);
+			font = originalFont.deriveFont(scalingFactor);
+			fontMetrics = g.getFontMetrics(font);
+			int actualWidth = fontMetrics.stringWidth(string);
+			if (actualWidth == desiredWidth)
+				return fontMetrics;
+			if (actualWidth > desiredWidth)
+				hiFactor = scalingFactor;
+			else
+				loFactor = scalingFactor;
+		}
+		
+		// err on side of returning low side font
+		return g.getFontMetrics(originalFont.deriveFont(loFactor));
+	}
+	
 	/**
 	 * @return whether the cursor is wrapping from one side of the grid to the other
 	 */
