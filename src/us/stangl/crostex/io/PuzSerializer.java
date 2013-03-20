@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import us.stangl.crostex.AcrossDownDirection;
@@ -156,6 +158,7 @@ public class PuzSerializer {
 		// Array to store IDs of rebuses, one per cell. If rebusIds null, there are no rebuses.
 		// If element is 0, corresponding cell is not a rebus. Otherwise element encodes rebus ID + 1
 		byte[] rebusIds = null;
+		String rtbl = null;
 		
 		// Parse extra sections
 		while (currOffset + 8 < bytes.length) {
@@ -184,12 +187,36 @@ public class PuzSerializer {
 				rebusIds = new byte[nCells];
 				System.arraycopy(bytes, currOffset + 8, rebusIds, 0, nCells);
 			} else if (sectionName.equals(SECTION_NAME_RTBL)) {
-				if (dataLength != nCells)
-					throw new RuntimeException("RTBL data length mismatch: expected " + nCells + " versus actual " + dataLength);
-				String rtbl = fromByteArray(bytes, currOffset + 8, nCells);
+				rtbl = fromByteArray(bytes, currOffset + 8, dataLength);
 			}
 
 			currOffset = currOffset + dataLength + 9;
+		}
+
+		// process rebuses, if any
+		if (rebusIds != null && rtbl != null) {
+			Map<Integer, String> idToRebusMap = new HashMap<Integer, String>();
+			for (String rawRebusString : rtbl.split(";")) {
+				int colonIndex = rawRebusString.indexOf(':');
+				if (colonIndex == -1)
+					throw new RuntimeException("Could not find : in '" + rawRebusString + "' part of RTBL string " + rtbl);
+				Integer id = Integer.valueOf(rawRebusString.substring(0, colonIndex).trim());
+				String rebus = rawRebusString.substring(colonIndex + 1);
+				idToRebusMap.put(id, rebus);
+			}
+			int rebusIdIndex = 0;
+			for (int row = 0; row < height; ++row) {
+				for (int column = 0; column < width; ++column) {
+					byte rebusId = rebusIds[rebusIdIndex++];
+					if (rebusId != 0) {
+						// turn to unsigned int just in case
+						String rebus  = idToRebusMap.get(Integer.valueOf((rebusId & 0xff) - 1));
+						if (rebus == null)
+							throw new RuntimeException("Unexpectedly didn't find rebus ID " + rebusId);
+						grid.setCellContents(row, column, rebus);
+					}
+				}
+			}
 		}
 		return grid;
 	}

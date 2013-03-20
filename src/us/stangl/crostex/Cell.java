@@ -20,6 +20,9 @@ public class Cell {
 	// whether this cell is circled
 	private boolean circled;
 	
+	// if this cell is a rebus, associated rebus data, else null
+	private Rebus rebus;
+	
 	public boolean isBlack() {
 		return black;
 	}
