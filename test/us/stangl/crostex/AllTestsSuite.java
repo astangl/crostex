@@ -14,6 +14,7 @@ import us.stangl.crostex.gui.CrosswordPanelTest;
 import us.stangl.crostex.util.CircularListTest;
 import us.stangl.crostex.util.MessageTest;
 import us.stangl.crostex.util.StackTest;
+import us.stangl.crostex.util.StringUtilsTest;
  
 /**
  * Test suite to run all unit tests.
@@ -27,6 +28,7 @@ import us.stangl.crostex.util.StackTest;
 	OnePolyominoGridConstraintTest.class,
 	RomanNumeralGeneratorTest.class,
 	StackTest.class,
+	StringUtilsTest.class,
 	SymmetryGridConstraintTest.class,
 	TrieTest.class
 })

@@ -40,9 +40,11 @@ public class PuzSerializer {
 	private static final int OFFSET_CIB_CHKSUM = 0x0e;
 	private static final int OFFSET_ENCRYPTED_CHKSUMS = 0x10;
 	private static final int OFFSET_VERSION_STRING = 0x18;
+	private static final int OFFSET_SCRAMBLED_CHKSUM = 0x1e;
 	private static final int OFFSET_WIDTH = 0x2c;
 	private static final int OFFSET_HEIGHT = 0x2d;
 	private static final int OFFSET_NBR_CLUES = 0x2e;
+	private static final int OFFSET_SCRAMBLED_TAG = 0x32;
 	private static final int OFFSET_SOLUTION = 0x34;
 	
 	// contents of a solution cell that represents black
@@ -104,17 +106,15 @@ public class PuzSerializer {
 					return null;
 			}
 		}
-		int solutionIndex = OFFSET_SOLUTION;
-		for (int row = 0; row < height; ++row) {
-			for (int column = 0; column < width; ++ column) {
-				byte b = bytes[solutionIndex];
-				if (b == BLACK_SOLUTION_CELL)
-					grid.setBlackCell(row, column, true);
-				else
-					grid.setCellContents(row, column, fromByteArray(bytes, solutionIndex, 1));
-				++solutionIndex;
-			}
+		populateGridFromByteArray(grid, bytes, OFFSET_SOLUTION);
+		
+		// If grid is scrambled, automatically descramble it
+		if (getShortAt(bytes, OFFSET_SCRAMBLED_TAG) != (short)0) {
+			short realSolutionChksum = getShortAt(bytes, OFFSET_SCRAMBLED_CHKSUM);
+			byte[] realSolution = new PuzScramblerDescrambler().autoDescramble(grid, realSolutionChksum);
+			populateGridFromByteArray(grid, realSolution, 0);
 		}
+		
 		
 		int nCells = width * height;
 		
@@ -132,29 +132,6 @@ public class PuzSerializer {
 		grid.setCopyright(strings[2]);
 		grid.setNotes(strings[nbrStrings - 1]);
 		
-		// create the clues, stored in order first by number, then across before down
-		int currCellNumber = 1;
-		int clueStringIndex = 3;
-		List<IoClue> acrossClues = new ArrayList<IoClue>();
-		List<IoClue> downClues = new ArrayList<IoClue>();
-		
-		for (int row = 0; row < height; ++row) {
-			for (int column = 0; column < width; ++column) {
-				if (grid.isBlackCell(row,  column))
-					continue;
-				boolean startOfAcrossWord = isStartOfAcrossWord(grid, row, column);
-				boolean startOfDownWord = isStartOfDownWord(grid, row, column);
-				if (startOfAcrossWord)
-					acrossClues.add(newIoClue(grid, currCellNumber, strings[clueStringIndex++], AcrossDownDirection.ACROSS));
-				if (startOfDownWord)
-					downClues.add(newIoClue(grid, currCellNumber, strings[clueStringIndex++], AcrossDownDirection.DOWN));
-				if (startOfAcrossWord || startOfDownWord)
-					++currCellNumber;
-			}
-		}
-		grid.setAcrossClues(acrossClues);
-		grid.setDownClues(downClues);
-		
 		// Array to store IDs of rebuses, one per cell. If rebusIds null, there are no rebuses.
 		// If element is 0, corresponding cell is not a rebus. Otherwise element encodes rebus ID + 1
 		byte[] rebusIds = null;
@@ -165,7 +142,7 @@ public class PuzSerializer {
 			String sectionName = fromByteArray(bytes, currOffset, 4);
 			short dataLength = getShortAt(bytes, currOffset + 4);
 			short checksum = getShortAt(bytes, currOffset + 6);
-			short computed_chksum = cksum_region(bytes, currOffset + 8, dataLength, (short) 0);
+			short computed_chksum = PuzUtils.cksum_region(bytes, currOffset + 8, dataLength, (short) 0);
 			LOG.fine("Section name = " + sectionName + ", length = " + dataLength + ", checksum = " + checksum + ", computed_chksum = " + computed_chksum);
 			if (checksum != computed_chksum) {
 				LOG.warning("Section " + sectionName + " checksum mismatch in fromBytes, computed = " + computed_chksum + " versus stored " + checksum);
@@ -218,7 +195,46 @@ public class PuzSerializer {
 				}
 			}
 		}
+		
+		// create the clues, stored in order first by number, then across before down
+		int currCellNumber = 1;
+		int clueStringIndex = 3;
+		List<IoClue> acrossClues = new ArrayList<IoClue>();
+		List<IoClue> downClues = new ArrayList<IoClue>();
+		
+		for (int row = 0; row < height; ++row) {
+			for (int column = 0; column < width; ++column) {
+				if (grid.isBlackCell(row,  column))
+					continue;
+				boolean startOfAcrossWord = isStartOfAcrossWord(grid, row, column);
+				boolean startOfDownWord = isStartOfDownWord(grid, row, column);
+				if (startOfAcrossWord)
+					acrossClues.add(newIoClue(grid, currCellNumber, strings[clueStringIndex++], AcrossDownDirection.ACROSS));
+				if (startOfDownWord)
+					downClues.add(newIoClue(grid, currCellNumber, strings[clueStringIndex++], AcrossDownDirection.DOWN));
+				if (startOfAcrossWord || startOfDownWord)
+					++currCellNumber;
+			}
+		}
+		grid.setAcrossClues(acrossClues);
+		grid.setDownClues(downClues);
+		
 		return grid;
+	}
+
+	private void populateGridFromByteArray(IoGrid grid, byte[] bytes, int index) {
+		int width = grid.getWidth();
+		int height = grid.getHeight();
+		for (int row = 0; row < height; ++row) {
+			for (int column = 0; column < width; ++ column) {
+				byte b = bytes[index];
+				if (b == BLACK_SOLUTION_CELL)
+					grid.setBlackCell(row, column, true);
+				else
+					grid.setCellContents(row, column, fromByteArray(bytes, index, 1));
+				++index;
+			}
+		}
 	}
 	
 	// return new IoClue associated with specified grid, initialized with specified number/direction/text
@@ -431,20 +447,6 @@ public class PuzSerializer {
 		}
 	}
 	
-	// return checksum of len bytes starting at region[index], and initial checksum value cksum
-	private static short cksum_region(byte[] region, int index, int len, short cksum) {
-		// use int to accumulate actual checksum so we don't have to worry about sign issues
-		int intSum = cksum & 0xffff;
-		for (int i = 0; i < len; ++i) {
-			boolean lowBit = intSum % 2 == 1;
-			intSum >>= 1;
-			if (lowBit)
-				intSum += 0x8000;
-			intSum = (intSum + (region[index + i] & 0xff)) & 0xffff;
-		}
-		return (short)intSum;
-	}
-	
 	// return GEXT section for the specified grid, or null if no GEXT section is needed
 	private byte[] buildGextSection(IoGrid grid) {
 		int width= grid.getWidth();
@@ -468,7 +470,7 @@ public class PuzSerializer {
 		
 		System.arraycopy(toByteArray(SECTION_NAME_GEXT), 0, retval, 0, 4);
 		putShortAt((short)length, retval, 4);
-		putShortAt(cksum_region(retval, 8, length, (short) 0), retval, 6);
+		putShortAt(PuzUtils.cksum_region(retval, 8, length, (short) 0), retval, 6);
 		return retval;
 	}
 	
@@ -483,15 +485,15 @@ public class PuzSerializer {
 			int height = puzData[startOffset + OFFSET_HEIGHT] & 0xff;
 			int nCells = width * height;
 			int nbrClues = getShortAt(puzData, startOffset + OFFSET_NBR_CLUES);
-			c_cib = cksum_region(puzData, startOffset + OFFSET_WIDTH, 8, (short)0);
+			c_cib = PuzUtils.cksum_region(puzData, startOffset + OFFSET_WIDTH, 8, (short)0);
 			short cksum = c_cib;
 			short c_part = (short)0;
 			
-			short c_sol = cksum_region(puzData, startOffset + OFFSET_SOLUTION, nCells, (short)0);
-			cksum = cksum_region(puzData, startOffset + OFFSET_SOLUTION, nCells, cksum);
+			short c_sol = PuzUtils.cksum_region(puzData, startOffset + OFFSET_SOLUTION, nCells, (short)0);
+			cksum = PuzUtils.cksum_region(puzData, startOffset + OFFSET_SOLUTION, nCells, cksum);
 			
-			short c_grid = cksum_region(puzData, startOffset + OFFSET_SOLUTION + nCells, nCells, (short)0);
-			cksum = cksum_region(puzData, startOffset + OFFSET_SOLUTION + nCells, nCells, cksum);
+			short c_grid = PuzUtils.cksum_region(puzData, startOffset + OFFSET_SOLUTION + nCells, nCells, (short)0);
+			cksum = PuzUtils.cksum_region(puzData, startOffset + OFFSET_SOLUTION + nCells, nCells, cksum);
 			
 			int currOffset = startOffset + OFFSET_SOLUTION + nCells + nCells;
 
@@ -505,8 +507,8 @@ public class PuzSerializer {
 					++strLen;
 				// If it's one of the ones including null in checksum, only include in checksum for non-empty strings
 				if (!includeNullInChecksum || strLen > 1) {
-					c_part = cksum_region(puzData, currOffset, strLen, c_part);
-					cksum = cksum_region(puzData, currOffset, strLen, cksum);
+					c_part = PuzUtils.cksum_region(puzData, currOffset, strLen, c_part);
+					cksum = PuzUtils.cksum_region(puzData, currOffset, strLen, cksum);
 				}
 				currOffset = nextOffset;
 			}

@@ -39,10 +39,6 @@ import us.stangl.crostex.util.RowColumnPair;
  * Crossword grid.
  * @author Alex Stangl
  */
-/**
- * @author Alex Stangl
- *
- */
 public class Grid implements IoGrid
 {
 	// logger
@@ -1045,6 +1041,7 @@ public class Grid implements IoGrid
 
 			clue.setStartOfWord(gridWordStart);
 			clue.setEndOfWord(gridWordEnd);
+
 			clue.setGridWord(gridWord.getContents());
 			clue.setWordComplete(gridWord.isComplete());
 			clue.setCells(gridWord.getCells());
