@@ -56,7 +56,9 @@ public class Stack<E> {
 	 * @throws ArrayIndexOutOfBoundsException if stack empty
 	 */
 	public E pop() {
-		return slots[--fillPointer];
+		E retval = slots[--fillPointer];
+		slots[fillPointer] = null;			// to avoid memory leaks
+		return retval;
 	}
 	
 	public boolean contains(E obj) {
