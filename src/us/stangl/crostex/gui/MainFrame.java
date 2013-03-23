@@ -113,7 +113,6 @@ public class MainFrame extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		// Ensure that dataDirectory preference is set, request it otherwise.
-		//p.remove(dataDirectoryPropertyName);
 		PreferenceKey dataDirectoryKey = PreferenceKey.DATA_DIRECTORY;
 		String dataDirectory = preferencesStore.getValue(dataDirectoryKey, null);
 		while (dataDirectory == null) {
@@ -193,13 +192,6 @@ public class MainFrame extends JFrame {
 		pack();
 		setVisible(true);
 
-//		f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-//		f.addWindowListener(new WindowAdapter() {
-//			public void windowClosed(WindowEvent e) {
-//				System.exit(0);
-//			}
-//		});
-		
 		// Create menus: File, Edit, Help (mnemonics F, E, H)
 		topLevelMenuBar.add(fileMenu());
 		topLevelMenuBar.add(editMenu());
@@ -261,14 +253,6 @@ public class MainFrame extends JFrame {
 				
 				Grid chosenGrid = dialog.getSelectedGridTemplate();
 				if (chosenGrid != null) {
-//					chosenGrid = new Grid(5, 5, "dummy", "dummy");
-					// Temporarily do auto-fill here
-//					trie_.insert("AAA".toCharArray(), new Word());
-//					long startTime = System.currentTimeMillis();
-//					boolean autofillReturn = chosenGrid.autoFill(dict_);
-//					long endTime = System.currentTimeMillis();
-//					System.out.println("autofill returns " + autofillReturn + ", elapsed time " + (endTime - startTime) + " ms.");
-
 					String title = MessageFormat.format(Message.UNTITLED_TAB_TITLE.toString(), untitledTabCounter++);
 					Grid gridCopy = new Grid(chosenGrid);
 					gridCopy.setTitle(title);
@@ -276,33 +260,8 @@ public class MainFrame extends JFrame {
 					gridCopy.setCopyright(preferencesStore.getValue(PreferenceKey.DEFAULT_COPYRIGHT, ""));
 					gridCopy.setNotes(preferencesStore.getValue(PreferenceKey.DEFAULT_NOTES, ""));
 					openGridInNewTab(gridCopy);
-					
-//					gridCopy.addTitleChangeListener(new GridChangeListener() {
-//						public void handleChange(Grid grid) {
-//							topLevelTabbedPane.setTitleAt(topLevelTabbedPane.getSelectedIndex(), grid.getTitle());
-//						}
-//					});
-//					//CrosswordPanel crosswordPanel = new CrosswordPanel(MainFrame.this, gridCopy);
-//					//topLevelTabbedPane.addTab(tabTitle, crosswordPanel);
-////					topLevelTabbedPane.addTab(tabTitle, new CrosswordPanel(MainFrame.this, gridCopy));
-//					topLevelTabbedPane.addTab(title, new TopLevelTabPanel(MainFrame.this, gridCopy));
-//					topLevelTabbedPane.setSelectedIndex(topLevelTabbedPane.getTabCount() - 1);
-////					crosswordPanel.setFocusable(true);
-////					crosswordPanel.requestFocusInWindow();
 				}
 				saveAsTemplate.setEnabled(true);
-//				tabbedPane_.addTab(title, component);
-				
-//				// create new non-modal dialog box
-//				JPanel buttonsPanel = new JPanel();
-//				buttonsPanel.add(new JButton(Message.BUTTON_OK.toString()));
-//				buttonsPanel.add(new JButton(Message.BUTTON_CANCEL.toString()));
-//				
-//				JDialog dialog = new JDialog((Frame)null, Message.DIALOG_TITLE_NEW_CROSSWORD.toString(), false);
-//				dialog.getContentPane().add(new NewCrosswordPanel(), BorderLayout.CENTER);
-//				dialog.getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
-//				dialog.pack();
-//				dialog.setVisible(true);
 			}
 		});
 		
@@ -522,7 +481,6 @@ public class MainFrame extends JFrame {
 				preferencesStore.putValue(PreferenceKey.DEFAULT_AUTHOR, defaultAuthorField.getText());
 				preferencesStore.putValue(PreferenceKey.DEFAULT_COPYRIGHT, defaultCopyrightField.getText());
 				preferencesStore.putValue(PreferenceKey.DEFAULT_NOTES, defaultNotesField.getText());
-				//TODO set preferences here
 				dialog.dispose();
 			}
 		});
@@ -530,7 +488,6 @@ public class MainFrame extends JFrame {
 		JButton cancelButton = new JButton(Message.BUTTON_CANCEL.toString());
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				//TODO discard preferences here
 				dialog.dispose();
 			}
 		});
