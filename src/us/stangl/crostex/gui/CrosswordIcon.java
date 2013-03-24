@@ -35,16 +35,12 @@ public class CrosswordIcon implements Icon {
 	@Override
 	public void paintIcon(Component c, Graphics g, int x, int y) {
 		g.setColor(Color.BLACK);
-		for (int row = 0; row < 15; ++row) {
-			int bitmap = GRID_DATA[row];
+		for (int row = 0; row < 15; ++row)
 			for (int col = 0; col < 15; ++col) {
-				if ((bitmap & 1) != 0) {
+				if ((GRID_DATA[row] & (1 << col)) != 0)
 					g.fillRect(x + col * pixelsPerCell, y + row * pixelsPerCell, pixelsPerCell, pixelsPerCell);
-				}
 				g.drawRect(x + col * pixelsPerCell, y + row * pixelsPerCell, pixelsPerCell, pixelsPerCell);
-				bitmap >>= 1;
 			}
-		}
 	}
 
 	/**
