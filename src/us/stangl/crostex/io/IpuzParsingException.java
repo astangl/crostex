@@ -4,18 +4,18 @@
 package us.stangl.crostex.io;
 
 /**
- * Exception thrown if error occurs during JSON parsing.
+ * Exception thrown when error occurs during parsing of IPUZ data.
  * @author Alex Stangl
  */
-public class JsonParsingException extends Exception {
+public class IpuzParsingException extends Exception {
 
 	private static final long serialVersionUID = 1L;
 
-	public JsonParsingException(String msg) {
+	public IpuzParsingException(String msg) {
 		super(msg);
 	}
 	
-	public JsonParsingException(String msg, Throwable t) {
+	public IpuzParsingException(String msg, Throwable t) {
 		super(msg, t);
 	}
 }

@@ -90,6 +90,19 @@ public class JsonParserTest {
 	}
 	
 	@Test
+	public void testEscapedStrings() throws JsonParsingException {
+		Object obj = new JsonParser().parseJsonString("[ \"\\\"Quoted String\\\"\", \"Line1\\nLine2\", \"Line1\\rLine2\", \"\\u0041l\\u0065x\"]");
+		assertNotNull(obj);
+		assertTrue(obj instanceof List);
+		List<String> list = (List<String>)obj;
+		assertEquals(4, list.size());
+		assertEquals("\"Quoted String\"", list.get(0));
+		assertEquals("Line1\nLine2", list.get(1));
+		assertEquals("Line1\rLine2", list.get(2));
+		assertEquals("Alex", list.get(3));
+	}
+	
+	@Test
 	public void testEmptyArray() throws JsonParsingException {
 		Object obj = new JsonParser().parseJsonString("[]");
 		assertTrue(obj instanceof List);

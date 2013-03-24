@@ -52,6 +52,8 @@ import us.stangl.crostex.dictionary.Dictionary;
 import us.stangl.crostex.dictionary.Ydict;
 import us.stangl.crostex.io.FileReader;
 import us.stangl.crostex.io.FileSaver;
+import us.stangl.crostex.io.IpuzParsingException;
+import us.stangl.crostex.io.IpuzSerializer;
 import us.stangl.crostex.io.PuzSerializer;
 import us.stangl.crostex.util.Message;
 import us.stangl.crostex.util.Pair;
@@ -90,6 +92,9 @@ public class MainFrame extends JFrame {
 	// File menu option to export PUZ file
 	private JMenuItem exportPuzItem = new JMenuItem(Message.FILE_MENU_OPTION_EXPORT_AS_PUZ.toString());
 
+	// File menu option to import IPUZ file
+	private JMenuItem importIpuzItem = new JMenuItem(Message.FILE_MENU_OPTION_IMPORT_IPUZ.toString());
+	
 	// Edit menu option to undo
 	private JMenuItem undoItem = newMenuItem(Message.EDIT_MENU_OPTION_UNDO);
 
@@ -241,6 +246,7 @@ public class MainFrame extends JFrame {
 		fileMenu.add(saveAsTemplate);
 		fileMenu.add(importPuzItem);
 		fileMenu.add(exportPuzItem);
+		fileMenu.add(importIpuzItem);
 		fileMenu.addSeparator();
 		fileMenu.add(exitItem);
 		
@@ -284,7 +290,7 @@ public class MainFrame extends JFrame {
 			}
 		});
 		
-		importPuzItem.setActionCommand("Import PUZ file");
+		//importPuzItem.setActionCommand("Import PUZ file");
 		importPuzItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				JFileChooser fileChooser = new JFileChooser();
@@ -300,12 +306,12 @@ public class MainFrame extends JFrame {
 							openGridInNewTab(grid);
 						}
 					} catch (IOException e) {
-						LOG.severe("IOException caught trying to import PUZ file " + file + ": " + e);
+						LOG.log(Level.WARNING, "IOException caught trying to import PUZ file " + file, e);
 					}
 				}
 			}
 		});
-		exportPuzItem.setActionCommand("Export as PUZ file");
+		//exportPuzItem.setActionCommand("Export as PUZ file");
 		exportPuzItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				CrosswordPanel crosswordPanel = getCrosswordPanel();
@@ -315,6 +321,28 @@ public class MainFrame extends JFrame {
 					{
 						byte[] bytes = new PuzSerializer().toPuz(crosswordPanel.getGrid());
 						FileSaver.saveToFile(bytes, fileChooser.getSelectedFile());
+					}
+				}
+			}
+		});
+		importIpuzItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				JFileChooser fileChooser = new JFileChooser();
+				if (fileChooser.showOpenDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION)
+				{
+					File file = fileChooser.getSelectedFile();
+					try {
+						byte[] bytes = FileReader.getFileBytes(file);
+						Grid grid = new IpuzSerializer().fromBytes(bytes, new GridFactory());
+						if (grid == null) {
+							LOG.severe("Couldn't open IPUZ file " + file + " because it appears invalid");
+						} else {
+							openGridInNewTab(grid);
+						}
+					} catch (IpuzParsingException e) {
+						LOG.log(Level.WARNING, "IpuzParsingException caught trying to import IPUZ file " + file, e);
+					} catch (IOException e) {
+						LOG.log(Level.WARNING, "IOException caught trying to import IPUZ file " + file, e);
 					}
 				}
 			}

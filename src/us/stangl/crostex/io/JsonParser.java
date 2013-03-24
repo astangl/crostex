@@ -142,14 +142,18 @@ public class JsonParser {
 			assertStartCharacter('"', "string");
 
 			int startString = currIndex;
+			StringBuilder builder = new StringBuilder();
 			while (true) {
 				char c = getCharAtOffset(currIndex++, "string");
 				if (c == '"')
-					return string.substring(startString, currIndex - 1);
+					return builder.toString();
 				if (c == '\\') {
 					c = getCharAtOffset(currIndex++, "string");
-					if ("\"\\/bfnrt".indexOf(c) != -1) {
+					if ("\"\\/".indexOf(c) != -1)
+						builder.append(c);
+					else if ("bfnrt".indexOf(c) != -1) {
 						// two character escape
+						builder.append("\b\f\n\r\t".charAt("bfnrt".indexOf(c)));
 					} else if (c == 'u') {
 						for (int i = 0; i < 4; ++i) {
 							c = getCharAtOffset(currIndex++, "string");
@@ -157,10 +161,15 @@ public class JsonParser {
 								throw new JsonParsingException("Unexpected character '" + c
 										+ "' encountered during hex escape sequence while parsing string at offset " + startString);
 						}
+						int codePoint = Integer.parseInt(string.substring(currIndex-4, currIndex), 16);
+						builder.append(Character.toChars(codePoint));
 					} else {
 						throw new JsonParsingException("Unexpectedly encountered '" + c 
 								+ "' after escape when parsing string at offset " + startString);
 					}
+				}
+				else {
+					builder.append(c);
 				}
 			}
 		}
