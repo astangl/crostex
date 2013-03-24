@@ -56,6 +56,7 @@ public class JsonSerializerTest {
 				new Double("2.3E+5"), "crypto"), values);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testParsingBigCase2() throws JsonSerializationException {
 		Object obj = new JsonSerializer().parseJsonString(BIG_CASE_2);
@@ -67,6 +68,7 @@ public class JsonSerializerTest {
 			testParsingBigCase1Map((Map<String, ?>)element);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testParsingBigCase1InUtf8() throws JsonSerializationException, UnsupportedEncodingException {
 		Object obj = new JsonSerializer().parseJsonBytes(BIG_CASE_1.getBytes("UTF-8"));
@@ -75,6 +77,7 @@ public class JsonSerializerTest {
 		testParsingBigCase1Map((Map<String, ?>)obj);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testParsingBigCase1InUtf16le() throws JsonSerializationException, UnsupportedEncodingException {
 		Object obj = new JsonSerializer().parseJsonBytes(BIG_CASE_1.getBytes("UTF-16LE"));
@@ -83,6 +86,7 @@ public class JsonSerializerTest {
 		testParsingBigCase1Map((Map<String, ?>)obj);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testParsingBigCase1InUtf16be() throws JsonSerializationException, UnsupportedEncodingException {
 		Object obj = new JsonSerializer().parseJsonBytes(BIG_CASE_1.getBytes("UTF-16BE"));
@@ -96,6 +100,7 @@ public class JsonSerializerTest {
 		Object obj = new JsonSerializer().parseJsonString("[ \"\\\"Quoted String\\\"\", \"Line1\\nLine2\", \"Line1\\rLine2\", \"\\u0041l\\u0065x\"]");
 		assertNotNull(obj);
 		assertTrue(obj instanceof List);
+		@SuppressWarnings("unchecked")
 		List<String> list = (List<String>)obj;
 		assertEquals(4, list.size());
 		assertEquals("\"Quoted String\"", list.get(0));

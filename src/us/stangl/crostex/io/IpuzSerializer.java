@@ -256,6 +256,7 @@ public class IpuzSerializer {
 		return retval;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private List<List<?>> toIpuzClues(List<? extends IoClue> clues) {
 		List<List<?>> retval = new ArrayList<List<?>>();
 		for (IoClue clue : clues)
