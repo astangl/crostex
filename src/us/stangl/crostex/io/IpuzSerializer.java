@@ -69,7 +69,7 @@ public class IpuzSerializer {
 			if (! ipuzString.endsWith(IPUZ_TRAILER))
 				throw new IpuzParsingException("IPUZ data '" + ipuzString + "' doesn't end with " + IPUZ_TRAILER);
 			String jsonString = ipuzString.substring(IPUZ_HEADER.length(), ipuzString.length() - IPUZ_TRAILER.length());
-			Object obj = new JsonParser().parseJsonString(jsonString);
+			Object obj = new JsonSerializer().parseJsonString(jsonString);
 			if (! (obj instanceof Map))
 				throw new IpuzParsingException("IPUZ JSON didn't decode into an object");
 			Map<String,?> map = (Map<String,?>)obj;

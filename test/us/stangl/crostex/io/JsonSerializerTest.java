@@ -17,10 +17,10 @@ import org.junit.Test;
 import us.stangl.crostex.util.MiscUtils;
 
 /**
- * Unit tests for JsonParser.
+ * Unit tests for JsonSerializer.
  * @author Alex Stangl
  */
-public class JsonParserTest {
+public class JsonSerializerTest {
 
 	// big JSON test cases
 	private static final String BIG_CASE_1 = " { \"name\" : \"Daily Planet Crossword, December 25, 2013\","
@@ -32,7 +32,7 @@ public class JsonParserTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testBigCase1() throws JsonParsingException {
-		Object obj = new JsonParser().parseJsonString(BIG_CASE_1);
+		Object obj = new JsonSerializer().parseJsonString(BIG_CASE_1);
 		assertNotNull(obj);
 		assertTrue(obj instanceof Map);
 		testBigCase1Map((Map<String, ?>)obj);
@@ -56,7 +56,7 @@ public class JsonParserTest {
 	
 	@Test
 	public void testBigCase2() throws JsonParsingException {
-		Object obj = new JsonParser().parseJsonString(BIG_CASE_2);
+		Object obj = new JsonSerializer().parseJsonString(BIG_CASE_2);
 		assertNotNull(obj);
 		assertTrue(obj instanceof List);
 		List<?> list = (List<?>)obj;
@@ -67,7 +67,7 @@ public class JsonParserTest {
 	
 	@Test
 	public void testBigCase1InUtf8() throws JsonParsingException, UnsupportedEncodingException {
-		Object obj = new JsonParser().parseJsonBytes(BIG_CASE_1.getBytes("UTF-8"));
+		Object obj = new JsonSerializer().parseJsonBytes(BIG_CASE_1.getBytes("UTF-8"));
 		assertNotNull(obj);
 		assertTrue(obj instanceof Map);
 		testBigCase1Map((Map<String, ?>)obj);
@@ -75,7 +75,7 @@ public class JsonParserTest {
 	
 	@Test
 	public void testBigCase1InUtf16le() throws JsonParsingException, UnsupportedEncodingException {
-		Object obj = new JsonParser().parseJsonBytes(BIG_CASE_1.getBytes("UTF-16LE"));
+		Object obj = new JsonSerializer().parseJsonBytes(BIG_CASE_1.getBytes("UTF-16LE"));
 		assertNotNull(obj);
 		assertTrue(obj instanceof Map);
 		testBigCase1Map((Map<String, ?>)obj);
@@ -83,7 +83,7 @@ public class JsonParserTest {
 	
 	@Test
 	public void testBigCase1InUtf16be() throws JsonParsingException, UnsupportedEncodingException {
-		Object obj = new JsonParser().parseJsonBytes(BIG_CASE_1.getBytes("UTF-16BE"));
+		Object obj = new JsonSerializer().parseJsonBytes(BIG_CASE_1.getBytes("UTF-16BE"));
 		assertNotNull(obj);
 		assertTrue(obj instanceof Map);
 		testBigCase1Map((Map<String, ?>)obj);
@@ -91,7 +91,7 @@ public class JsonParserTest {
 	
 	@Test
 	public void testEscapedStrings() throws JsonParsingException {
-		Object obj = new JsonParser().parseJsonString("[ \"\\\"Quoted String\\\"\", \"Line1\\nLine2\", \"Line1\\rLine2\", \"\\u0041l\\u0065x\"]");
+		Object obj = new JsonSerializer().parseJsonString("[ \"\\\"Quoted String\\\"\", \"Line1\\nLine2\", \"Line1\\rLine2\", \"\\u0041l\\u0065x\"]");
 		assertNotNull(obj);
 		assertTrue(obj instanceof List);
 		List<String> list = (List<String>)obj;
@@ -104,12 +104,12 @@ public class JsonParserTest {
 	
 	@Test
 	public void testEmptyArray() throws JsonParsingException {
-		Object obj = new JsonParser().parseJsonString("[]");
+		Object obj = new JsonSerializer().parseJsonString("[]");
 		assertTrue(obj instanceof List);
 		List<?> list = (List<?>)obj;
 		assertTrue(list.isEmpty());
 		
-		obj = new JsonParser().parseJsonString("   \t [ \r\n  ]\n");
+		obj = new JsonSerializer().parseJsonString("   \t [ \r\n  ]\n");
 		assertTrue(obj instanceof List);
 		list = (List<?>)obj;
 		assertTrue(list.isEmpty());
@@ -117,12 +117,12 @@ public class JsonParserTest {
 	
 	@Test
 	public void testEmptyObject() throws JsonParsingException {
-		Object obj = new JsonParser().parseJsonString("{}");
+		Object obj = new JsonSerializer().parseJsonString("{}");
 		assertTrue(obj instanceof Map);
 		Map<?,?> map = (Map<?,?>)obj;
 		assertTrue(map.isEmpty());
 		
-		obj = new JsonParser().parseJsonString("   \t\t { \r\n  }\n");
+		obj = new JsonSerializer().parseJsonString("   \t\t { \r\n  }\n");
 		assertTrue(obj instanceof Map);
 		map = (Map<?,?>)obj;
 		assertTrue(map.isEmpty());
@@ -130,51 +130,51 @@ public class JsonParserTest {
 	
 	@Test(expected=JsonParsingException.class)
 	public void testEmptyParse() throws JsonParsingException {
-		new JsonParser().parseJsonString("");
+		new JsonSerializer().parseJsonString("");
 	}
 	
 	@Test(expected=JsonParsingException.class)
 	public void testBadLeadingZero() throws JsonParsingException {
-		new JsonParser().parseJsonString("[00]");
+		new JsonSerializer().parseJsonString("[00]");
 	}
 
 	@Test(expected=JsonParsingException.class)
 	public void testBadLeadingPlus() throws JsonParsingException {
-		new JsonParser().parseJsonString("[+1]");
+		new JsonSerializer().parseJsonString("[+1]");
 	}
 
 	@Test(expected=JsonParsingException.class)
 	public void testBadExponent() throws JsonParsingException {
-		new JsonParser().parseJsonString("[123E, 4]");
+		new JsonSerializer().parseJsonString("[123E, 4]");
 	}
 
 	@Test(expected=JsonParsingException.class)
 	public void testBadMissingFraction1() throws JsonParsingException {
-		new JsonParser().parseJsonString("[123.,35]");
+		new JsonSerializer().parseJsonString("[123.,35]");
 	}
 
 	@Test(expected=JsonParsingException.class)
 	public void testBadMissingFraction2() throws JsonParsingException {
-		new JsonParser().parseJsonString("[-123.]");
+		new JsonSerializer().parseJsonString("[-123.]");
 	}
 
 	@Test(expected=JsonParsingException.class)
 	public void testBadExtraSpace() throws JsonParsingException {
-		new JsonParser().parseJsonString("[123E 45, 4]");
+		new JsonSerializer().parseJsonString("[123E 45, 4]");
 	}
 
 	@Test(expected=JsonParsingException.class)
 	public void testBadBareNumber() throws JsonParsingException {
-		new JsonParser().parseJsonString("4");
+		new JsonSerializer().parseJsonString("4");
 	}
 
 	@Test(expected=JsonParsingException.class)
 	public void testBadBareString1() throws JsonParsingException {
-		new JsonParser().parseJsonString("\"name\"");
+		new JsonSerializer().parseJsonString("\"name\"");
 	}
 
 	@Test(expected=JsonParsingException.class)
 	public void testBadBareString2() throws JsonParsingException {
-		new JsonParser().parseJsonString("name");
+		new JsonSerializer().parseJsonString("name");
 	}
 }

@@ -11,10 +11,10 @@ import java.util.Map;
 
 
 /**
- * JSON parser, RFC4627 compliant except that it doesn't handle UTF-32.
+ * JSON serializer, RFC4627 compliant except that it doesn't handle UTF-32.
  * @author Alex Stangl
  */
-public class JsonParser {
+public class JsonSerializer {
 	// enumeration of possible UTF encodings
 	private enum UtfEncoding { UTF_32BE, UTF_32LE, UTF_16BE, UTF_16LE, UTF_8 };
 
