@@ -422,6 +422,13 @@ public class Grid implements IoGrid
 		getCell(row, col).setContents(contents);
 	}
 	
+	/* (non-Javadoc)
+	 * @see us.stangl.crostex.io.IoGrid#getCellNumber(int, int)
+	 */
+	public int getCellNumber(int row, int col) {
+		return getCell(row, col).getNumber();
+	}
+	
 	/**
 	 * Handle mouse clicked event.
 	 * @param evt mouse clicked event from AWT

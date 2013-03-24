@@ -50,6 +50,7 @@ public enum Message {
 	FILE_MENU_HEADER,				// header for File menu (e.g., File)
 	FILE_MENU_OPTION_EXIT,			// File menu Exit option
 	FILE_MENU_OPTION_EXPORT_AS_PUZ,	// File menu Export as PUZ option
+	FILE_MENU_OPTION_EXPORT_AS_IPUZ,	// File menu Export as IPUZ option
 	FILE_MENU_OPTION_IMPORT_IPUZ,	// File menu Import IPUZ option
 	FILE_MENU_OPTION_IMPORT_PUZ,	// File menu Import PUZ file option
 	FILE_MENU_OPTION_NEW,			// File menu New ... option

@@ -118,6 +118,13 @@ public interface IoGrid {
 	void setCellContents(int row, int column, String contents);
 	
 	/**
+	 * Return number associated with specified cell, or 0 if cell has no number.
+	 * @param row row of the cell
+	 * @param column column of the cell
+	 */
+	int getCellNumber(int row, int column);
+	
+	/**
 	 * @return across clues for puzzle
 	 */
 	List<? extends IoClue> getAcrossClues();

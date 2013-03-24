@@ -52,7 +52,7 @@ import us.stangl.crostex.dictionary.Dictionary;
 import us.stangl.crostex.dictionary.Ydict;
 import us.stangl.crostex.io.FileReader;
 import us.stangl.crostex.io.FileSaver;
-import us.stangl.crostex.io.IpuzParsingException;
+import us.stangl.crostex.io.IpuzSerializationException;
 import us.stangl.crostex.io.IpuzSerializer;
 import us.stangl.crostex.io.PuzSerializer;
 import us.stangl.crostex.util.Message;
@@ -94,6 +94,9 @@ public class MainFrame extends JFrame {
 
 	// File menu option to import IPUZ file
 	private JMenuItem importIpuzItem = new JMenuItem(Message.FILE_MENU_OPTION_IMPORT_IPUZ.toString());
+
+	// File menu option to export IPUZ file
+	private JMenuItem exportIpuzItem = new JMenuItem(Message.FILE_MENU_OPTION_EXPORT_AS_IPUZ.toString());
 	
 	// Edit menu option to undo
 	private JMenuItem undoItem = newMenuItem(Message.EDIT_MENU_OPTION_UNDO);
@@ -247,6 +250,7 @@ public class MainFrame extends JFrame {
 		fileMenu.add(importPuzItem);
 		fileMenu.add(exportPuzItem);
 		fileMenu.add(importIpuzItem);
+		fileMenu.add(exportIpuzItem);
 		fileMenu.addSeparator();
 		fileMenu.add(exitItem);
 		
@@ -339,10 +343,27 @@ public class MainFrame extends JFrame {
 						} else {
 							openGridInNewTab(grid);
 						}
-					} catch (IpuzParsingException e) {
-						LOG.log(Level.WARNING, "IpuzParsingException caught trying to import IPUZ file " + file, e);
+					} catch (IpuzSerializationException e) {
+						LOG.log(Level.WARNING, "IpuzSerializationException caught trying to import IPUZ file " + file, e);
 					} catch (IOException e) {
 						LOG.log(Level.WARNING, "IOException caught trying to import IPUZ file " + file, e);
+					}
+				}
+			}
+		});
+		exportIpuzItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				CrosswordPanel crosswordPanel = getCrosswordPanel();
+				if (crosswordPanel != null) {
+					JFileChooser fileChooser = new JFileChooser();
+					if (fileChooser.showSaveDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION)
+					{
+						try {
+							byte[] bytes = new IpuzSerializer().toBytes(crosswordPanel.getGrid());
+							FileSaver.saveToFile(bytes, fileChooser.getSelectedFile());
+						} catch (IpuzSerializationException e) {
+							LOG.log(Level.WARNING, "IpuzSerializationException caught trying to export IPUZ file", e);
+						}
 					}
 				}
 			}
