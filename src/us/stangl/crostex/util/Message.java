@@ -30,6 +30,7 @@ public enum Message {
 	DIALOG_TEXT_CONFIRM_DATA_DIRECTORY_CREATE, // text confirming creation of data directory
 	DIALOG_TEXT_CONFIRM_DUPLICATE_GRID,			// text for dialog confirming whether to create duplicate (by structure) grid template
 	DIALOG_TEXT_NONEMPTY_NAME_DESCRIPTION,	// text for dialog reporting that name and description must be non-blank
+	DIALOG_TEXT_OVERWRITE_EXISTING_FILE,	// text for dialog confirming whether to overwrite an existing file
 	DIALOG_TEXT_OVERWRITE_EXISTING_GRID,		// text for dialog prompting whether to overwrite existing grid template with same name
 	DIALOG_TEXT_SET_DATA_DIRECTORY,	// text for Set Data Directory dialog box
 	DIALOG_TEXT_UNABLE_TO_CREATE_DATA_DIRECTORY,	// text unable to create data directory {0}
@@ -37,7 +38,8 @@ public enum Message {
 	DIALOG_TITLE_CONFIRM_DUPLICATE_GRID,		// title for ""
 	DIALOG_TITLE_NEW_CROSSWORD,		// title for New Crossword dialog box
 	DIALOG_TITLE_NONEMPTY_NAME_DESCRIPTION,	// title for ""
-	DIALOG_TITLE_OVERWRITE_EXISTING_GRID,		// title for ""
+	DIALOG_TITLE_OVERWRITE_EXISTING_GRID,		// title for dialog box confirming whether to overwrite existing grid
+	DIALOG_TITLE_OVERWRITE_FILE,		// title for dialog box confirming whether to overwrite existing file
 	DIALOG_TITLE_PREFERENCES,		// title for Preferences dialog box
 	DIALOG_TITLE_SAVE_GRID_TEMPLATE,				// title for Save Grid Template dialog box
 	DIALOG_TITLE_SET_DATA_DIRECTORY,// title for Set Data Directory dialog box

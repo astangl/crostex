@@ -254,7 +254,6 @@ public class MainFrame extends JFrame {
 		fileMenu.addSeparator();
 		fileMenu.add(exitItem);
 		
-		newItem.setActionCommand("Create new crossword tableau");
 		newItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				NewCrosswordDialog dialog = new NewCrosswordDialog(gridsDb);
@@ -294,10 +293,10 @@ public class MainFrame extends JFrame {
 			}
 		});
 		
-		//importPuzItem.setActionCommand("Import PUZ file");
 		importPuzItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				JFileChooser fileChooser = new JFileChooser();
+				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				if (fileChooser.showOpenDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION)
 				{
 					File file = fileChooser.getSelectedFile();
@@ -315,12 +314,12 @@ public class MainFrame extends JFrame {
 				}
 			}
 		});
-		//exportPuzItem.setActionCommand("Export as PUZ file");
 		exportPuzItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				CrosswordPanel crosswordPanel = getCrosswordPanel();
 				if (crosswordPanel != null) {
-					JFileChooser fileChooser = new JFileChooser();
+					JFileChooser fileChooser = new FileChooserConfirmingOverwrite(); //saveFileChooserPromptingOverwrite(); //new JFileChooser();
+					fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 					if (fileChooser.showSaveDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION)
 					{
 						byte[] bytes = new PuzSerializer().toPuz(crosswordPanel.getGrid());
@@ -332,6 +331,7 @@ public class MainFrame extends JFrame {
 		importIpuzItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				JFileChooser fileChooser = new JFileChooser();
+				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				if (fileChooser.showOpenDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION)
 				{
 					File file = fileChooser.getSelectedFile();
@@ -355,12 +355,17 @@ public class MainFrame extends JFrame {
 			public void actionPerformed(ActionEvent evt) {
 				CrosswordPanel crosswordPanel = getCrosswordPanel();
 				if (crosswordPanel != null) {
-					JFileChooser fileChooser = new JFileChooser();
+					JFileChooser fileChooser = new FileChooserConfirmingOverwrite(); //saveFileChooserPromptingOverwrite(); //new JFileChooser();
+					fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 					if (fileChooser.showSaveDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION)
 					{
 						try {
 							byte[] bytes = new IpuzSerializer().toBytes(crosswordPanel.getGrid());
-							FileSaver.saveToFile(bytes, fileChooser.getSelectedFile());
+							File fileToWrite = fileChooser.getSelectedFile();
+							if (fileToWrite.exists()) {
+								
+							}
+							FileSaver.saveToFile(bytes, fileToWrite);
 						} catch (IpuzSerializationException e) {
 							LOG.log(Level.WARNING, "IpuzSerializationException caught trying to export IPUZ file", e);
 						}
@@ -438,6 +443,7 @@ public class MainFrame extends JFrame {
 		helpMenu.addSeparator();
 		JMenuItem aboutItem = new JMenuItem(Message.HELP_MENU_OPTION_ABOUT.toString());
 		aboutItem.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent evt) {
 				JOptionPane.showMessageDialog(MainFrame.this,
 					Message.HELP_ABOUT_DIALOG_TEXT.toString(),
@@ -448,7 +454,7 @@ public class MainFrame extends JFrame {
 		helpMenu.add(aboutItem);
 		return helpMenu;
 	}
-
+	
 	private boolean readDictionaryFile(String dataDirectory, String filename) {
 		File dictionaryFile = new File(dataDirectory, filename);
 		BufferedReader in = null;
