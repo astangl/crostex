@@ -248,9 +248,8 @@ public class Grid implements IoGrid
 		FontMetrics fontMetrics = g.getFontMetrics(font);
 		int ascent = fontMetrics.getAscent();
 		int cellHeightResidual = cellHeight - ascent;
-		int cellWidthResidual = cellWidth - fontMetrics.charWidth('X');
-		LOG.finest("font size = " + font.getSize() + ", cellHeightResidual = " + cellHeightResidual
-				+ ", cellWidthResidual = " + cellWidthResidual);
+		//int cellWidthResidual = cellWidth - fontMetrics.charWidth('X');
+		LOG.finest("font size = " + font.getSize() + ", cellHeightResidual = " + cellHeightResidual);
 		g.setColor(Color.BLACK);
 		g.setFont(font);
 		for (int row = 0; row < height; ++row) {
@@ -281,6 +280,7 @@ public class Grid implements IoGrid
 									yoffset + row * cellHeight + rebusFontMetrics.getAscent() + rebusHeightResidual / 2);
 							g.setFont(font);
 						} else {
+							int cellWidthResidual = cellWidth - fontMetrics.stringWidth(string);
 							g.drawString(string, xoffset + col * cellWidth + cellWidthResidual / 2,
 									yoffset + row * cellHeight + ascent + cellHeightResidual / 2);
 						}
