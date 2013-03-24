@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import us.stangl.crostex.util.IdentityHashSet;
 
 
 /**
@@ -26,34 +29,52 @@ public class JsonSerializer {
 	// whitespace characters
 	private static final String WHITESPACE = " \t\r\n";
 	
-	public String parseBytesToString(byte[] bytes) throws JsonParsingException {
+	public String parseBytesToString(byte[] bytes) throws JsonSerializationException {
 		UtfEncoding encoding = detectUtfEncoding(bytes);
 		if (encoding == UtfEncoding.UTF_32BE || encoding == UtfEncoding.UTF_32LE)
-			throw new JsonParsingException("Cannot handle UTF-32 encoding: " + encoding);
+			throw new JsonSerializationException("Cannot handle UTF-32 encoding: " + encoding);
 		if (bytes.length < 4)
-			throw new JsonParsingException("Expected JSON to be at least 4 bytes. Was "
+			throw new JsonSerializationException("Expected JSON to be at least 4 bytes. Was "
 					+ bytes.length + " bytes.");
 		
 		// use enum name with _ replaced with - as the Charset name
 		try {
 			return new String(bytes, encoding.name().replace('_', '-'));
 		} catch (UnsupportedEncodingException e) {
-			throw new JsonParsingException("UnsupportedEncodingException unexpectedly caught", e);
+			throw new JsonSerializationException("UnsupportedEncodingException unexpectedly caught", e);
 		}
 	}
 	
-	public Object parseJsonBytes(byte[] bytes) throws JsonParsingException {
+	public Object parseJsonBytes(byte[] bytes) throws JsonSerializationException {
 		return parseJsonString(parseBytesToString(bytes));
 	}
 	
-	public Object parseJsonString(String string) throws JsonParsingException {
+	public Object parseJsonString(String string) throws JsonSerializationException {
 		return new ParserImpl(string).parseObjectOrArray();
+	}
+	
+	/**
+	 * Serialize object to JSON string. Object is expected to be structured equivalent
+	 * to that produced by this class' parser, e.g., consist of nested Map<String, ?>,
+	 * Lists, and Boolean/String/Double/null "primitives".
+	 * If input object graph contains back-references, this is considered an error and will
+	 * cause JsonSerializationException to be thrown. 
+	 * @param object object to serialize to JSON, should be either a Map (JSON object) or List (JSON array)
+	 * @return JSON string equivalent of object
+	 * @throws JsonSerializationException if unable to successfully encode object as JSON
+	 */
+	public String toJsonString(Object object) throws JsonSerializationException {
+		if (! (object instanceof Map) && ! (object instanceof List))
+			throw new JsonSerializationException("Illegal attempt to JSON encode top-level object that is not a Map or List");
+		JsonEncoder encoder = new JsonEncoder();
+		encoder.encodeAny(object);
+		return encoder.toString();
 	}
 
 	// looking at first 4 bytes, determine type of UTF encoding, from RFC4627
-	private UtfEncoding detectUtfEncoding(byte[] bytes) throws JsonParsingException {
+	private UtfEncoding detectUtfEncoding(byte[] bytes) throws JsonSerializationException {
 		if (bytes.length < 4)
-			throw new JsonParsingException("Expected JSON to be at least 4 bytes. Was "
+			throw new JsonSerializationException("Expected JSON to be at least 4 bytes. Was "
 					+ bytes.length + " bytes.");
 		if (bytes[0] != 0 && bytes[1] != 0 && bytes[2] != 0)
 			return UtfEncoding.UTF_8;
@@ -74,7 +95,7 @@ public class JsonSerializer {
 			this.string = string;
 		}
 		
-		public Object parseObjectOrArray() throws JsonParsingException {
+		public Object parseObjectOrArray() throws JsonSerializationException {
 			currIndex = indexOfNextNonWhitespaceChar("object or array");
 			char c = getCharAtOffset(currIndex, "object or array");
 			if (c == '[')
@@ -82,10 +103,10 @@ public class JsonSerializer {
 			else if (c == '{')
 				return parseObject();
 			else
-				throw new JsonParsingException("Parsed unexpected character '" + c + "' when expecting object or array at offset " + currIndex);
+				throw new JsonSerializationException("Parsed unexpected character '" + c + "' when expecting object or array at offset " + currIndex);
 		}
 		
-		public List<Object> parseArray() throws JsonParsingException {
+		public List<Object> parseArray() throws JsonSerializationException {
 			assertStartCharacter('[', "array");
 			List<Object> array = new ArrayList<Object>();
 			while (true) {
@@ -103,7 +124,7 @@ public class JsonSerializer {
 			}
 		}
 		
-		public Map<String, Object> parseObject() throws JsonParsingException {
+		public Map<String, Object> parseObject() throws JsonSerializationException {
 			assertStartCharacter('{', "object");
 			Map<String, Object> object = new HashMap<String, Object>();
 			while (true) {
@@ -111,7 +132,7 @@ public class JsonSerializer {
 				char c = getCharAtOffset(currIndex++, "object");
 				if (! object.isEmpty() && c != '}') {
 					if (c != ',')
-						throw new JsonParsingException("Unexpectedly encountered '" + c
+						throw new JsonSerializationException("Unexpectedly encountered '" + c
 								+ "' when expecting name string when parsing object at offset " + (currIndex - 1));
 					currIndex = indexOfNextNonWhitespaceChar("object");
 					c = getCharAtOffset(currIndex++, "object");
@@ -121,13 +142,13 @@ public class JsonSerializer {
 				}
 				--currIndex;
 				if (c != '"')
-					throw new JsonParsingException("Unexpectedly encountered '" + c
+					throw new JsonSerializationException("Unexpectedly encountered '" + c
 							+ "' when expecting name string when parsing object at offset " + currIndex);
 				String name = parseString();
 				currIndex = indexOfNextNonWhitespaceChar("object");
 				c = getCharAtOffset(currIndex, "object");
 				if (c != ':')
-					throw new JsonParsingException("Encountered unexpected character " + c 
+					throw new JsonSerializationException("Encountered unexpected character " + c 
 							+ " when expecting ':' while parsing object at offset " + currIndex);
 				++currIndex;
 				
@@ -138,7 +159,7 @@ public class JsonSerializer {
 			}
 		}
 		
-		public String parseString() throws JsonParsingException {
+		public String parseString() throws JsonSerializationException {
 			assertStartCharacter('"', "string");
 
 			int startString = currIndex;
@@ -158,13 +179,13 @@ public class JsonSerializer {
 						for (int i = 0; i < 4; ++i) {
 							c = getCharAtOffset(currIndex++, "string");
 							if ("0123456789abcdefABCDEF".indexOf(c) == -1)
-								throw new JsonParsingException("Unexpected character '" + c
+								throw new JsonSerializationException("Unexpected character '" + c
 										+ "' encountered during hex escape sequence while parsing string at offset " + startString);
 						}
 						int codePoint = Integer.parseInt(string.substring(currIndex-4, currIndex), 16);
 						builder.append(Character.toChars(codePoint));
 					} else {
-						throw new JsonParsingException("Unexpectedly encountered '" + c 
+						throw new JsonSerializationException("Unexpectedly encountered '" + c 
 								+ "' after escape when parsing string at offset " + startString);
 					}
 				}
@@ -174,7 +195,7 @@ public class JsonSerializer {
 			}
 		}
 		
-		public Double parseNumber() throws JsonParsingException {
+		public Double parseNumber() throws JsonSerializationException {
 			int i = indexOfNextNonWhitespaceChar("number");
 			int startNumber = i;
 
@@ -185,18 +206,18 @@ public class JsonSerializer {
 			if (c == '0') {
 				c = getCharAtOffset(++i, "number");
 				if (c >= '0' && c <= '9')
-					throw new JsonParsingException("Number with leading zero at offset " + startNumber);
+					throw new JsonSerializationException("Number with leading zero at offset " + startNumber);
 			} else if (c >= '1' && c <= '9') {
 				while (c >= '0' && c <= '9')
 					c = getCharAtOffset(++i, "number");
 			} else {
-				throw new JsonParsingException("Unexpected character " + c + " encountered trying to parse number at offset " + startNumber);
+				throw new JsonSerializationException("Unexpected character " + c + " encountered trying to parse number at offset " + startNumber);
 			}
 			
 			if (c == '.') {
 				c = getCharAtOffset(++i, "number");
 				if (! (c >= '0' && c <= '9'))
-					throw new JsonParsingException("Number with unexpected character '" + c + "' following decimal point at offset " + startNumber);
+					throw new JsonSerializationException("Number with unexpected character '" + c + "' following decimal point at offset " + startNumber);
 				while (c >= '0' && c <= '9')
 					c = getCharAtOffset(++i, "number");
 			}
@@ -206,7 +227,7 @@ public class JsonSerializer {
 				if (c == '-' || c == '+')
 					c = getCharAtOffset(++i, "number");
 				if (! (c >= '0' && c <= '9'))
-					throw new JsonParsingException("Number with unexpected character '" + c + "' following exponent indicator at offset " + startNumber);
+					throw new JsonSerializationException("Number with unexpected character '" + c + "' following exponent indicator at offset " + startNumber);
 				while (c >= '0' && c <= '9')
 					c = getCharAtOffset(++i, "number");
 			}
@@ -215,7 +236,7 @@ public class JsonSerializer {
 			try {
 				return Double.parseDouble(string.substring(startNumber, i));
 			} catch (NumberFormatException e) {
-				throw new JsonParsingException("Unexpectedly caught NumberFormatException trying to parse number at offset " + startNumber, e);
+				throw new JsonSerializationException("Unexpectedly caught NumberFormatException trying to parse number at offset " + startNumber, e);
 			}
 		}
 		
@@ -223,7 +244,7 @@ public class JsonSerializer {
 		 * @return next value, parsed starting at currIndex, leaving currIndex pointing after value
 		 * @throws RuntimeException if value could not be successfully parsed
 		 */
-		public Object parseValue() throws JsonParsingException {
+		public Object parseValue() throws JsonSerializationException {
 			currIndex = indexOfNextNonWhitespaceChar("value");
 			char c = getCharAtOffset(currIndex, "value");
 			if (c == '[')
@@ -247,28 +268,28 @@ public class JsonSerializer {
 				// TODO maybe return null placeholder here instead
 				return null;
 			}
-			throw new JsonParsingException("Unexpected character '" + c + "' encountered when trying to parse value at offset " + currIndex);
+			throw new JsonSerializationException("Unexpected character '" + c + "' encountered when trying to parse value at offset " + currIndex);
 		}
 		
 		// assert expected start character for expected type, throwing appropriate exception otherwise
 		// If successful, leaves currIndex set one past character
-		private void assertStartCharacter(char c, String whatsBeingParsed) throws JsonParsingException {
+		private void assertStartCharacter(char c, String whatsBeingParsed) throws JsonSerializationException {
 			currIndex = indexOfNextNonWhitespaceChar(whatsBeingParsed);
 			char peek = getCharAtOffset(currIndex, whatsBeingParsed);
 			if (peek != c)
-				throw new JsonParsingException("Encountered unexpected character '"
+				throw new JsonSerializationException("Encountered unexpected character '"
 						+ peek + "' when was expecting '" + c + "' when trying to parse "
 						+ whatsBeingParsed + " at offset " + currIndex);
 			++currIndex;
 		}
 		
 		// get character at specified offset, throwing parse exception if EOF reached
-		private char getCharAtOffset(int offset, String whatsBeingParsed) throws JsonParsingException {
+		private char getCharAtOffset(int offset, String whatsBeingParsed) throws JsonSerializationException {
 			if (offset < 0)
-				throw new JsonParsingException("Tried to access bogus offset " + offset
+				throw new JsonSerializationException("Tried to access bogus offset " + offset
 						+ ", trying to parse " + whatsBeingParsed + ". Actual range 0.." + Integer.toString(cs.length - 1));
 			if (offset >= cs.length)
-				throw new JsonParsingException("Unexpectedly reached EOF when trying to parse "
+				throw new JsonSerializationException("Unexpectedly reached EOF when trying to parse "
 						+ whatsBeingParsed + ". Tried to access offset " + offset 
 						+ " whereas valid index range is 0.." + Integer.toString(cs.length - 1));
 			return cs[offset];
@@ -287,16 +308,100 @@ public class JsonSerializer {
 		
 		/**
 		 * @return index of next non-whitespace character
-		 * @throws JsonParsingException if no more non-whitespace characters remain
+		 * @throws JsonSerializationException if no more non-whitespace characters remain
 		 */
-		public int indexOfNextNonWhitespaceChar(String whatsBeingParsed) throws JsonParsingException {
+		public int indexOfNextNonWhitespaceChar(String whatsBeingParsed) throws JsonSerializationException {
 			for (int i = currIndex; i < cs.length; ++i) {
 				char c = cs[i];
 				if (WHITESPACE.indexOf(c) == -1)
 					return i;
 			}
-			throw new JsonParsingException("Unexpectedly reached EOF when trying to parse "
+			throw new JsonSerializationException("Unexpectedly reached EOF when trying to parse "
 					+ whatsBeingParsed + " at offset " + currIndex);
+		}
+	}
+	
+	private static class JsonEncoder {
+		private final StringBuilder builder = new StringBuilder();
+		
+		// IdentityHashSet of objects which we have already encoded or started encoding, to detect backrefs
+		private final Set<Object> visitedSet = new IdentityHashSet<Object>();
+		
+		@SuppressWarnings("unchecked")
+		public void encodeAny(Object object) throws JsonSerializationException {
+			if (object == null)
+				builder.append("null");
+			else if (object instanceof String)
+				encodeString((String)object);
+			else if (object instanceof Double)
+				encodeDouble((Double)object);
+			else if (object instanceof Boolean)
+				builder.append(object.toString());
+			else {
+				if (visitedSet.contains(object))
+					throw new JsonSerializationException("Backref detected in JSON encoding");
+				visitedSet.add(object);
+						
+				if (object instanceof Map)
+					encodeMap((Map<String, ?>)object);
+				else if (object instanceof List)
+					encodeList((List<?>)object);
+				else
+					throw new JsonSerializationException("Unhandled object " + object);
+			}
+		}
+		
+		private void encodeMap(Map<String, ?> map) throws JsonSerializationException {
+			builder.append('{');
+			boolean needComma = false;
+			for (Map.Entry<String, ?> entry : map.entrySet()) {
+				if (needComma)
+					builder.append(',');
+				encodeString(entry.getKey());
+				builder.append(':');
+				encodeAny(entry.getValue());
+				needComma = true;
+			}
+			builder.append('}');
+		}
+		
+		private void encodeList(List<?> list) throws JsonSerializationException {
+			builder.append('[');
+			boolean needComma = false;
+			for (Object element : list) {
+				if (needComma)
+					builder.append(',');
+				encodeAny(element);
+				needComma = true;
+			}
+			builder.append(']');
+		}
+		
+		private void encodeString(String string) {
+			builder.append('"');
+			for (char c : string.toCharArray()) {
+				if (c >= '\u0000' && c <= '\u001f') {
+					String hexString = "000" + Integer.toHexString(c);
+					builder.append("\\u").append(hexString.substring(hexString.length() - 4));
+				} else if (c == '"' || c == '\\') {
+					builder.append('\\').append(c);
+				} else {
+					builder.append(c);
+				}
+			}
+			builder.append('"');
+		}
+		
+		private void encodeDouble(Double number) {
+			String string = number.toString();
+			String unneededSuffix = ".0";
+			if (string.endsWith(unneededSuffix))
+				string = string.substring(0, string.length() - unneededSuffix.length());
+			builder.append(string);
+		}
+		
+		public String toString() {
+			return builder.toString();
 		}
 	}
 }

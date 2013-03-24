@@ -13,6 +13,7 @@ import us.stangl.crostex.constraint.SymmetryGridConstraintTest;
 import us.stangl.crostex.gui.CrosswordPanelTest;
 import us.stangl.crostex.io.JsonSerializerTest;
 import us.stangl.crostex.util.CircularListTest;
+import us.stangl.crostex.util.IdentityHashSetTest;
 import us.stangl.crostex.util.MessageTest;
 import us.stangl.crostex.util.MiscUtilsTest;
 import us.stangl.crostex.util.StackTest;
@@ -26,6 +27,7 @@ import us.stangl.crostex.util.StringUtilsTest;
 @Suite.SuiteClasses({
 	CircularListTest.class,
 	CrosswordPanelTest.class,
+	IdentityHashSetTest.class,
 	JsonSerializerTest.class,
 	MessageTest.class,
 	MiscUtilsTest.class,

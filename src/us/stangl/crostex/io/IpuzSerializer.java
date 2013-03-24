@@ -146,8 +146,8 @@ public class IpuzSerializer {
 			return grid;
 		} catch (UnsupportedEncodingException e) {
 			throw new IpuzParsingException("UnsupportedEncodingException caught trying to parse IPUZ bytes as UTF-8", e);
-		} catch (JsonParsingException e) {
-			throw new IpuzParsingException("JsonParsingException caught trying to parse IPUZ bytes", e);
+		} catch (JsonSerializationException e) {
+			throw new IpuzParsingException("JsonSerializationException caught trying to parse IPUZ bytes", e);
 		}
 	}
 	
