@@ -128,7 +128,7 @@ public class CrosswordPanel extends JPanel {
 		enterRebusItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent evt) {
-				String rebusText = JOptionPane.showInputDialog(CrosswordPanel.this, "Enter Rebus text");
+				String rebusText = JOptionPane.showInputDialog(CrosswordPanel.this, Message.DIALOG_TEXT_ENTER_REBUS_TEXT.toString());
 				if (rebusText != null) {
 					CrosswordPanel.this.grid.enterTextCommand(rebusText.toUpperCase());
 					CrosswordPanel.this.repaint(0);

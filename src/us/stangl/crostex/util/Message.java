@@ -30,6 +30,7 @@ public enum Message {
 	DEFAULT_GRID_NAME,				// default (empty) grid name
 	DIALOG_TEXT_CONFIRM_DATA_DIRECTORY_CREATE, // text confirming creation of data directory
 	DIALOG_TEXT_CONFIRM_DUPLICATE_GRID,			// text for dialog confirming whether to create duplicate (by structure) grid template
+	DIALOG_TEXT_ENTER_REBUS_TEXT,	// text for dialog prompting for rebus text
 	DIALOG_TEXT_NONEMPTY_NAME_DESCRIPTION,	// text for dialog reporting that name and description must be non-blank
 	DIALOG_TEXT_OVERWRITE_EXISTING_FILE,	// text for dialog confirming whether to overwrite an existing file
 	DIALOG_TEXT_OVERWRITE_EXISTING_GRID,		// text for dialog prompting whether to overwrite existing grid template with same name
@@ -59,8 +60,10 @@ public enum Message {
 	FILE_MENU_OPTION_NEW,			// File menu New ... option
 	FILE_MENU_OPTION_SAVE_GRID_AS_TEMPLATE,	// File menu Save Grid as Template... option
 	HELP_ABOUT_DIALOG_TEXT,			// text in Help/About dialog box
+	HELP_HTML_CONTENTS,				// Help Contents, in HTML
 	HELP_MENU_HEADER,				// header for Help menu
 	HELP_MENU_OPTION_ABOUT,			// Help menu option About Crostex
+	HELP_MENU_OPTION_HELP_CONTENTS,	// Help menu option Help Contents
 	LABEL_ACROSS,					// label Across
 	LABEL_AUTHOR,					// label Author
 	LABEL_COPYRIGHT,				// label Copyright

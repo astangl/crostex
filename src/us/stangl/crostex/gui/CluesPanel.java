@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -101,6 +102,9 @@ public final class CluesPanel extends JPanel implements FullGridChangeListener, 
 				sca.acrossClueNumber = clue.getNumber();
 			}
 		}
+		topPanel.add(Box.createVerticalStrut(10), new GBC(0, row).ipady(10));
+		++row;
+		
 		topPanel.add(new JLabel(Message.LABEL_DOWN.toString()), new GBC(0, row).anchor(GBC.NORTHWEST));
 		++row;
 		List<Clue> downClues = grid.validateAndGetDownClues();

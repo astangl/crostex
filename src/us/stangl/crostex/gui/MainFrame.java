@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -33,6 +34,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -440,6 +442,24 @@ public class MainFrame extends JFrame {
 	private JMenu helpMenu() {
 		JMenu helpMenu = new JMenu(Message.HELP_MENU_HEADER.toString());
 		helpMenu.setMnemonic(KeyEvent.VK_H);
+		JMenuItem helpContentsItem = new JMenuItem(Message.HELP_MENU_OPTION_HELP_CONTENTS.toString());
+		helpContentsItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				JEditorPane editorPane = new JEditorPane();
+				editorPane.setContentType("text/html");
+				editorPane.setPreferredSize(new Dimension(520,180));
+				//editorPane.setSize(400, 400);
+				//editorPane.
+				//editorPane.setText("<html><head></head><body><b>This is a test!</b></body></html>");
+				editorPane.setText(Message.HELP_HTML_CONTENTS.toString());
+				JOptionPane.showMessageDialog(MainFrame.this,
+					new JScrollPane(editorPane),
+					Message.HELP_MENU_OPTION_HELP_CONTENTS.toString(),
+					JOptionPane.PLAIN_MESSAGE, new CrosswordIcon(5));
+			}
+		});
+		helpMenu.add(helpContentsItem);
 		helpMenu.addSeparator();
 		JMenuItem aboutItem = new JMenuItem(Message.HELP_MENU_OPTION_ABOUT.toString());
 		aboutItem.addActionListener(new ActionListener() {
