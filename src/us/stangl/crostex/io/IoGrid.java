@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Abstract interface for a grid to use for I/O.
  * Using this interface to gain looser coupling and
- * potentially be able to re-use serialization logic better.
+ * potentially be able to re-use serialization logic.
  * @author Alex Stangl
  */
 public interface IoGrid {

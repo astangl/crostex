@@ -69,7 +69,6 @@ public class TopLevelTabPanel extends JPanel {
 		add(sp);
 		tabbedPane.addTab(Message.TAB_TITLE_STATS.toString(), new StatsPanel(crosswordPanel));
 		tabbedPane.addTab(Message.TAB_TITLE_CLUES.toString(), new CluesPanel(grid));
-		tabbedPane.addTab(Message.TAB_TITLE_REBUS.toString(), new RebusPanel(crosswordPanel));
 		tabbedPane.setSelectedIndex(0);
 	}
 

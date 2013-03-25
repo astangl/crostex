@@ -8,10 +8,10 @@ import us.stangl.crostex.Grid;
 import us.stangl.crostex.util.RowColumnPair;
 
 /**
- * Undoable command to enter a specified character into the current cell in the grid, and advance cursor.
+ * Undoable command to enter specified text into the current cell in the grid, and advance cursor.
  * @author Alex Stangl
  */
-public class EnterCharacterToCellCommand implements UndoableCommand<Grid> {
+public class EnterTextToCellCommand implements UndoableCommand<Grid> {
 	// row, column coordinates of cell to manipulate
 	private final RowColumnPair coordinates;
 	
@@ -27,13 +27,13 @@ public class EnterCharacterToCellCommand implements UndoableCommand<Grid> {
 	// whether cell change causes renumbering to occur (i.e., changing a black cell)
 	private final boolean renumberRequired = false;
 	
-	public EnterCharacterToCellCommand(Grid grid, char c) {
+	public EnterTextToCellCommand(Grid grid, String text) {
 		int oldCurrentRow = grid.getCurrentRow();
 		int oldCurrentColumn = grid.getCurrentColumn();
 		coordinates = new RowColumnPair(oldCurrentRow, oldCurrentColumn);
 		Cell cell = grid.getCell(oldCurrentRow, oldCurrentColumn);
 		oldContents = cell.getContents();
-		newContents = String.valueOf(c);
+		newContents = text;
 		// renumberRequired = cell.isBlack();
 		this.newCoordinates = grid.getNextCursorPosition();
 	}

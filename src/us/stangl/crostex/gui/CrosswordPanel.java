@@ -19,6 +19,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
@@ -92,6 +93,7 @@ public class CrosswordPanel extends JPanel {
 		addKeystrokeAction(KeyEvent.VK_DOWN, ACTION_MAP_CURSOR_DOWN, new AbstractAction() {
 			private static final long serialVersionUID = 1L;
 
+			@Override
 			public void actionPerformed(ActionEvent evt) {
 				CrosswordPanel.this.grid.cursorDown();
 				CrosswordPanel.this.repaint(0);
@@ -101,8 +103,8 @@ public class CrosswordPanel extends JPanel {
 		this.grid.renumberCells();
 		
 		JMenuItem toggleCellBlackWhiteItem = new JMenuItem(Message.CELL_POPUP_MENU_OPTION_TOGGLE_CELL_BLACK.toString());
-		toggleCellBlackWhiteItem.setActionCommand("Toggle cell between black/white");
 		toggleCellBlackWhiteItem.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent evt) {
 				CrosswordPanel.this.grid.toggleCellBlackCommand();
 				CrosswordPanel.this.grid.renumberCells();
@@ -113,14 +115,27 @@ public class CrosswordPanel extends JPanel {
 		cellPopupMenu.add(toggleCellBlackWhiteItem);
 
 		JMenuItem toggleCellCircledItem = new JMenuItem(Message.CELL_POPUP_MENU_OPTION_TOGGLE_CELL_CIRCLED.toString());
-		toggleCellCircledItem.setActionCommand("Toggle cell circled/uncircled");
 		toggleCellCircledItem.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent evt) {
 				CrosswordPanel.this.grid.toggleCellCircledCommand();
 				CrosswordPanel.this.repaint(0);
 			}
 		});
 		cellPopupMenu.add(toggleCellCircledItem);
+		
+		JMenuItem enterRebusItem = new JMenuItem(Message.CELL_POPUP_MENU_OPTION_ENTER_REBUS.toString());
+		enterRebusItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				String rebusText = JOptionPane.showInputDialog(CrosswordPanel.this, "Enter Rebus text");
+				if (rebusText != null) {
+					CrosswordPanel.this.grid.enterTextCommand(rebusText.toUpperCase());
+					CrosswordPanel.this.repaint(0);
+				}
+			}
+		});
+		cellPopupMenu.add(enterRebusItem);
 	}
 	
 	private void addKeystrokeAction(int keyCode, String actionMapKey, Action action) {
@@ -179,6 +194,8 @@ public class CrosswordPanel extends JPanel {
 		private void maybeShowPopup(MouseEvent evt) {
 			if (evt.isPopupTrigger()) {
 				grid.mouseClicked(evt);
+				parentFrame.resetMenuState();
+				CrosswordPanel.this.repaint(0);
 				cellPopupMenu.show(CrosswordPanel.this, evt.getX(), evt.getY());
 			}
 		}

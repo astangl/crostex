@@ -20,6 +20,7 @@ public enum Message {
 	BUTTON_CUSTOM,					// text for Custom button
 	BUTTON_OK,						// text for OK button
 	BUTTON_PICK_DATA_DIRECTORY,		// text for pick data directory button
+	CELL_POPUP_MENU_OPTION_ENTER_REBUS,			// popup menu option to enter rebus
 	CELL_POPUP_MENU_OPTION_TOGGLE_CELL_BLACK,	// popup menu for cell, option to toggle cell black/white
 	CELL_POPUP_MENU_OPTION_TOGGLE_CELL_CIRCLED,	// popup menu for cell, option to toggle cell circled/uncircled
 	COMBO_BOX_OPTION_SKIP_BLACK,	// combo box Skip Black option

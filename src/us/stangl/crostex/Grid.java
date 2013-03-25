@@ -25,7 +25,7 @@ import org.w3c.dom.Element;
 import us.stangl.crostex.autofill.AutoFiller7;
 import us.stangl.crostex.command.ClearCellCommand;
 import us.stangl.crostex.command.CommandBuffer;
-import us.stangl.crostex.command.EnterCharacterToCellCommand;
+import us.stangl.crostex.command.EnterTextToCellCommand;
 import us.stangl.crostex.command.SetCurrentCellBlackCommand;
 import us.stangl.crostex.command.ToggleCurrentCellBlackCommand;
 import us.stangl.crostex.command.ToggleCurrentCellCircledCommand;
@@ -463,7 +463,7 @@ public class Grid implements IoGrid
 			c = Character.toUpperCase(c);
 			Cell currentCell = getCurrentCell();
 			if (currentCell != null && !currentCell.isBlack()) {
-				commandBuffer.applyCommand(new EnterCharacterToCellCommand(this, c));
+				commandBuffer.applyCommand(new EnterTextToCellCommand(this, String.valueOf(c)));
 			}
 		} else if (c == ' ') {
 			Cell currentCell = getCurrentCell();
@@ -493,7 +493,15 @@ public class Grid implements IoGrid
 	public void setCellBlackCommand() {
 		commandBuffer.applyCommand(new SetCurrentCellBlackCommand(this));
 	}
-	
+
+	/**
+	 * Execute new undoable command to replace text in current cell with specified text.
+	 * @param text text to place into current cell
+	 */
+	public void enterTextCommand(String text) {
+		commandBuffer.applyCommand(new EnterTextToCellCommand(this, text));
+	}
+
 	public int getHeight() {
 		return height;
 	}
