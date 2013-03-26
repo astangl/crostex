@@ -252,7 +252,7 @@ public class PuzSerializer {
 	 * @return PUZ-format byte array
 	 * @throws RuntimeException if error occurs during serialization
 	 */
-	public byte[] toPuz(IoGrid grid) {
+	public byte[] toBytes(IoGrid grid) {
 		int width = grid.getWidth();
 		int height = grid.getHeight();
 		int nCells = width * height;

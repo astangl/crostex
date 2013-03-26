@@ -161,7 +161,7 @@ public class IpuzSerializer {
 	}
 	
 	/**
-	 * Serialized IoGrid to IPUZ UTF-8 byte stream.
+	 * Serialize IoGrid to IPUZ UTF-8 byte stream.
 	 * @param grid
 	 * @return
 	 */

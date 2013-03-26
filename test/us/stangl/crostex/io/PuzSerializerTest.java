@@ -26,7 +26,7 @@ public class PuzSerializerTest {
 		Grid grid = serializer.fromBytes(bytes, new GridFactory(), true);
 		assertEquals(23, grid.getWidth());
 		assertEquals(22, grid.getHeight());
-		byte[] outputBytes = serializer.toPuz(grid);
+		byte[] outputBytes = serializer.toBytes(grid);
 		System.out.println("outputBytes = " + outputBytes);
 	}
 }

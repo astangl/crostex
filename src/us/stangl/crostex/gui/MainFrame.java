@@ -56,6 +56,8 @@ import us.stangl.crostex.io.FileReader;
 import us.stangl.crostex.io.FileSaver;
 import us.stangl.crostex.io.IpuzSerializationException;
 import us.stangl.crostex.io.IpuzSerializer;
+import us.stangl.crostex.io.JpzSerializationException;
+import us.stangl.crostex.io.JpzSerializer;
 import us.stangl.crostex.io.PuzSerializer;
 import us.stangl.crostex.util.Message;
 import us.stangl.crostex.util.Pair;
@@ -89,16 +91,22 @@ public class MainFrame extends JFrame {
 	private JMenuItem saveAsTemplate = newMenuItem(Message.FILE_MENU_OPTION_SAVE_GRID_AS_TEMPLATE);
 	
 	// File menu option to import PUZ file
-	private JMenuItem importPuzItem = new JMenuItem(Message.FILE_MENU_OPTION_IMPORT_PUZ.toString());
+	private JMenuItem importPuzItem = newMenuItem(Message.FILE_MENU_OPTION_IMPORT_PUZ);
 	
 	// File menu option to export PUZ file
-	private JMenuItem exportPuzItem = new JMenuItem(Message.FILE_MENU_OPTION_EXPORT_AS_PUZ.toString());
+	private JMenuItem exportPuzItem = newMenuItem(Message.FILE_MENU_OPTION_EXPORT_AS_PUZ);
 
 	// File menu option to import IPUZ file
-	private JMenuItem importIpuzItem = new JMenuItem(Message.FILE_MENU_OPTION_IMPORT_IPUZ.toString());
+	private JMenuItem importIpuzItem = newMenuItem(Message.FILE_MENU_OPTION_IMPORT_IPUZ);
 
 	// File menu option to export IPUZ file
-	private JMenuItem exportIpuzItem = new JMenuItem(Message.FILE_MENU_OPTION_EXPORT_AS_IPUZ.toString());
+	private JMenuItem exportIpuzItem = newMenuItem(Message.FILE_MENU_OPTION_EXPORT_AS_IPUZ);
+	
+	// File menu option to import JPZ file
+	private JMenuItem importJpzItem = newMenuItem(Message.FILE_MENU_OPTION_IMPORT_JPZ);
+	
+	// File menu option to export JPZ file
+	private JMenuItem exportJpzItem = newMenuItem(Message.FILE_MENU_OPTION_EXPORT_AS_JPZ);
 	
 	// Edit menu option to undo
 	private JMenuItem undoItem = newMenuItem(Message.EDIT_MENU_OPTION_UNDO);
@@ -253,6 +261,8 @@ public class MainFrame extends JFrame {
 		fileMenu.add(exportPuzItem);
 		fileMenu.add(importIpuzItem);
 		fileMenu.add(exportIpuzItem);
+		fileMenu.add(importJpzItem);
+		fileMenu.add(exportJpzItem);
 		fileMenu.addSeparator();
 		fileMenu.add(exitItem);
 		
@@ -320,11 +330,11 @@ public class MainFrame extends JFrame {
 			public void actionPerformed(ActionEvent evt) {
 				CrosswordPanel crosswordPanel = getCrosswordPanel();
 				if (crosswordPanel != null) {
-					JFileChooser fileChooser = new FileChooserConfirmingOverwrite(); //saveFileChooserPromptingOverwrite(); //new JFileChooser();
+					JFileChooser fileChooser = new FileChooserConfirmingOverwrite();
 					fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 					if (fileChooser.showSaveDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION)
 					{
-						byte[] bytes = new PuzSerializer().toPuz(crosswordPanel.getGrid());
+						byte[] bytes = new PuzSerializer().toBytes(crosswordPanel.getGrid());
 						FileSaver.saveToFile(bytes, fileChooser.getSelectedFile());
 					}
 				}
@@ -357,19 +367,56 @@ public class MainFrame extends JFrame {
 			public void actionPerformed(ActionEvent evt) {
 				CrosswordPanel crosswordPanel = getCrosswordPanel();
 				if (crosswordPanel != null) {
-					JFileChooser fileChooser = new FileChooserConfirmingOverwrite(); //saveFileChooserPromptingOverwrite(); //new JFileChooser();
+					JFileChooser fileChooser = new FileChooserConfirmingOverwrite();
 					fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 					if (fileChooser.showSaveDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION)
 					{
 						try {
 							byte[] bytes = new IpuzSerializer().toBytes(crosswordPanel.getGrid());
-							File fileToWrite = fileChooser.getSelectedFile();
-							if (fileToWrite.exists()) {
-								
-							}
-							FileSaver.saveToFile(bytes, fileToWrite);
+							FileSaver.saveToFile(bytes, fileChooser.getSelectedFile());
 						} catch (IpuzSerializationException e) {
 							LOG.log(Level.WARNING, "IpuzSerializationException caught trying to export IPUZ file", e);
+						}
+					}
+				}
+			}
+		});
+		importJpzItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				JFileChooser fileChooser = new JFileChooser();
+				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				if (fileChooser.showOpenDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION)
+				{
+					File file = fileChooser.getSelectedFile();
+					try {
+						byte[] bytes = FileReader.getFileBytes(file);
+						Grid grid = new JpzSerializer().fromBytes(bytes, new GridFactory());
+						if (grid == null) {
+							LOG.severe("Couldn't open JPZ file " + file + " because it appears invalid");
+						} else {
+							openGridInNewTab(grid);
+						}
+					} catch (JpzSerializationException e) {
+						LOG.log(Level.WARNING, "JpzSerializationException caught trying to import JPZ file " + file, e);
+					} catch (IOException e) {
+						LOG.log(Level.WARNING, "IOException caught trying to import JPZ file " + file, e);
+					}
+				}
+			}
+		});
+		exportJpzItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				CrosswordPanel crosswordPanel = getCrosswordPanel();
+				if (crosswordPanel != null) {
+					JFileChooser fileChooser = new FileChooserConfirmingOverwrite();
+					fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+					if (fileChooser.showSaveDialog(MainFrame.this) == JFileChooser.APPROVE_OPTION)
+					{
+						try {
+							byte[] bytes = new JpzSerializer().toBytes(crosswordPanel.getGrid());
+							FileSaver.saveToFile(bytes, fileChooser.getSelectedFile());
+						} catch (JpzSerializationException e) {
+							LOG.log(Level.WARNING, "JpzSerializationException caught trying to export JPZ file", e);
 						}
 					}
 				}
@@ -583,12 +630,17 @@ public class MainFrame extends JFrame {
 			undoItem.setEnabled(false);
 			redoItem.setEnabled(false);
 			exportPuzItem.setEnabled(false);
+			exportJpzItem.setEnabled(false);
+			exportIpuzItem.setEnabled(false);
 			
 		} else {
 			Grid grid = crosswordPanel.getGrid();
 			undoItem.setEnabled(grid.isAbleToUndo());
 			redoItem.setEnabled(grid.isAbleToRedo());
-			exportPuzItem.setEnabled(grid.isReadyToExport());
+			boolean readyToExport = grid.isReadyToExport();
+			exportPuzItem.setEnabled(readyToExport);
+			exportJpzItem.setEnabled(readyToExport);
+			exportIpuzItem.setEnabled(readyToExport);
 		}
 	}
 
