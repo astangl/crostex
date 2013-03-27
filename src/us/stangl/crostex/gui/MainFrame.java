@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.print.PrinterException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -47,6 +48,7 @@ import us.stangl.crostex.GridFactory;
 import us.stangl.crostex.GridsDb;
 import us.stangl.crostex.PreferenceKey;
 import us.stangl.crostex.PreferencesStore;
+import us.stangl.crostex.PrintHelper;
 import us.stangl.crostex.RomanNumeralGenerator;
 import us.stangl.crostex.ServiceException;
 import us.stangl.crostex.Word;
@@ -89,6 +91,9 @@ public class MainFrame extends JFrame {
 	
 	// File menu option to save grid as template
 	private JMenuItem saveAsTemplate = newMenuItem(Message.FILE_MENU_OPTION_SAVE_GRID_AS_TEMPLATE);
+	
+	// File menu option to print
+	private JMenuItem printItem = newMenuItem(Message.FILE_MENU_OPTION_PRINT);
 	
 	// File menu option to import PUZ file
 	private JMenuItem importPuzItem = newMenuItem(Message.FILE_MENU_OPTION_IMPORT_PUZ);
@@ -257,6 +262,9 @@ public class MainFrame extends JFrame {
 		JMenuItem exitItem = new JMenuItem(Message.FILE_MENU_OPTION_EXIT.toString());
 		fileMenu.add(newItem);
 		fileMenu.add(saveAsTemplate);
+		fileMenu.addSeparator();
+		fileMenu.add(printItem);
+		fileMenu.addSeparator();
 		fileMenu.add(importPuzItem);
 		fileMenu.add(exportPuzItem);
 		fileMenu.add(importIpuzItem);
@@ -422,6 +430,20 @@ public class MainFrame extends JFrame {
 				}
 			}
 		});
+		
+		printItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				CrosswordPanel crosswordPanel = getCrosswordPanel();
+				if (crosswordPanel != null) {
+					try {
+						new PrintHelper(crosswordPanel).print();
+					} catch (PrinterException e) {
+						LOG.log(Level.SEVERE, "PrinterException caught trying to print", e);
+					}
+				}
+			}
+		});
+
 		
 		return fileMenu;
 	}

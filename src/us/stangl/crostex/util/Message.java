@@ -60,6 +60,7 @@ public enum Message {
 	FILE_MENU_OPTION_IMPORT_JPZ,	// File menu Import JPZ option
 	FILE_MENU_OPTION_IMPORT_PUZ,	// File menu Import PUZ file option
 	FILE_MENU_OPTION_NEW,			// File menu New ... option
+	FILE_MENU_OPTION_PRINT,			// File menu Print option
 	FILE_MENU_OPTION_SAVE_GRID_AS_TEMPLATE,	// File menu Save Grid as Template... option
 	HELP_ABOUT_DIALOG_TEXT,			// text in Help/About dialog box
 	HELP_HTML_CONTENTS,				// Help Contents, in HTML
