@@ -602,7 +602,7 @@ public class Grid implements IoGrid
 	}
 	
 	public boolean autoFill(Dictionary<char[], Word> dict) {
-		return new AutoFiller7().autoFill(this, dict);
+		return new AutoFiller7().autoFillRegion(this, dict);
 	}
 
 	public String getDescription() {

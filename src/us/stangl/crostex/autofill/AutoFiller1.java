@@ -22,7 +22,7 @@ import us.stangl.crostex.util.ResettableIterator;
  * 1st generation grid auto-fill algorithm.
  * @author Alex Stangl
  */
-public class AutoFiller1 implements AutoFill {
+public class AutoFiller1 implements AutoFillGrid {
 	public boolean autoFill(Grid grid, Dictionary<char[], Word> dict) {
 		// Find all full words in xword, store in set for duplicate checking
 		Set<String> wordsAlreadyInUse = new HashSet<String>();

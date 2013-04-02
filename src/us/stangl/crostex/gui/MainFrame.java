@@ -665,6 +665,13 @@ public class MainFrame extends JFrame {
 			exportIpuzItem.setEnabled(readyToExport);
 		}
 	}
+	
+	public boolean autoFill() {
+		CrosswordPanel crosswordPanel = getCrosswordPanel();
+		if (crosswordPanel == null)
+			return false;
+		return crosswordPanel.getGrid().autoFill(dict);
+	}
 
 	// return currently selected CrosswordPanel, if any, else null
 	private CrosswordPanel getCrosswordPanel() {

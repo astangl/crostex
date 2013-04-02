@@ -136,6 +136,14 @@ public class CrosswordPanel extends JPanel {
 			}
 		});
 		cellPopupMenu.add(enterRebusItem);
+		
+		JMenuItem autoFillItem = new JMenuItem(Message.CELL_POPUP_MENU_OPTION_AUTOFILL.toString());
+		autoFillItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				CrosswordPanel.this.parentFrame.autoFill();
+			}
+		});
 	}
 	
 	private void addKeystrokeAction(int keyCode, String actionMapKey, Action action) {

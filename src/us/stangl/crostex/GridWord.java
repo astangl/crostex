@@ -3,7 +3,9 @@
  */
 package us.stangl.crostex;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import us.stangl.crostex.util.Pair;
@@ -314,5 +316,26 @@ public class GridWord {
 	 */
 	public RowColumnPair getEndOfWord() {
 		return endOfWord;
+	}
+	
+	/**
+	 * @return coordinates of all cells in the word
+	 */
+	public List<RowColumnPair> getCoordinatesOfAllCells() {
+		List<RowColumnPair> retval = new ArrayList<RowColumnPair>();
+		if (startOfWord.row == endOfWord.row) {
+			int row = startOfWord.row;
+			int delta = endOfWord.column > startOfWord.column ? 1 : -1;
+			for (int column = startOfWord.column; column <= endOfWord.column; column += delta)
+				retval.add(new RowColumnPair(row, column));
+		} else if (startOfWord.column == endOfWord.column) {
+			int column = startOfWord.column;
+			int delta = endOfWord.row > startOfWord.row ? 1 : -1;
+			for (int row = startOfWord.row; row <= endOfWord.row; row += delta)
+				retval.add(new RowColumnPair(row, column));
+		} else {
+			throw new RuntimeException("startOfWord " + startOfWord + " incompatible with endOfWord " + endOfWord);
+		}
+		return retval;
 	}
 }

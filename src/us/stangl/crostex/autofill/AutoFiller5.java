@@ -23,7 +23,7 @@ import us.stangl.crostex.util.Stack;
  * 5th generation implementation of auto-fill algorithm.
  * @author Alex Stangl
  */
-public class AutoFiller5 implements AutoFill {
+public class AutoFiller5 implements AutoFillGrid {
 	public boolean autoFill(Grid grid, Dictionary<char[], Word> dict) {
         // Find all full words in xword, store in set for duplicate checking
 		Set<String> wordsAlreadyInUse = new HashSet<String>();

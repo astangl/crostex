@@ -11,7 +11,7 @@ import us.stangl.crostex.dictionary.Dictionary;
  * Interface for classes providing grid autofill service.
  * @author Alex Stangl
  */
-public interface AutoFill {
+public interface AutoFillGrid {
 	/**
 	 * Attempt to autofill grid.
 	 * @param grid grid to fill

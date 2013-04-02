@@ -25,7 +25,7 @@ import us.stangl.crostex.util.Stack;
  * Iterative implementation of DFS.
  * @author Alex Stangl
  */
-public class AutoFiller4 implements AutoFill {
+public class AutoFiller4 implements AutoFillGrid {
 	public boolean autoFill(Grid grid, Dictionary<char[], Word> dict) {
        // Find all full words in xword, store in set for duplicate checking
 		Set<String> wordsAlreadyInUse = new HashSet<String>();

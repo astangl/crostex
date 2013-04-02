@@ -23,7 +23,7 @@ import us.stangl.crostex.util.Pair;
  * 3rd generation grid autofill algorithm.
  * @author Alex Stangl
  */
-public class AutoFiller3 implements AutoFill {
+public class AutoFiller3 implements AutoFillGrid {
 	public boolean autoFill(Grid grid, Dictionary<char[], Word> dict) {
         // Find all full words in xword, store in set for duplicate checking
 		Set<String> wordsAlreadyInUse = new HashSet<String>();
