@@ -144,6 +144,7 @@ public class CrosswordPanel extends JPanel {
 				CrosswordPanel.this.parentFrame.autoFill();
 			}
 		});
+		cellPopupMenu.add(autoFillItem);
 	}
 	
 	private void addKeystrokeAction(int keyCode, String actionMapKey, Action action) {

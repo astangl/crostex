@@ -192,7 +192,6 @@ public class JsonSerializerTest {
 		
 		String string = new JsonSerializer().toJsonString(map);
 		checkStringifiedMap(string);
-		System.out.println(string);
 		/*
 		assertTrue(string.contains("\"author\":\"Jonathan Swift\""));
 		assertTrue(string.contains("\"title\":\"A Modest Proposal\""));
@@ -209,7 +208,6 @@ public class JsonSerializerTest {
 		addDataToMap(map);
 		list.add(map);
 		String string = new JsonSerializer().toJsonString(list);
-		System.out.println(string);
 		assertTrue(string.startsWith("[true,-6.717,0,2.0E-12,false,null,{\""));
 		checkStringifiedMap(string);
 		

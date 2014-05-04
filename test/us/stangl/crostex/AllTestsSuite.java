@@ -12,6 +12,7 @@ import us.stangl.crostex.constraint.OnePolyominoGridConstraintTest;
 import us.stangl.crostex.constraint.SymmetryGridConstraintTest;
 import us.stangl.crostex.gui.CrosswordPanelTest;
 import us.stangl.crostex.io.JsonSerializerTest;
+import us.stangl.crostex.io.PuzSerializerTest;
 import us.stangl.crostex.util.CircularListTest;
 import us.stangl.crostex.util.IdentityHashSetTest;
 import us.stangl.crostex.util.MessageTest;
@@ -32,6 +33,7 @@ import us.stangl.crostex.util.StringUtilsTest;
 	MessageTest.class,
 	MiscUtilsTest.class,
 	OnePolyominoGridConstraintTest.class,
+	PuzSerializerTest.class,
 	RomanNumeralGeneratorTest.class,
 	StackTest.class,
 	StringUtilsTest.class,
